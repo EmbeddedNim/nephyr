@@ -1,4 +1,4 @@
-import ../../nephyr/cmtoken
+import cmtoken
 export cmtoken
 
 template BIT*(n: untyped): untyped =
