@@ -58,9 +58,9 @@ const
   Z_DEVICE_MAX_NAME_LEN* = 48
 
 type
-  ZpDataPtr* = distinct pointer
-  ZpConfigPtr* = distinct pointer
-  ZpApiPtr* = distinct pointer
+  zp_data_ptr* = distinct pointer
+  zp_config_ptr* = distinct pointer
+  zp_api_ptr* = distinct pointer
 
   init_func_cb* = proc (dev: ptr device): cint {.cdecl.}
 
@@ -218,11 +218,11 @@ proc DEVICE_DEFINE*(dev_name: cminvtoken;
                     drv_name: cstring;
                     init_fn: init_func_cb;
                     pm_control_fn: pm_control_cb;
-                    data_ptr: ZpDataPtr;
-                    cfg_ptr: ZpConfigPtr;
+                    data_ptr: zp_data_ptr;
+                    cfg_ptr: zp_config_ptr;
                     level: cminvtoken;
                     prio: cminvtoken;
-                    api_ptr: ZpApiPtr) {.
+                    api_ptr: zp_api_ptr) {.
     importc: "DEVICE_DEFINE", header: "device.h".}
 
 
@@ -290,11 +290,11 @@ proc DEVICE_DT_NAME*(node_id: cminvtoken) {.importc: "DEVICE_DT_NAME",
 proc DEVICE_DT_DEFINE*(node_id: cminvtoken;
                        init_fn: init_func_cb;
                        pm_control_fn: pm_control_cb;
-                       data_ptr: ZpDataPtr;
-                       cfg_ptr: ZpConfigPtr;
+                       data_ptr: zp_data_ptr;
+                       cfg_ptr: zp_config_ptr;
                        level: cminvtoken;
                        prio: cminvtoken;
-                       api_ptr: ZpApiPtr) {.varargs,
+                       api_ptr: zp_api_ptr) {.varargs,
     importc: "DEVICE_DT_DEFINE", header: "device.h".}
 
 
@@ -314,11 +314,11 @@ proc DEVICE_DT_INST_DEFINE*(inst: cminvtoken;
                             node_id: cminvtoken;
                             init_fn: init_func_cb;
                             pm_control_fn: pm_control_cb;
-                            data_ptr: ZpDataPtr;
-                            cfg_ptr: ZpConfigPtr;
+                            data_ptr: zp_data_ptr;
+                            cfg_ptr: zp_config_ptr;
                             level: cminvtoken;
                             prio: cminvtoken;
-                            api_ptr: ZpApiPtr) {.varargs,
+                            api_ptr: zp_api_ptr) {.varargs,
     importc: "DEVICE_DT_INST_DEFINE", header: "device.h".}
     # TODO: possibly swap this out with Nim level macros, for now avoids needing
     #   to wrap the devicetree.h header too much
@@ -752,10 +752,10 @@ proc Z_DEVICE_DEFINE*(node_id: cminvtoken;
                       drv_name: cstring;
                       init_fn: init_func_cb;
                       pm_control_fn: pm_control_cb;
-                      data_ptr: ZpDataPtr;
-                      cfg_ptr: ZpConfigPtr;
+                      data_ptr: zp_data_ptr;
+                      cfg_ptr: zp_config_ptr;
                       level: cminvtoken;
                       prio: cminvtoken;
-                      api_ptr: ZpApiPtr) {.
+                      api_ptr: zp_api_ptr) {.
     varargs, importc: "Z_DEVICE_DEFINE", header: "device.h".}
 ##  device_extern is generated based on devicetree nodes
