@@ -111,17 +111,18 @@ proc wrapReply*(id: JsonNode, value: JsonNode): JsonNode =
 proc wrapReplyError*(id: JsonNode, error: JsonNode): JsonNode =
   return %* {"jsonrpc":"2.0", "id": id, "error": error}
 
-proc `%`(err: StackTraceEntry): JsonNode =
-  # StackTraceEntry = object
-  # procname*: cstring         ## Name of the proc that is currently executing.
-  # line*: int                 ## Line number of the proc that is currently executing.
-  # filename*: cstring         ## Filename of the proc that is currently executing.
-  let
-    pc: string = $err.procname
-    fl: string = $err.filename
-    ln: int = err.line.int
+when defined(RpcRouterIncludeTraceBack):
+  proc `%`(err: StackTraceEntry): JsonNode =
+    # StackTraceEntry = object
+    # procname*: cstring         ## Name of the proc that is currently executing.
+    # line*: int                 ## Line number of the proc that is currently executing.
+    # filename*: cstring         ## Filename of the proc that is currently executing.
+    let
+      pc: string = $err.procname
+      fl: string = $err.filename
+      ln: int = err.line.int
 
-  return %* (procname: pc, line: err.line, filename: fl)
+    return %* (procname: pc, line: err.line, filename: fl)
 
 proc wrapError*(code: int, msg: string, id: JsonNode,
                 data: JsonNode = newJNull(), err: ref Exception = nil): JsonNode {.gcsafe.} =
@@ -134,14 +135,15 @@ proc wrapError*(code: int, msg: string, id: JsonNode,
   
   echo "Error generated: ", "result: ", result, " id: ", id
 
-# template wrapException(body: untyped) =
-#   try:
-#     body
-#   except: 
-#     let msg = getCurrentExceptionMsg()
-#     echo("control server: invalid input: error: ", msg)
-#     let resp = rpcInvalidRequest(msg)
-#     return resp
+when defined(RpcRouterIncludeTraceBack):
+  template wrapException(body: untyped) =
+    try:
+      body
+    except: 
+      let msg = getCurrentExceptionMsg()
+      echo("control server: invalid input: error: ", msg)
+      let resp = rpcInvalidRequest(msg)
+      return resp
 
 
 proc route*(router: RpcRouter, node: JsonNode): JsonNode {.gcsafe.} =
