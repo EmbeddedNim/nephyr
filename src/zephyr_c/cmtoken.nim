@@ -51,11 +51,6 @@ macro CM_PROC*(macroName: untyped, margs: untyped): untyped =
       var mi2 {.importc: `ma`, global, nodecl, noinit.}: cminvtoken
       mi2
 
-macro CM_DECLARE_PROC*(macroName: untyped, margs: varargs[untyped]): untyped =
-  result = quote do:
-      template `macroName`*(ma: untyped): cminvtoken =
-        CM_PROC(`macroName`, ma)
-
 macro `tok`*(token: untyped): cminvtoken = 
   let nm: string = 
     if token.kind == nnkAccQuoted:
