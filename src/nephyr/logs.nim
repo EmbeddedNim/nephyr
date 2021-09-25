@@ -4,7 +4,7 @@ import sequtils
 
 import macros
 
-const LOG_HDR = "<logging/log.h>"
+# const LOG_HDR = "<logging/log.h>"
 
 # proc loge*(formatstr: cstring) {.importc: "LOG_ERR", varargs, header: LOG_HDR.}
 # proc logw*(formatstr: cstring) {.importc: "LOG_WRN", varargs, header: LOG_HDR.}
