@@ -1,15 +1,14 @@
 
+proc doCheck*(ret: int): int {.discardable.} =
+  if ret != 0:
+    raise newException(OSError, "error id: " & $(ret))
+  return ret
+
 template check*(blk: untyped) =
-  let ret = blk
-  if ret < 0:
-    raise newException(OSError, "error: " & $ret)
-
-proc doCheck*(ret: int) =
-  if ret < 0:
-    raise newException(OSError, "error: " & $ret)
-
+  doCheck(blk)
 
 proc joinBytes32*[T](bs: openArray[uint8], count: range[0..4], top=false): T =
+  ## Join's an array of bytes into an integer
   var n = 0'u32
   let N = min(count, bs.len())
   for i in 0 ..< N:
@@ -19,6 +18,7 @@ proc joinBytes32*[T](bs: openArray[uint8], count: range[0..4], top=false): T =
   return cast[T](n)
 
 proc joinBytes64*[T](bs: openArray[uint8], count: range[0..8], top=false): T =
+  ## Join's an array of bytes into an integer
   var n = 0'u64
   let N = min(count, bs.len())
   for i in 0 ..< N:
@@ -28,6 +28,7 @@ proc joinBytes64*[T](bs: openArray[uint8], count: range[0..8], top=false): T =
   return cast[T](n)
 
 proc splitBytes*[T](val: T, count: range[0..8], top=false): seq[byte] =
+  ## Splits's an integer into an array of bytes
   let szT = sizeof(T)
   let N = min(count, szT)
 

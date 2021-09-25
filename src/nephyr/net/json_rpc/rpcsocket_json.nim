@@ -3,8 +3,9 @@ import net
 # import tables
 # import posix
 
-import ../logs
-import ../tcpsocket
+import nephyr/logs
+import nephyr/net/tcpsocket
+
 import router
 import json
 

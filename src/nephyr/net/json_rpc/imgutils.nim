@@ -1,13 +1,14 @@
 
 import json
 
-import wrappers/drivers/flash_img
-import wrappers/mcuboot
-import logs
-import zephyr_utils
 import strutils
 
-import rpc/router
+import nephyr/general
+
+import zephyr_c/drivers/zflash_img
+import zephyr_c/zmcuboot
+
+import router
 
 # TODO: FIXME: handle non-secure and/or second core images
 {.emit: """

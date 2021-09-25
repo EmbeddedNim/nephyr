@@ -1,17 +1,11 @@
 
 
-import utils
+import utils, logs
+
 export utils
+export logs
 
 proc NimMain() {.importc.}
-
-proc doCheck*(ret: int): int {.discardable.} =
-  if ret != 0:
-    raise newException(OSError, "error id: " & $(ret))
-  return ret
-
-template check*(blk: untyped) =
-  doCheck(blk)
 
 proc abort*() {.importc: "abort", header: "stdlib.h".}
 

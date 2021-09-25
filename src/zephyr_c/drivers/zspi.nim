@@ -1,8 +1,8 @@
 import ../wrapper_utils
-import ../device
-import gpio
+import ../zdevice
+import zgpio
 
-export wrapper_utils, device, gpio
+export wrapper_utils, zdevice, zgpio
 
 const hdr = "<drivers/spi.h>"
 

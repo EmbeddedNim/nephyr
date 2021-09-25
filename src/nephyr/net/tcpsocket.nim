@@ -6,7 +6,7 @@ import posix
 
 export net, selectors, tables, posix
 
-import logs
+import nephyr/logs
 
 initLogs("tcpsocket")
 

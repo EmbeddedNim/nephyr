@@ -4,11 +4,10 @@ import router
 import json
 import msgpack4nim/msgpack2json
 
-import ../logs
-import ../tcpsocket
-export tcpsocket, router
+import nephyr/general
+import nephyr/net/tcpsocket
 
-import ../zephyr_utils
+export tcpsocket, router
 
 const TAG = "socketrpc"
 
