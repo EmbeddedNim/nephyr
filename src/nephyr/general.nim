@@ -1,4 +1,8 @@
 
+
+import utils
+export utils
+
 proc NimMain() {.importc.}
 
 proc doCheck*(ret: int): int {.discardable.} =
