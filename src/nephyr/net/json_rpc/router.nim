@@ -1,5 +1,4 @@
 import json, tables, strutils, macros, options
-import sequtils
 
 import marshal
 
@@ -67,9 +66,9 @@ proc rpcInvalidRequest*(id: int, detail: string): JsonNode =
 const
   methodField = "method"
   paramsField = "params"
-  jsonRpcField = "jsonrpc"
+  # jsonRpcField = "jsonrpc"
   idField = "id"
-  messageTerminator = "\c\l"
+  # messageTerminator = "\c\l"
 
   JSON_PARSE_ERROR* = -32700
   INVALID_REQUEST* = -32600
@@ -102,7 +101,7 @@ proc clear*(router: var RpcRouter) = router.procs.clear
 
 proc hasMethod*(router: RpcRouter, methodName: string): bool = router.procs.hasKey(methodName)
 
-func isEmpty(node: JsonNode): bool = node.isNil or node.kind == JNull
+# func isEmpty(node: JsonNode): bool = node.isNil or node.kind == JNull
 
 # Json reply wrappers
 
@@ -135,14 +134,14 @@ proc wrapError*(code: int, msg: string, id: JsonNode,
   
   echo "Error generated: ", "result: ", result, " id: ", id
 
-template wrapException(body: untyped) =
-  try:
-    body
-  except: 
-    let msg = getCurrentExceptionMsg()
-    echo("control server: invalid input: error: ", msg)
-    let resp = rpcInvalidRequest(msg)
-    return resp
+# template wrapException(body: untyped) =
+#   try:
+#     body
+#   except: 
+#     let msg = getCurrentExceptionMsg()
+#     echo("control server: invalid input: error: ", msg)
+#     let resp = rpcInvalidRequest(msg)
+#     return resp
 
 
 proc route*(router: RpcRouter, node: JsonNode): JsonNode {.gcsafe.} =
