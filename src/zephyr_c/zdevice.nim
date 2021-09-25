@@ -359,7 +359,8 @@ proc DEVICE_DT_NAME_GET*(node_id: cminvtoken): cmtoken {.importc: "DEVICE_DT_NAM
 ##  @return A pointer to the device object created by DEVICE_DT_DEFINE()
 ##
 
-proc DEVICE_DT_GET*(node_id: cminvtoken): ptr device {.importc: "DEVICE_DT_GET", header: "device.h".}
+proc DEVICE_DT_GET*(node_id: cminvtoken): ptr device {.
+    importc: "DEVICE_DT_GET", header: "device.h".}
 
 
 

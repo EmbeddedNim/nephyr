@@ -19,18 +19,9 @@ type
     spi_dev: ptr device
 
 
-proc spi_debug*() =
-  echo "======="
-  echo "\ncs_ctrl: ", repr(cs_ctrl)
-  echo "\nspi_cfg: ", repr(spi_cfg)
-  echo "\nspi_device: ", repr(spi_dev)
-  echo "======="
+template spi_setup*(node_label: cminvtoken, ) =
 
-proc spi_setup*() =
-
-  # spi_dev = device_get_binding("mikrobus_spi")
-
-  spi_dev = DEVICE_DT_GET(tok"DT_NODELABEL(mikrobus_spi)")
+  spi_dev = DEVICE_DT_GET(CM_PROC(DT_NODELABEL, tok"mikrobus_spi"))
   cs_ctrl =
     SPI_CS_CONTROL_PTR_DT(tok"DT_NODELABEL(click_spi2)", tok`2`)[]
 
@@ -58,3 +49,5 @@ proc spi_read*(): int =
 
   result = joinBytes32[int](rx_buf, 2)
   result = 0b0011_1111_1111_1111 and result
+
+

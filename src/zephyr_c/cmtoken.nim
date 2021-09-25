@@ -32,6 +32,30 @@ macro CTOKEN*(macroInvocation: untyped): cminvtoken =
       var mi {.importc: `macroInvokeName`, global, noinit, nodecl.}: cminvtoken
       mi
 
+macro CM_PROC*(macroName: untyped, margs: untyped): untyped =
+  let mn = macroname.repr
+  echo "MN =",  macroName.treeRepr
+  echo "MARGS =", margs.treeRepr
+  # echo "MARGS expand =", margs.expandMacros.treeRepr
+
+  margs.expectKind(nnkCallStrLit)
+  margs[0].expectKind(nnkIdent)
+  margs[1].expectKind(nnkRStrLit)
+  assert margs[0].strVal == "tok"
+
+  let
+    label = margs[1].strVal
+    mas = mn & "(" & label & ")"
+    ma = newLit mas
+  result = quote do:
+      var mi2 {.importc: `ma`, global, nodecl, noinit.}: cminvtoken
+      mi2
+
+macro CM_DECLARE_PROC*(macroName: untyped, margs: varargs[untyped]): untyped =
+  result = quote do:
+      template `macroName`*(ma: untyped): cminvtoken =
+        CM_PROC(`macroName`, ma)
+
 macro `tok`*(token: untyped): cminvtoken = 
   let nm: string = 
     if token.kind == nnkAccQuoted:
@@ -46,8 +70,8 @@ macro `tok`*(token: untyped): cminvtoken =
   
   let mi = newLit(nm)
   result = quote do:
-      var mi {.importc: `mi`, global, nodecl, noinit.}: cminvtoken
-      mi
+      var mi2 {.importc: `mi`, global, nodecl, noinit.}: cminvtoken
+      mi2
 
 macro CDefineDeclareVar*(name: untyped, macroRepr: untyped, retType: typedesc) =
   let macroInvokeName = newLit( macroRepr.repr )
