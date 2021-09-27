@@ -5,7 +5,7 @@ import zephyr_c/wrapper_utils
 import zephyr_c/zdevicetree
 import zephyr_c/drivers/zspi
 import zephyr_c/dt_bindings/dt_gpio
-# import zephyr_c/dt_bindings/dt_spi
+import zephyr_c/dt_bindings/dt_spi
 
 import sequtils
 
@@ -24,12 +24,10 @@ type
     cfg: spi_config
     spi_ptr: ptr device
 
-template DT_SPI_DEV_CS_GPIOS_CTLR*(spi_dev: untyped): cminvtoken =
-  CM_PROC(DT_SPI_DEV_CS_GPIOS_CTLR, spi_dev)
-proc DT_SPI_DEV_CS_GPIOS_PIN*(gpio_dev: cminvtoken): gpio_pin_t {.
-    importc: "$1", header: "devicetree/spi.h".}
-proc DT_SPI_DEV_CS_GPIOS_FLAGS*(gpio_dev: cminvtoken): gpio_dt_flags_t {.
-    importc: "$1", header: "devicetree/spi.h".}
+# proc DT_SPI_DEV_CS_GPIOS_PIN*(gpio_dev: cminvtoken): gpio_pin_t {.
+    # importc: "$1", header: "devicetree/spi.h".}
+# proc DT_SPI_DEV_CS_GPIOS_FLAGS*(gpio_dev: cminvtoken): gpio_dt_flags_t {.
+    # importc: "$1", header: "devicetree/spi.h".}
 
 
 

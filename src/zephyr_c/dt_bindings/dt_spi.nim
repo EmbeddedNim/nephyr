@@ -11,7 +11,10 @@
 ##  SPDX-License-Identifier: Apache-2.0
 ##
 import ../wrapper_utils
+import ../cmtoken
+import ../drivers/zgpio
 
+const hdr = "<devicetree/spi.h>"
 
 
 
@@ -52,7 +55,7 @@ import ../wrapper_utils
 ##
 
 proc DT_SPI_HAS_CS_GPIOS*(spi: cminvtoken) {.importc: "DT_SPI_HAS_CS_GPIOS",
-                                       header: "dt_spi.h".}
+                                       header: hdr.}
 
 
 
@@ -82,7 +85,7 @@ proc DT_SPI_HAS_CS_GPIOS*(spi: cminvtoken) {.importc: "DT_SPI_HAS_CS_GPIOS",
 ##
 
 proc DT_SPI_NUM_CS_GPIOS*(spi: cminvtoken) {.importc: "DT_SPI_NUM_CS_GPIOS",
-                                       header: "dt_spi.h".}
+                                       header: hdr.}
 
 
 
@@ -123,7 +126,7 @@ proc DT_SPI_NUM_CS_GPIOS*(spi: cminvtoken) {.importc: "DT_SPI_NUM_CS_GPIOS",
 ##
 
 proc DT_SPI_DEV_HAS_CS_GPIOS*(spi_dev: cminvtoken) {.
-    importc: "DT_SPI_DEV_HAS_CS_GPIOS", header: "dt_spi.h".}
+    importc: "DT_SPI_DEV_HAS_CS_GPIOS", header: hdr.}
 
 
 
@@ -160,7 +163,7 @@ proc DT_SPI_DEV_HAS_CS_GPIOS*(spi_dev: cminvtoken) {.
 ##
 
 proc DT_SPI_DEV_CS_GPIOS_CTLR*(spi_dev: cminvtoken): cminvtoken {.
-    importc: "DT_SPI_DEV_CS_GPIOS_CTLR", header: "dt_spi.h".}
+    importc: "DT_SPI_DEV_CS_GPIOS_CTLR", header: hdr.}
 
 
 
@@ -201,7 +204,7 @@ proc DT_SPI_DEV_CS_GPIOS_CTLR*(spi_dev: cminvtoken): cminvtoken {.
 ##
 
 proc DT_SPI_DEV_CS_GPIOS_LABEL*(spi_dev: cminvtoken) {.
-    importc: "DT_SPI_DEV_CS_GPIOS_LABEL", header: "dt_spi.h".}
+    importc: "DT_SPI_DEV_CS_GPIOS_LABEL", header: hdr.}
 
 
 
@@ -236,8 +239,8 @@ proc DT_SPI_DEV_CS_GPIOS_LABEL*(spi_dev: cminvtoken) {.
 ##  @return pin number of spi_dev's chip select GPIO
 ##
 
-proc DT_SPI_DEV_CS_GPIOS_PIN*(spi_dev: cminvtoken) {.
-    importc: "DT_SPI_DEV_CS_GPIOS_PIN", header: "dt_spi.h".}
+proc DT_SPI_DEV_CS_GPIOS_PIN*(gpio_dev: cminvtoken): gpio_pin_t {.
+    importc: "$1", header: "devicetree/spi.h".}
 
 
 
@@ -268,8 +271,8 @@ proc DT_SPI_DEV_CS_GPIOS_PIN*(spi_dev: cminvtoken) {.
 ##          zero if there is none
 ##
 
-proc DT_SPI_DEV_CS_GPIOS_FLAGS*(spi_dev: cminvtoken) {.
-    importc: "DT_SPI_DEV_CS_GPIOS_FLAGS", header: "dt_spi.h".}
+proc DT_SPI_DEV_CS_GPIOS_FLAGS*(spi_dev: cminvtoken): gpio_dt_flags_t  {.
+    importc: "DT_SPI_DEV_CS_GPIOS_FLAGS", header: hdr.}
 
 
 
@@ -282,7 +285,7 @@ proc DT_SPI_DEV_CS_GPIOS_FLAGS*(spi_dev: cminvtoken) {.
 ##
 
 proc DT_INST_SPI_DEV_HAS_CS_GPIOS*(inst: cminvtoken) {.
-    importc: "DT_INST_SPI_DEV_HAS_CS_GPIOS", header: "dt_spi.h".}
+    importc: "DT_INST_SPI_DEV_HAS_CS_GPIOS", header: hdr.}
 
 
 
@@ -295,7 +298,7 @@ proc DT_INST_SPI_DEV_HAS_CS_GPIOS*(inst: cminvtoken) {.
 ##
 
 proc DT_INST_SPI_DEV_CS_GPIOS_CTLR*(inst: cminvtoken) {.
-    importc: "DT_INST_SPI_DEV_CS_GPIOS_CTLR", header: "dt_spi.h".}
+    importc: "DT_INST_SPI_DEV_CS_GPIOS_CTLR", header: hdr.}
 
 
 
@@ -308,7 +311,7 @@ proc DT_INST_SPI_DEV_CS_GPIOS_CTLR*(inst: cminvtoken) {.
 ##
 
 proc DT_INST_SPI_DEV_CS_GPIOS_LABEL*(inst: cminvtoken) {.
-    importc: "DT_INST_SPI_DEV_CS_GPIOS_LABEL", header: "dt_spi.h".}
+    importc: "DT_INST_SPI_DEV_CS_GPIOS_LABEL", header: hdr.}
 
 
 
@@ -320,7 +323,7 @@ proc DT_INST_SPI_DEV_CS_GPIOS_LABEL*(inst: cminvtoken) {.
 ##
 
 proc DT_INST_SPI_DEV_CS_GPIOS_PIN*(inst: cminvtoken) {.
-    importc: "DT_INST_SPI_DEV_CS_GPIOS_PIN", header: "dt_spi.h".}
+    importc: "DT_INST_SPI_DEV_CS_GPIOS_PIN", header: hdr.}
 
 
 
@@ -333,7 +336,7 @@ proc DT_INST_SPI_DEV_CS_GPIOS_PIN*(inst: cminvtoken) {.
 ##
 
 proc DT_INST_SPI_DEV_CS_GPIOS_FLAGS*(inst: cminvtoken) {.
-    importc: "DT_INST_SPI_DEV_CS_GPIOS_FLAGS", header: "dt_spi.h".}
+    importc: "DT_INST_SPI_DEV_CS_GPIOS_FLAGS", header: hdr.}
 
 
 
