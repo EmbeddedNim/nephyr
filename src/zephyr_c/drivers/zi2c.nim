@@ -1,3 +1,6 @@
+
+
+
 ## *
 ##  @file
 ##
@@ -8,6 +11,9 @@
 ##
 ##  SPDX-License-Identifier: Apache-2.0
 ##
+
+
+
 
 ## *
 ##  @brief I2C Interface
@@ -66,6 +72,9 @@ const
 
 var I2C_SLAVE_FLAGS_ADDR_10_BITS* {.importc: "I2C_SLAVE_FLAGS_ADDR_10_BITS",
                                   header: "i2c.h".}: int ## * Slave device responds to 10-bit addressing.
+
+
+
 
 ## *
 ##  @brief One I2C Message.
@@ -247,6 +256,9 @@ type
     i2c_addr*: uint16
 
 
+
+
+
 ## *
 ##  @brief Configure operation of a host controller.
 ##
@@ -262,6 +274,9 @@ proc i2c_configure*(dev: ptr device; dev_config: uint32): cint {.syscall,
     importc: "i2c_configure", header: "i2c.h".}
 proc z_impl_i2c_configure*(dev: ptr device; dev_config: uint32): cint {.
     importc: "z_impl_i2c_configure", header: "i2c.h".}
+
+
+
 ## *
 ##  @brief Perform data transfer to another I2C device in master mode.
 ##
@@ -295,6 +310,9 @@ proc i2c_transfer*(dev: ptr device; msgs: ptr i2c_msg; num_msgs: uint8; `addr`: 
 proc z_impl_i2c_transfer*(dev: ptr device; msgs: ptr i2c_msg; num_msgs: uint8;
                          `addr`: uint16): cint {.importc: "z_impl_i2c_transfer",
     header: "i2c.h".}
+
+
+
 ## *
 ##  @brief Recover the I2C bus
 ##
@@ -310,8 +328,9 @@ proc z_impl_i2c_transfer*(dev: ptr device; msgs: ptr i2c_msg; num_msgs: uint8;
 
 proc i2c_recover_bus*(dev: ptr device): cint {.syscall, importc: "i2c_recover_bus",
     header: "i2c.h".}
-proc z_impl_i2c_recover_bus*(dev: ptr device): cint {.
-    importc: "z_impl_i2c_recover_bus", header: "i2c.h".}
+
+
+
 ## *
 ##  @brief Registers the provided config as Slave device of a controller.
 ##
@@ -339,6 +358,9 @@ proc z_impl_i2c_recover_bus*(dev: ptr device): cint {.
 
 proc i2c_slave_register*(dev: ptr device; cfg: ptr i2c_slave_config): cint {.
     importc: "i2c_slave_register", header: "i2c.h".}
+
+
+
 ## *
 ##  @brief Unregisters the provided config as Slave device
 ##
@@ -358,6 +380,9 @@ proc i2c_slave_register*(dev: ptr device; cfg: ptr i2c_slave_config): cint {.
 
 proc i2c_slave_unregister*(dev: ptr device; cfg: ptr i2c_slave_config): cint {.
     importc: "i2c_slave_unregister", header: "i2c.h".}
+
+
+
 ## *
 ##  @brief Instructs the I2C Slave device to register itself to the I2C Controller
 ##
@@ -376,6 +401,9 @@ proc i2c_slave_driver_register*(dev: ptr device): cint {.syscall,
     importc: "i2c_slave_driver_register", header: "i2c.h".}
 proc z_impl_i2c_slave_driver_register*(dev: ptr device): cint {.
     importc: "z_impl_i2c_slave_driver_register", header: "i2c.h".}
+
+
+
 ## *
 ##  @brief Instructs the I2C Slave device to unregister itself from the I2C
 ##  Controller
@@ -397,6 +425,9 @@ proc z_impl_i2c_slave_driver_unregister*(dev: ptr device): cint {.
 ##
 ##  Derived i2c APIs -- all implemented in terms of i2c_transfer()
 ##
+
+
+
 ## *
 ##  @brief Write a set amount of data to an I2C device.
 ##
@@ -414,6 +445,9 @@ proc z_impl_i2c_slave_driver_unregister*(dev: ptr device): cint {.
 
 proc i2c_write*(dev: ptr device; buf: ptr uint8; num_bytes: uint32; `addr`: uint16): cint {.
     importc: "i2c_write", header: "i2c.h".}
+
+
+
 ## *
 ##  @brief Read a set amount of data from an I2C device.
 ##
@@ -431,6 +465,9 @@ proc i2c_write*(dev: ptr device; buf: ptr uint8; num_bytes: uint32; `addr`: uint
 
 proc i2c_read*(dev: ptr device; buf: ptr uint8; num_bytes: uint32; `addr`: uint16): cint {.
     importc: "i2c_read", header: "i2c.h".}
+
+
+
 ## *
 ##  @brief Write then read data from an I2C device.
 ##
@@ -453,6 +490,9 @@ proc i2c_read*(dev: ptr device; buf: ptr uint8; num_bytes: uint32; `addr`: uint1
 proc i2c_write_read*(dev: ptr device; `addr`: uint16; write_buf: pointer;
                     num_write: csize_t; read_buf: pointer; num_read: csize_t): cint {.
     importc: "i2c_write_read", header: "i2c.h".}
+
+
+
 ## *
 ##  @brief Read multiple bytes from an internal address of an I2C device.
 ##
@@ -475,6 +515,9 @@ proc i2c_write_read*(dev: ptr device; `addr`: uint16; write_buf: pointer;
 proc i2c_burst_read*(dev: ptr device; dev_addr: uint16; start_addr: uint8;
                     buf: ptr uint8; num_bytes: uint32): cint {.
     importc: "i2c_burst_read", header: "i2c.h".}
+
+
+
 ## *
 ##  @brief Write multiple bytes to an internal address of an I2C device.
 ##
@@ -500,6 +543,9 @@ proc i2c_burst_read*(dev: ptr device; dev_addr: uint16; start_addr: uint8;
 proc i2c_burst_write*(dev: ptr device; dev_addr: uint16; start_addr: uint8;
                      buf: ptr uint8; num_bytes: uint32): cint {.
     importc: "i2c_burst_write", header: "i2c.h".}
+
+
+
 ## *
 ##  @brief Read internal register of an I2C device.
 ##
@@ -519,6 +565,9 @@ proc i2c_burst_write*(dev: ptr device; dev_addr: uint16; start_addr: uint8;
 proc i2c_reg_read_byte*(dev: ptr device; dev_addr: uint16; reg_addr: uint8;
                        value: ptr uint8): cint {.importc: "i2c_reg_read_byte",
     header: "i2c.h".}
+
+
+
 ## *
 ##  @brief Write internal register of an I2C device.
 ##
@@ -541,6 +590,9 @@ proc i2c_reg_read_byte*(dev: ptr device; dev_addr: uint16; reg_addr: uint8;
 proc i2c_reg_write_byte*(dev: ptr device; dev_addr: uint16; reg_addr: uint8;
                         value: uint8): cint {.importc: "i2c_reg_write_byte",
     header: "i2c.h".}
+
+
+
 ## *
 ##  @brief Update internal register of an I2C device.
 ##
@@ -564,6 +616,9 @@ proc i2c_reg_write_byte*(dev: ptr device; dev_addr: uint16; reg_addr: uint8;
 proc i2c_reg_update_byte*(dev: ptr device; dev_addr: uint8; reg_addr: uint8;
                          mask: uint8; value: uint8): cint {.
     importc: "i2c_reg_update_byte", header: "i2c.h".}
+
+
+
 ## *
 ##  @brief Dump out an I2C message
 ##
@@ -589,6 +644,9 @@ proc i2c_reg_update_byte*(dev: ptr device; dev_addr: uint8; reg_addr: uint8;
 
 proc i2c_dump_msgs*(name: cstring; msgs: ptr i2c_msg; num_msgs: uint8; `addr`: uint16) {.
     importc: "i2c_dump_msgs", header: "i2c.h".}
+
+
+
 
 
 ## *
