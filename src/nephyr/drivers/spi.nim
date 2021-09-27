@@ -19,11 +19,11 @@ type
     spi_dev: ptr device
 
 
-template spi_setup*(node_label: cminvtoken, ) =
+template spi_setup*(node_label: untyped, ) =
 
-  spi_dev = DEVICE_DT_GET(CM_PROC(DT_NODELABEL, tok"mikrobus_spi"))
+  spi_dev = DEVICE_DT_GET(DT_NODELABEL(node_label))
   cs_ctrl =
-    SPI_CS_CONTROL_PTR_DT(tok"DT_NODELABEL(click_spi2)", tok`2`)[]
+    SPI_CS_CONTROL_PTR_DT(DT_NODELABEL(tok"click_spi2"), tok`2`)[]
 
   spi_cfg = spi_config(
         frequency: 1_000_000'u32,
