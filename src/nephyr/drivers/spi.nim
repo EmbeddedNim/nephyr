@@ -15,15 +15,15 @@ type
 
   SpiDevice* = ref object
     cs_ctrl: spi_cs_control
-    spi_cfg: spi_config
-    spi_dev: ptr device
+    cfg: spi_config
+    spi_ptr: ptr device
 
 
-template spi_setup*(node_label: untyped, ) =
+template spi_setup*(node_label: untyped, cs_label: untyped) =
 
   spi_dev = DEVICE_DT_GET(DT_NODELABEL(node_label))
   cs_ctrl =
-    SPI_CS_CONTROL_PTR_DT(DT_NODELABEL(tok"click_spi2"), tok`2`)[]
+    SPI_CS_CONTROL_PTR_DT(DT_NODELABEL(cs_label), tok`2`)[]
 
   spi_cfg = spi_config(
         frequency: 1_000_000'u32,
@@ -33,7 +33,7 @@ template spi_setup*(node_label: untyped, ) =
   spi_debug()
 
 
-proc spi_read*(): int =
+proc spi_read*(dev: SpiDevice): seq[uint8] =
 
   var
     rx_buf = @[0x0'u8, 0x0]
@@ -45,9 +45,8 @@ proc spi_read*(): int =
     tx_bufs = @[spi_buf(buf: addr tx_buf[0], len: csize_t(sizeof(uint8) * tx_buf.len())) ]
     tx_bset = spi_buf_set(buffers: addr(tx_bufs[0]), count: tx_bufs.len().csize_t)
 
-  check: spi_transceive(spi_dev, addr spi_cfg, addr tx_bset, addr rx_bset)
+  check: spi_transceive(dev.spi_ptr, addr dev.cfg, addr tx_bset, addr rx_bset)
 
-  result = joinBytes32[int](rx_buf, 2)
-  result = 0b0011_1111_1111_1111 and result
+  result = rx_buf
 
 
