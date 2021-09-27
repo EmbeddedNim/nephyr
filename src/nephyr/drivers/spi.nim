@@ -24,10 +24,6 @@ type
     cfg: spi_config
     spi_ptr: ptr device
 
-# proc DT_SPI_DEV_CS_GPIOS_PIN*(gpio_dev: cminvtoken): gpio_pin_t {.
-    # importc: "$1", header: "devicetree/spi.h".}
-# proc DT_SPI_DEV_CS_GPIOS_FLAGS*(gpio_dev: cminvtoken): gpio_dt_flags_t {.
-    # importc: "$1", header: "devicetree/spi.h".}
 
 
 
