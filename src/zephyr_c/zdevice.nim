@@ -154,8 +154,8 @@ proc DEVICE_NAME_GET*(name: string): ptr device {.importc: "DEVICE_NAME_GET", he
 proc SYS_DEVICE_DEFINE*(drv_name: cstring;
                         init_fn: init_func_cb;
                         pm_control_fn: pm_control_cb;
-                        level: cmtoken;
-                        prio: cmtoken) {.
+                        level: cminvtoken;
+                        prio: cminvtoken) {.
     importc: "SYS_DEVICE_DEFINE", header: "device.h".}
 
 
@@ -342,7 +342,7 @@ proc DEVICE_DT_INST_DEFINE*(inst: cminvtoken;
 ##  DEVICE_DT_DEFINE()
 ##
 
-proc DEVICE_DT_NAME_GET*(node_id: cminvtoken): cmtoken {.importc: "DEVICE_DT_NAME_GET",
+proc DEVICE_DT_NAME_GET*(node_id: cminvtoken): cminvtoken {.importc: "DEVICE_DT_NAME_GET",
     header: "device.h".}
 
 

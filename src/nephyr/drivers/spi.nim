@@ -1,10 +1,16 @@
 
-import nephyr/utils
+import nephyr/general
+import zephyr_c/cmtoken
+import zephyr_c/wrapper_utils
 import zephyr_c/zdevicetree
 import zephyr_c/drivers/zspi
 import zephyr_c/dt_bindings/dt_gpio
+# import zephyr_c/dt_bindings/dt_spi
 
 import sequtils
+
+export cmtoken
+export general
 
 # var
 #   cs_ctrl: spi_cs_control
@@ -18,19 +24,33 @@ type
     cfg: spi_config
     spi_ptr: ptr device
 
+template DT_SPI_DEV_CS_GPIOS_CTLR*(spi_dev: untyped): cminvtoken =
+  CM_PROC(DT_SPI_DEV_CS_GPIOS_CTLR, spi_dev)
+proc DT_SPI_DEV_CS_GPIOS_PIN*(gpio_dev: cminvtoken): gpio_pin_t {.
+    importc: "$1", header: "devicetree/spi.h".}
+proc DT_SPI_DEV_CS_GPIOS_FLAGS*(gpio_dev: cminvtoken): gpio_dt_flags_t {.
+    importc: "$1", header: "devicetree/spi.h".}
 
-template spi_setup*(node_label: untyped, cs_label: untyped) =
 
-  spi_dev = DEVICE_DT_GET(DT_NODELABEL(node_label))
-  cs_ctrl =
-    SPI_CS_CONTROL_PTR_DT(DT_NODELABEL(cs_label), tok`2`)[]
 
-  spi_cfg = spi_config(
+template spiDeviceInit*(node_label: untyped, cs_label: untyped; spi_freq: Hertz, cs_delay=2): SpiDevice =
+  var dev = SpiDevice()
+
+  dev.spi_ptr = DEVICE_DT_GET(DT_NODELABEL(node_label))
+  dev.cs_ctrl =
+        spi_cs_control(
+                gpio_dev: DEVICE_DT_GET(DT_SPI_DEV_CS_GPIOS_CTLR(cs_label)),
+                delay: cs_delay,
+                gpio_pin: DT_SPI_DEV_CS_GPIOS_PIN(cs_label),
+                gpio_dt_flags: DT_SPI_DEV_CS_GPIOS_FLAGS(cs_label)
+        )
+
+  dev.cfg = spi_config(
         frequency: 1_000_000'u32,
         operation: SPI_WORD_SET(8) or SPI_TRANSFER_MSB or SPI_OP_MODE_MASTER,
-        cs: addr cs_ctrl)
-
-  spi_debug()
+        cs: addr dev.cs_ctrl)
+  
+  dev
 
 
 proc spi_read*(dev: SpiDevice): seq[uint8] =

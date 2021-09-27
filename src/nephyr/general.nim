@@ -1,9 +1,15 @@
 
+import sequtils
+import strutils
 
 import utils, logs
+import basictypes
 
+export basictypes
 export utils
 export logs
+export sequtils
+export strutils
 
 proc NimMain() {.importc.}
 
