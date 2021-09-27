@@ -1,9 +1,2 @@
 
 #def __subsystem
-
-#def I2C_CLIENT(_master, _addr) 
-
-#def I2C_GET_MASTER(conf)
-#def I2C_GET_ADDR(conf)
-
-#pp I2C_DECLARE_CLIENT_CONFIG

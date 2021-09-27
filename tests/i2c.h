@@ -134,7 +134,7 @@ typedef int (*i2c_api_slave_unregister_t)(const struct device *dev,
 					  struct i2c_slave_config *cfg);
 typedef int (*i2c_api_recover_bus_t)(const struct device *dev);
 
-__subsystem struct i2c_driver_api {
+ struct i2c_driver_api {
 	i2c_api_configure_t configure;
 	i2c_api_full_io_t transfer;
 	i2c_api_slave_register_t slave_register;
@@ -307,14 +307,9 @@ struct i2c_slave_config {
  */
 __syscall int i2c_configure(const struct device *dev, uint32_t dev_config);
 
-static inline int z_impl_i2c_configure(const struct device *dev,
+ int z_impl_i2c_configure(const struct device *dev,
 				       uint32_t dev_config)
-{
-	const struct i2c_driver_api *api =
-		(const struct i2c_driver_api *)dev->api;
-
-	return api->configure(dev, dev_config);
-}
+;
 
 /**
  * @brief Perform data transfer to another I2C device in master mode.
@@ -347,15 +342,10 @@ __syscall int i2c_transfer(const struct device *dev,
 			   struct i2c_msg *msgs, uint8_t num_msgs,
 			   uint16_t addr);
 
-static inline int z_impl_i2c_transfer(const struct device *dev,
+ int z_impl_i2c_transfer(const struct device *dev,
 				      struct i2c_msg *msgs, uint8_t num_msgs,
 				      uint16_t addr)
-{
-	const struct i2c_driver_api *api =
-		(const struct i2c_driver_api *)dev->api;
-
-	return api->transfer(dev, msgs, num_msgs, addr);
-}
+;
 
 /**
  * @brief Recover the I2C bus
@@ -371,17 +361,8 @@ static inline int z_impl_i2c_transfer(const struct device *dev,
  */
 __syscall int i2c_recover_bus(const struct device *dev);
 
-static inline int z_impl_i2c_recover_bus(const struct device *dev)
-{
-	const struct i2c_driver_api *api =
-		(const struct i2c_driver_api *)dev->api;
-
-	if (api->recover_bus == NULL) {
-		return -ENOSYS;
-	}
-
-	return api->recover_bus(dev);
-}
+ int z_impl_i2c_recover_bus(const struct device *dev)
+;
 
 /**
  * @brief Registers the provided config as Slave device of a controller.
@@ -407,18 +388,9 @@ static inline int z_impl_i2c_recover_bus(const struct device *dev)
  * @retval -EIO General input / output error.
  * @retval -ENOSYS If slave mode is not implemented
  */
-static inline int i2c_slave_register(const struct device *dev,
+ int i2c_slave_register(const struct device *dev,
 				     struct i2c_slave_config *cfg)
-{
-	const struct i2c_driver_api *api =
-		(const struct i2c_driver_api *)dev->api;
-
-	if (api->slave_register == NULL) {
-		return -ENOSYS;
-	}
-
-	return api->slave_register(dev, cfg);
-}
+;
 
 /**
  * @brief Unregisters the provided config as Slave device
@@ -436,18 +408,9 @@ static inline int i2c_slave_register(const struct device *dev,
  * @retval -EINVAL If parameters are invalid
  * @retval -ENOSYS If slave mode is not implemented
  */
-static inline int i2c_slave_unregister(const struct device *dev,
+ int i2c_slave_unregister(const struct device *dev,
 				       struct i2c_slave_config *cfg)
-{
-	const struct i2c_driver_api *api =
-		(const struct i2c_driver_api *)dev->api;
-
-	if (api->slave_unregister == NULL) {
-		return -ENOSYS;
-	}
-
-	return api->slave_unregister(dev, cfg);
-}
+;
 
 /**
  * @brief Instructs the I2C Slave device to register itself to the I2C Controller
@@ -464,13 +427,8 @@ static inline int i2c_slave_unregister(const struct device *dev,
  */
 __syscall int i2c_slave_driver_register(const struct device *dev);
 
-static inline int z_impl_i2c_slave_driver_register(const struct device *dev)
-{
-	const struct i2c_slave_driver_api *api =
-		(const struct i2c_slave_driver_api *)dev->api;
-
-	return api->driver_register(dev);
-}
+ int z_impl_i2c_slave_driver_register(const struct device *dev)
+;
 
 /**
  * @brief Instructs the I2C Slave device to unregister itself from the I2C
@@ -487,13 +445,8 @@ static inline int z_impl_i2c_slave_driver_register(const struct device *dev)
  */
 __syscall int i2c_slave_driver_unregister(const struct device *dev);
 
-static inline int z_impl_i2c_slave_driver_unregister(const struct device *dev)
-{
-	const struct i2c_slave_driver_api *api =
-		(const struct i2c_slave_driver_api *)dev->api;
-
-	return api->driver_unregister(dev);
-}
+ int z_impl_i2c_slave_driver_unregister(const struct device *dev)
+;
 
 /*
  * Derived i2c APIs -- all implemented in terms of i2c_transfer()
@@ -513,17 +466,9 @@ static inline int z_impl_i2c_slave_driver_unregister(const struct device *dev)
  * @retval 0 If successful.
  * @retval -EIO General input / output error.
  */
-static inline int i2c_write(const struct device *dev, const uint8_t *buf,
+ int i2c_write(const struct device *dev, const uint8_t *buf,
 			    uint32_t num_bytes, uint16_t addr)
-{
-	struct i2c_msg msg;
-
-	msg.buf = (uint8_t *)buf;
-	msg.len = num_bytes;
-	msg.flags = I2C_MSG_WRITE | I2C_MSG_STOP;
-
-	return i2c_transfer(dev, &msg, 1, addr);
-}
+;
 
 /**
  * @brief Read a set amount of data from an I2C device.
@@ -539,17 +484,9 @@ static inline int i2c_write(const struct device *dev, const uint8_t *buf,
  * @retval 0 If successful.
  * @retval -EIO General input / output error.
  */
-static inline int i2c_read(const struct device *dev, uint8_t *buf,
+ int i2c_read(const struct device *dev, uint8_t *buf,
 			   uint32_t num_bytes, uint16_t addr)
-{
-	struct i2c_msg msg;
-
-	msg.buf = buf;
-	msg.len = num_bytes;
-	msg.flags = I2C_MSG_READ | I2C_MSG_STOP;
-
-	return i2c_transfer(dev, &msg, 1, addr);
-}
+;
 
 /**
  * @brief Write then read data from an I2C device.
@@ -569,22 +506,10 @@ static inline int i2c_read(const struct device *dev, uint8_t *buf,
  * @retval 0 if successful
  * @retval negative on error.
  */
-static inline int i2c_write_read(const struct device *dev, uint16_t addr,
+ int i2c_write_read(const struct device *dev, uint16_t addr,
 				 const void *write_buf, size_t num_write,
 				 void *read_buf, size_t num_read)
-{
-	struct i2c_msg msg[2];
-
-	msg[0].buf = (uint8_t *)write_buf;
-	msg[0].len = num_write;
-	msg[0].flags = I2C_MSG_WRITE;
-
-	msg[1].buf = (uint8_t *)read_buf;
-	msg[1].len = num_read;
-	msg[1].flags = I2C_MSG_RESTART | I2C_MSG_READ | I2C_MSG_STOP;
-
-	return i2c_transfer(dev, msg, 2, addr);
-}
+;
 
 /**
  * @brief Read multiple bytes from an internal address of an I2C device.
@@ -604,16 +529,12 @@ static inline int i2c_write_read(const struct device *dev, uint16_t addr,
  * @retval 0 If successful.
  * @retval -EIO General input / output error.
  */
-static inline int i2c_burst_read(const struct device *dev,
+ int i2c_burst_read(const struct device *dev,
 				 uint16_t dev_addr,
 				 uint8_t start_addr,
 				 uint8_t *buf,
 				 uint32_t num_bytes)
-{
-	return i2c_write_read(dev, dev_addr,
-			      &start_addr, sizeof(start_addr),
-			      buf, num_bytes);
-}
+;
 
 /**
  * @brief Write multiple bytes to an internal address of an I2C device.
@@ -636,24 +557,12 @@ static inline int i2c_burst_read(const struct device *dev,
  * @retval 0 If successful.
  * @retval -EIO General input / output error.
  */
-static inline int i2c_burst_write(const struct device *dev,
+ int i2c_burst_write(const struct device *dev,
 				  uint16_t dev_addr,
 				  uint8_t start_addr,
 				  const uint8_t *buf,
 				  uint32_t num_bytes)
-{
-	struct i2c_msg msg[2];
-
-	msg[0].buf = &start_addr;
-	msg[0].len = 1U;
-	msg[0].flags = I2C_MSG_WRITE;
-
-	msg[1].buf = (uint8_t *)buf;
-	msg[1].len = num_bytes;
-	msg[1].flags = I2C_MSG_WRITE | I2C_MSG_STOP;
-
-	return i2c_transfer(dev, msg, 2, dev_addr);
-}
+;
 
 /**
  * @brief Read internal register of an I2C device.
@@ -670,14 +579,10 @@ static inline int i2c_burst_write(const struct device *dev,
  * @retval 0 If successful.
  * @retval -EIO General input / output error.
  */
-static inline int i2c_reg_read_byte(const struct device *dev,
+ int i2c_reg_read_byte(const struct device *dev,
 				    uint16_t dev_addr,
 				    uint8_t reg_addr, uint8_t *value)
-{
-	return i2c_write_read(dev, dev_addr,
-			      &reg_addr, sizeof(reg_addr),
-			      value, sizeof(*value));
-}
+;
 
 /**
  * @brief Write internal register of an I2C device.
@@ -697,14 +602,10 @@ static inline int i2c_reg_read_byte(const struct device *dev,
  * @retval 0 If successful.
  * @retval -EIO General input / output error.
  */
-static inline int i2c_reg_write_byte(const struct device *dev,
+ int i2c_reg_write_byte(const struct device *dev,
 				     uint16_t dev_addr,
 				     uint8_t reg_addr, uint8_t value)
-{
-	uint8_t tx_buf[2] = {reg_addr, value};
-
-	return i2c_write(dev, tx_buf, 2, dev_addr);
-}
+;
 
 /**
  * @brief Update internal register of an I2C device.
@@ -725,26 +626,11 @@ static inline int i2c_reg_write_byte(const struct device *dev,
  * @retval 0 If successful.
  * @retval -EIO General input / output error.
  */
-static inline int i2c_reg_update_byte(const struct device *dev,
+ int i2c_reg_update_byte(const struct device *dev,
 				      uint8_t dev_addr,
 				      uint8_t reg_addr, uint8_t mask,
 				      uint8_t value)
-{
-	uint8_t old_value, new_value;
-	int rc;
-
-	rc = i2c_reg_read_byte(dev, dev_addr, reg_addr, &old_value);
-	if (rc != 0) {
-		return rc;
-	}
-
-	new_value = (old_value & ~mask) | (value & mask);
-	if (new_value == old_value) {
-		return 0;
-	}
-
-	return i2c_reg_write_byte(dev, dev_addr, reg_addr, new_value);
-}
+;
 
 /**
  * @brief Dump out an I2C message
@@ -776,8 +662,6 @@ struct i2c_client_config {
 	uint16_t i2c_addr;
 };
 
-#define I2C_DECLARE_CLIENT_CONFIG	struct i2c_client_config i2c_client
-
 
 #ifdef __cplusplus
 }
@@ -787,6 +671,5 @@ struct i2c_client_config {
  * @}
  */
 
-#include <syscalls/i2c.h>
 
 #endif /* ZEPHYR_INCLUDE_DRIVERS_I2C_H_ */

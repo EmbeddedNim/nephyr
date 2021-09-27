@@ -16,56 +16,95 @@
 ##  @{
 ##
 
-import ../wrapper_utils
-import ../zdevice
-
 ##
 ##  The following #defines are used to configure the I2C controller.
 ##
+## * I2C Standard Speed: 100 kHz
+
 const
-  I2C_SPEED_STANDARD* = (0x1) ## I2C Standard Speed: 100
+  I2C_SPEED_STANDARD* = (0x1)
 
-  I2C_SPEED_FAST* = (0x2) ## I2C Fast Speed: 400
+## * I2C Fast Speed: 400 kHz
 
-  I2C_SPEED_FAST_PLUS* = (0x3) ## I2C Fast Plus Speed: 1
+const
+  I2C_SPEED_FAST* = (0x2)
 
-  I2C_SPEED_HIGH* = (0x4) ## I2C High Speed: 3.4
+## * I2C Fast Plus Speed: 1 MHz
 
-  I2C_SPEED_ULTRA* = (0x5) ## I2C Ultra Fast Speed: 5
+const
+  I2C_SPEED_FAST_PLUS* = (0x3)
+
+## * I2C High Speed: 3.4 MHz
+
+const
+  I2C_SPEED_HIGH* = (0x4)
+
+## * I2C Ultra Fast Speed: 5 MHz
+
+const
+  I2C_SPEED_ULTRA* = (0x5)
   I2C_SPEED_SHIFT* = (1'u)
-
-const
-  I2C_SPEED_MASK* = (0x7 shl I2C_SPEED_SHIFT) ##  3 bits
 
 template I2C_SPEED_SET*(speed: untyped): untyped =
   (((speed) shl I2C_SPEED_SHIFT) and I2C_SPEED_MASK)
 
+const
+  I2C_SPEED_MASK* = (0x7 shl I2C_SPEED_SHIFT) ##  3 bits
+
 template I2C_SPEED_GET*(cfg: untyped): untyped =
   (((cfg) and I2C_SPEED_MASK) shr I2C_SPEED_SHIFT)
 
+## * Use 10-bit addressing. DEPRECATED - Use I2C_MSG_ADDR_10_BITS instead.
+
 const
-  I2C_ADDR_10_BITS* = BIT(0) ## Use 10-bit addressing. DEPRECATED - Use I2C_MSG_ADDR_10_BITS
+  I2C_ADDR_10_BITS* = BIT(0)
 
-  I2C_MODE_MASTER* = BIT(4) ## Controller to act as
+## * Controller to act as Master.
 
-  ##
-  ##  I2C_MSG_* are I2C Message flags.
-  ##
-  I2C_MSG_WRITE* = (0 shl 0) ## Write message to I2C
+const
+  I2C_MODE_MASTER* = BIT(4)
 
-  I2C_MSG_READ* = BIT(0) ## Read message from I2C
+##
+##  I2C_MSG_* are I2C Message flags.
+##
+## * Write message to I2C bus.
 
-  I2C_MSG_RW_MASK* = BIT(0) ## @cond
+const
+  I2C_MSG_WRITE* = (0'u shl 0'u)
 
-  I2C_MSG_STOP* = BIT(1) ## Send STOP after this
+## * Read message from I2C bus.
 
-  I2C_MSG_RESTART* = BIT(2) ## RESTART I2C transaction for this
+const
+  I2C_MSG_READ* = BIT(0)
 
-  I2C_MSG_ADDR_10_BITS* = BIT(3) ## Use 10-bit addressing for this
+## * @cond INTERNAL_HIDDEN
 
+const
+  I2C_MSG_RW_MASK* = BIT(0)
 
-var I2C_SLAVE_FLAGS_ADDR_10_BITS* {.importc: "I2C_SLAVE_FLAGS_ADDR_10_BITS",
-                                  header: "i2c.h".}: int ## * Slave device responds to 10-bit addressing.
+## * @endcond
+## * Send STOP after this message.
+
+const
+  I2C_MSG_STOP* = BIT(1)
+
+## * RESTART I2C transaction for this message.
+##
+##  @note Not all I2C drivers have or require explicit support for this
+##  feature. Some drivers require this be present on a read message
+##  that follows a write, or vice-versa.  Some drivers will merge
+##  adjacent fragments into a single transaction using this flag; some
+##  will not.
+
+const
+  I2C_MSG_RESTART* = BIT(2)
+
+## * Use 10-bit addressing for this message.
+##
+##  @note Not all SoC I2C implementations support this feature.
+
+const
+  I2C_MSG_ADDR_10_BITS* = BIT(3)
 
 ## *
 ##  @brief One I2C Message.
@@ -83,168 +122,190 @@ var I2C_SLAVE_FLAGS_ADDR_10_BITS* {.importc: "I2C_SLAVE_FLAGS_ADDR_10_BITS",
 ##
 
 type
-  i2c_msg* {.bycopy.} = object
-    buf*: ptr uint8             ## * Data buffer in bytes
+  i2c_msg* {.importc: "i2c_msg", header: "i2c.h", bycopy.} = object
+    buf* {.importc: "buf".}: ptr uint8 ## * Data buffer in bytes
     ## * Length of buffer in bytes
-    len*: uint32               ## * Flags for this message
-    flags*: uint8
+    len* {.importc: "len".}: uint32 ## * Flags for this message
+    flags* {.importc: "flags".}: uint8
 
 
+## *
+##  @cond INTERNAL_HIDDEN
+##
+##  These are for internal use only, so skip these in
+##  public documentation.
+##
+
+discard "forward decl of i2c_slave_config"
+type
   i2c_api_configure_t* = proc (dev: ptr device; dev_config: uint32): cint
   i2c_api_full_io_t* = proc (dev: ptr device; msgs: ptr i2c_msg; num_msgs: uint8;
                           `addr`: uint16): cint
   i2c_api_slave_register_t* = proc (dev: ptr device; cfg: ptr i2c_slave_config): cint
   i2c_api_slave_unregister_t* = proc (dev: ptr device; cfg: ptr i2c_slave_config): cint
   i2c_api_recover_bus_t* = proc (dev: ptr device): cint
-  i2c_driver_api* {.bycopy.} = object
-    configure*: i2c_api_configure_t
-    transfer*: i2c_api_full_io_t
-    slave_register*: i2c_api_slave_register_t
-    slave_unregister*: i2c_api_slave_unregister_t
-    recover_bus*: i2c_api_recover_bus_t
+  i2c_driver_api* {.importc: "i2c_driver_api", header: "i2c.h", bycopy.} = object
+    configure* {.importc: "configure".}: i2c_api_configure_t
+    transfer* {.importc: "transfer".}: i2c_api_full_io_t
+    slave_register* {.importc: "slave_register".}: i2c_api_slave_register_t
+    slave_unregister* {.importc: "slave_unregister".}: i2c_api_slave_unregister_t
+    recover_bus* {.importc: "recover_bus".}: i2c_api_recover_bus_t
 
   i2c_slave_api_register_t* = proc (dev: ptr device): cint
   i2c_slave_api_unregister_t* = proc (dev: ptr device): cint
-  i2c_slave_driver_api* {.bycopy.} = object
-    driver_register*: i2c_slave_api_register_t
-    driver_unregister*: i2c_slave_api_unregister_t
+  i2c_slave_driver_api* {.importc: "i2c_slave_driver_api", header: "i2c.h", bycopy.} = object
+    driver_register* {.importc: "driver_register".}: i2c_slave_api_register_t
+    driver_unregister* {.importc: "driver_unregister".}: i2c_slave_api_unregister_t
 
 
+## *
+##  @endcond
+##
+## * Slave device responds to 10-bit addressing.
 
-  i2c_slave_write_requested_cb_t* = proc (config: ptr i2c_slave_config): cint ##\
-    ## * @brief Function called when a write to the device is initiated.
-    ##
-    ##  This function is invoked by the controller when the bus completes a
-    ##  start condition for a write operation to the address associated
-    ##  with a particular device.
-    ##
-    ##  A success return shall cause the controller to ACK the next byte
-    ##  received.  An error return shall cause the controller to NACK the
-    ##  next byte received.
-    ##
-    ##  @param config the configuration structure associated with the
-    ##  device to which the operation is addressed.
-    ##
-    ##  @return 0 if the write is accepted, or a negative error code.
-    ##
+const
+  I2C_SLAVE_FLAGS_ADDR_10_BITS* = BIT(0)
+
+## * @brief Function called when a write to the device is initiated.
+##
+##  This function is invoked by the controller when the bus completes a
+##  start condition for a write operation to the address associated
+##  with a particular device.
+##
+##  A success return shall cause the controller to ACK the next byte
+##  received.  An error return shall cause the controller to NACK the
+##  next byte received.
+##
+##  @param config the configuration structure associated with the
+##  device to which the operation is addressed.
+##
+##  @return 0 if the write is accepted, or a negative error code.
+##
+
+type
+  i2c_slave_write_requested_cb_t* = proc (config: ptr i2c_slave_config): cint
+
+## * @brief Function called when a write to the device is continued.
+##
+##  This function is invoked by the controller when it completes
+##  reception of a byte of data in an ongoing write operation to the
+##  device.
+##
+##  A success return shall cause the controller to ACK the next byte
+##  received.  An error return shall cause the controller to NACK the
+##  next byte received.
+##
+##  @param config the configuration structure associated with the
+##  device to which the operation is addressed.
+##
+##  @param val the byte received by the controller.
+##
+##  @return 0 if more data can be accepted, or a negative error
+##  code.
+##
+
+type
+  i2c_slave_write_received_cb_t* = proc (config: ptr i2c_slave_config; val: uint8): cint
+
+## * @brief Function called when a read from the device is initiated.
+##
+##  This function is invoked by the controller when the bus completes a
+##  start condition for a read operation from the address associated
+##  with a particular device.
+##
+##  The value returned in @p *val will be transmitted.  A success
+##  return shall cause the controller to react to additional read
+##  operations.  An error return shall cause the controller to ignore
+##  bus operations until a new start condition is received.
+##
+##  @param config the configuration structure associated with the
+##  device to which the operation is addressed.
+##
+##  @param val pointer to storage for the first byte of data to return
+##  for the read request.
+##
+##  @return 0 if more data can be requested, or a negative error code.
+##
+
+type
+  i2c_slave_read_requested_cb_t* = proc (config: ptr i2c_slave_config; val: ptr uint8): cint
+
+## * @brief Function called when a read from the device is continued.
+##
+##  This function is invoked by the controller when the bus is ready to
+##  provide additional data for a read operation from the address
+##  associated with the device device.
+##
+##  The value returned in @p *val will be transmitted.  A success
+##  return shall cause the controller to react to additional read
+##  operations.  An error return shall cause the controller to ignore
+##  bus operations until a new start condition is received.
+##
+##  @param config the configuration structure associated with the
+##  device to which the operation is addressed.
+##
+##  @param val pointer to storage for the next byte of data to return
+##  for the read request.
+##
+##  @return 0 if data has been provided, or a negative error code.
+##
+
+type
+  i2c_slave_read_processed_cb_t* = proc (config: ptr i2c_slave_config; val: ptr uint8): cint
+
+## * @brief Function called when a stop condition is observed after a
+##  start condition addressed to a particular device.
+##
+##  This function is invoked by the controller when the bus is ready to
+##  provide additional data for a read operation from the address
+##  associated with the device device.  After the function returns the
+##  controller shall enter a state where it is ready to react to new
+##  start conditions.
+##
+##  @param config the configuration structure associated with the
+##  device to which the operation is addressed.
+##
+##  @return Ignored.
+##
+
+type
+  i2c_slave_stop_cb_t* = proc (config: ptr i2c_slave_config): cint
+
+## * @brief Structure providing callbacks to be implemented for devices
+##  that supports the I2C slave API.
+##
+##  This structure may be shared by multiple devices that implement the
+##  same API at different addresses on the bus.
+##
+
+type
+  i2c_slave_callbacks* {.importc: "i2c_slave_callbacks", header: "i2c.h", bycopy.} = object
+    write_requested* {.importc: "write_requested".}: i2c_slave_write_requested_cb_t
+    read_requested* {.importc: "read_requested".}: i2c_slave_read_requested_cb_t
+    write_received* {.importc: "write_received".}: i2c_slave_write_received_cb_t
+    read_processed* {.importc: "read_processed".}: i2c_slave_read_processed_cb_t
+    stop* {.importc: "stop".}: i2c_slave_stop_cb_t
 
 
-  i2c_slave_write_received_cb_t* = proc (config: ptr i2c_slave_config; val: uint8): cint ##\
-    ## * @brief Function called when a write to the device is continued.
-    ##
-    ##  This function is invoked by the controller when it completes
-    ##  reception of a byte of data in an ongoing write operation to the
-    ##  device.
-    ##
-    ##  A success return shall cause the controller to ACK the next byte
-    ##  received.  An error return shall cause the controller to NACK the
-    ##  next byte received.
-    ##
-    ##  @param config the configuration structure associated with the
-    ##  device to which the operation is addressed.
-    ##
-    ##  @param val the byte received by the controller.
-    ##
-    ##  @return 0 if more data can be accepted, or a negative error
-    ##  code.
-    ##
+## * @brief Structure describing a device that supports the I2C
+##  slave API.
+##
+##  Instances of this are passed to the i2c_slave_register() and
+##  i2c_slave_unregister() functions to indicate addition and removal
+##  of a slave device, respective.
+##
+##  Fields other than @c node must be initialized by the module that
+##  implements the device behavior prior to passing the object
+##  reference to i2c_slave_register().
+##
 
-
-  i2c_slave_read_requested_cb_t* = proc (config: ptr i2c_slave_config; val: ptr uint8): cint ##\
-    ## * @brief Function called when a read from the device is initiated.
-    ##
-    ##  This function is invoked by the controller when the bus completes a
-    ##  start condition for a read operation from the address associated
-    ##  with a particular device.
-    ##
-    ##  The value returned in @p *val will be transmitted.  A success
-    ##  return shall cause the controller to react to additional read
-    ##  operations.  An error return shall cause the controller to ignore
-    ##  bus operations until a new start condition is received.
-    ##
-    ##  @param config the configuration structure associated with the
-    ##  device to which the operation is addressed.
-    ##
-    ##  @param val pointer to storage for the first byte of data to return
-    ##  for the read request.
-    ##
-    ##  @return 0 if more data can be requested, or a negative error code.
-    ##
-
-
-  i2c_slave_read_processed_cb_t* = proc (config: ptr i2c_slave_config; val: ptr uint8): cint ##\
-    ## * @brief Function called when a read from the device is continued.
-    ##
-    ##  This function is invoked by the controller when the bus is ready to
-    ##  provide additional data for a read operation from the address
-    ##  associated with the device device.
-    ##
-    ##  The value returned in @p *val will be transmitted.  A success
-    ##  return shall cause the controller to react to additional read
-    ##  operations.  An error return shall cause the controller to ignore
-    ##  bus operations until a new start condition is received.
-    ##
-    ##  @param config the configuration structure associated with the
-    ##  device to which the operation is addressed.
-    ##
-    ##  @param val pointer to storage for the next byte of data to return
-    ##  for the read request.
-    ##
-    ##  @return 0 if data has been provided, or a negative error code.
-    ##
-
-  i2c_slave_stop_cb_t* = proc (config: ptr i2c_slave_config): cint ##\
-    ## * @brief Function called when a stop condition is observed after a
-    ##  start condition addressed to a particular device.
-    ##
-    ##  This function is invoked by the controller when the bus is ready to
-    ##  provide additional data for a read operation from the address
-    ##  associated with the device device.  After the function returns the
-    ##  controller shall enter a state where it is ready to react to new
-    ##  start conditions.
-    ##
-    ##  @param config the configuration structure associated with the
-    ##  device to which the operation is addressed.
-    ##
-    ##  @return Ignored.
-    ##
-
-
-  i2c_slave_callbacks* {.bycopy.} = object ##\
-      ## * @brief Structure providing callbacks to be implemented for devices
-      ##  that supports the I2C slave API.
-      ##
-      ##  This structure may be shared by multiple devices that implement the
-      ##  same API at different addresses on the bus.
-      ##
-    write_requested*: i2c_slave_write_requested_cb_t
-    read_requested*: i2c_slave_read_requested_cb_t
-    write_received*: i2c_slave_write_received_cb_t
-    read_processed*: i2c_slave_read_processed_cb_t
-    stop*: i2c_slave_stop_cb_t
-
-
-  i2c_slave_config* {.bycopy.} = object ##\
-      ## * @brief Structure describing a device that supports the I2C
-      ##  slave API.
-      ##
-      ##  Instances of this are passed to the i2c_slave_register() and
-      ##  i2c_slave_unregister() functions to indicate addition and removal
-      ##  of a slave device, respective.
-      ##
-      ##  Fields other than @c node must be initialized by the module that
-      ##  implements the device behavior prior to passing the object
-      ##  reference to i2c_slave_register().
-      ##
-    node*: sys_snode_t         ## * Private, do not modify
+type
+  i2c_slave_config* {.importc: "i2c_slave_config", header: "i2c.h", bycopy.} = object
+    node* {.importc: "node".}: sys_snode_t ## * Private, do not modify
     ## * Flags for the slave device defined by I2C_SLAVE_FLAGS_* constants
-    flags*: uint8              ## * Address for this slave device
-    address*: uint16           ## * Callback functions
-    callbacks*: ptr i2c_slave_callbacks
-
-  i2c_client_config* {.bycopy.} = object
-    i2c_master*: cstring
-    i2c_addr*: uint16
+    flags* {.importc: "flags".}: uint8 ## * Address for this slave device
+    address* {.importc: "address".}: uint16 ## * Callback functions
+    callbacks* {.importc: "callbacks".}: ptr i2c_slave_callbacks
 
 
 ## *
@@ -589,6 +650,10 @@ proc i2c_reg_update_byte*(dev: ptr device; dev_addr: uint8; reg_addr: uint8;
 
 proc i2c_dump_msgs*(name: cstring; msgs: ptr i2c_msg; num_msgs: uint8; `addr`: uint16) {.
     importc: "i2c_dump_msgs", header: "i2c.h".}
+type
+  i2c_client_config* {.importc: "i2c_client_config", header: "i2c.h", bycopy.} = object
+    i2c_master* {.importc: "i2c_master".}: cstring
+    i2c_addr* {.importc: "i2c_addr".}: uint16
 
 
 ## *
