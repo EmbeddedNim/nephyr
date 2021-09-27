@@ -272,8 +272,6 @@ type
 
 proc i2c_configure*(dev: ptr device; dev_config: uint32): cint {.syscall,
     importc: "i2c_configure", header: "i2c.h".}
-proc z_impl_i2c_configure*(dev: ptr device; dev_config: uint32): cint {.
-    importc: "z_impl_i2c_configure", header: "i2c.h".}
 
 
 
@@ -307,9 +305,6 @@ proc z_impl_i2c_configure*(dev: ptr device; dev_config: uint32): cint {.
 
 proc i2c_transfer*(dev: ptr device; msgs: ptr i2c_msg; num_msgs: uint8; `addr`: uint16): cint {.
     syscall, importc: "i2c_transfer", header: "i2c.h".}
-proc z_impl_i2c_transfer*(dev: ptr device; msgs: ptr i2c_msg; num_msgs: uint8;
-                         `addr`: uint16): cint {.importc: "z_impl_i2c_transfer",
-    header: "i2c.h".}
 
 
 
@@ -399,9 +394,6 @@ proc i2c_slave_unregister*(dev: ptr device; cfg: ptr i2c_slave_config): cint {.
 
 proc i2c_slave_driver_register*(dev: ptr device): cint {.syscall,
     importc: "i2c_slave_driver_register", header: "i2c.h".}
-proc z_impl_i2c_slave_driver_register*(dev: ptr device): cint {.
-    importc: "z_impl_i2c_slave_driver_register", header: "i2c.h".}
-
 
 
 ## *
@@ -420,8 +412,8 @@ proc z_impl_i2c_slave_driver_register*(dev: ptr device): cint {.
 
 proc i2c_slave_driver_unregister*(dev: ptr device): cint {.syscall,
     importc: "i2c_slave_driver_unregister", header: "i2c.h".}
-proc z_impl_i2c_slave_driver_unregister*(dev: ptr device): cint {.
-    importc: "z_impl_i2c_slave_driver_unregister", header: "i2c.h".}
+
+
 ##
 ##  Derived i2c APIs -- all implemented in terms of i2c_transfer()
 ##
