@@ -40,14 +40,7 @@ const
   I2C_SPEED_ULTRA* = (0x5) ## I2C Ultra Fast Speed: 5
   I2C_SPEED_SHIFT* = (1'u)
 
-const
   I2C_SPEED_MASK* = (0x7 shl I2C_SPEED_SHIFT) ##  3 bits
-
-template I2C_SPEED_SET*(speed: untyped): untyped =
-  (((speed) shl I2C_SPEED_SHIFT) and I2C_SPEED_MASK)
-
-template I2C_SPEED_GET*(cfg: untyped): untyped =
-  (((cfg) and I2C_SPEED_MASK) shr I2C_SPEED_SHIFT)
 
 const
   I2C_ADDR_10_BITS* = BIT(0) ## Use 10-bit addressing. DEPRECATED - Use I2C_MSG_ADDR_10_BITS
@@ -69,10 +62,13 @@ const
 
   I2C_MSG_ADDR_10_BITS* = BIT(3) ## Use 10-bit addressing for this
 
+  I2C_SLAVE_FLAGS_ADDR_10_BITS* = BIT(0)
 
-var I2C_SLAVE_FLAGS_ADDR_10_BITS* {.importc: "I2C_SLAVE_FLAGS_ADDR_10_BITS",
-                                  header: "i2c.h".}: int ## * Slave device responds to 10-bit addressing.
+template I2C_SPEED_SET*(speed: untyped): untyped =
+  (((speed) shl I2C_SPEED_SHIFT) and I2C_SPEED_MASK)
 
+template I2C_SPEED_GET*(cfg: untyped): untyped =
+  (((cfg) and I2C_SPEED_MASK) shr I2C_SPEED_SHIFT)
 
 
 
