@@ -24,7 +24,7 @@ static int write_bytes(const struct device *i2c_dev, uint16_t addr,
 	uint8_t wr_addr[2];
 	struct i2c_msg msgs[2];
 
-	/* FRAM address */
+	/* write register address */
 	wr_addr[0] = (addr >> 8) & 0xFF;
 	wr_addr[1] = addr & 0xFF;
 
@@ -51,7 +51,7 @@ static int read_bytes(const struct device *i2c_dev, uint16_t addr,
 
 	/* Now try to read back from FRAM */
 
-	/* FRAM address */
+	/* write register address */
 	wr_addr[0] = (addr >> 8) & 0xFF;
 	wr_addr[1] = addr & 0xFF;
 

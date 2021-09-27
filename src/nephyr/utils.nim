@@ -7,6 +7,14 @@ proc doCheck*(ret: int): int {.discardable.} =
 template check*(blk: untyped) =
   doCheck(blk)
 
+template clen*(item: untyped): untyped =
+  csize_t(len(item))
+template ulen*(item: untyped): untyped =
+  uint32(len(item))
+
+template lenBytes*[T](item: openArray[T]): untyped =
+  csize_t(sizeof(T) * item.len())
+
 proc joinBytes32*[T](bs: openArray[uint8], count: range[0..4], top=false): T =
   ## Join's an array of bytes into an integer
   var n = 0'u32

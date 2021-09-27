@@ -299,7 +299,7 @@ proc i2c_configure*(dev: ptr device; dev_config: uint32): cint {.syscall,
 ##  @retval -EIO General input / output error.
 ##
 
-proc i2c_transfer*(dev: ptr device; msgs: ptr i2c_msg; num_msgs: uint8; `addr`: uint16): cint {.
+proc i2c_transfer*(dev: ptr device; msgs: ptr i2c_msg; num_msgs: uint8; devAddr: uint16): cint {.
     syscall, importc: "i2c_transfer", header: "i2c.h".}
 
 
