@@ -22,92 +22,46 @@ import ../zdevice
 ##
 ##  The following #defines are used to configure the I2C controller.
 ##
-## * I2C Standard Speed: 100 kHz
-
 const
-  I2C_SPEED_STANDARD* = (0x1)
+  I2C_SPEED_STANDARD* = (0x1) ## I2C Standard Speed: 100
 
-## * I2C Fast Speed: 400 kHz
+  I2C_SPEED_FAST* = (0x2) ## I2C Fast Speed: 400
 
-const
-  I2C_SPEED_FAST* = (0x2)
+  I2C_SPEED_FAST_PLUS* = (0x3) ## I2C Fast Plus Speed: 1
 
-## * I2C Fast Plus Speed: 1 MHz
+  I2C_SPEED_HIGH* = (0x4) ## I2C High Speed: 3.4
 
-const
-  I2C_SPEED_FAST_PLUS* = (0x3)
-
-## * I2C High Speed: 3.4 MHz
-
-const
-  I2C_SPEED_HIGH* = (0x4)
-
-## * I2C Ultra Fast Speed: 5 MHz
-
-const
-  I2C_SPEED_ULTRA* = (0x5)
+  I2C_SPEED_ULTRA* = (0x5) ## I2C Ultra Fast Speed: 5
   I2C_SPEED_SHIFT* = (1'u)
-
-template I2C_SPEED_SET*(speed: untyped): untyped =
-  (((speed) shl I2C_SPEED_SHIFT) and I2C_SPEED_MASK)
 
 const
   I2C_SPEED_MASK* = (0x7 shl I2C_SPEED_SHIFT) ##  3 bits
 
+template I2C_SPEED_SET*(speed: untyped): untyped =
+  (((speed) shl I2C_SPEED_SHIFT) and I2C_SPEED_MASK)
+
 template I2C_SPEED_GET*(cfg: untyped): untyped =
   (((cfg) and I2C_SPEED_MASK) shr I2C_SPEED_SHIFT)
 
-## * Use 10-bit addressing. DEPRECATED - Use I2C_MSG_ADDR_10_BITS instead.
-
 const
-  I2C_ADDR_10_BITS* = BIT(0)
+  I2C_ADDR_10_BITS* = BIT(0) ## Use 10-bit addressing. DEPRECATED - Use I2C_MSG_ADDR_10_BITS
 
-## * Controller to act as Master.
+  I2C_MODE_MASTER* = BIT(4) ## Controller to act as
 
-const
-  I2C_MODE_MASTER* = BIT(4)
+  ##
+  ##  I2C_MSG_* are I2C Message flags.
+  ##
+  I2C_MSG_WRITE* = (0 shl 0) ## Write message to I2C
 
-##
-##  I2C_MSG_* are I2C Message flags.
-##
-## * Write message to I2C bus.
+  I2C_MSG_READ* = BIT(0) ## Read message from I2C
 
-const
-  I2C_MSG_WRITE* = (0'u shl 0'u)
+  I2C_MSG_RW_MASK* = BIT(0) ## @cond
 
-## * Read message from I2C bus.
+  I2C_MSG_STOP* = BIT(1) ## Send STOP after this
 
-const
-  I2C_MSG_READ* = BIT(0)
+  I2C_MSG_RESTART* = BIT(2) ## RESTART I2C transaction for this
 
-## * @cond INTERNAL_HIDDEN
-
-const
-  I2C_MSG_RW_MASK* = BIT(0)
-
-## * @endcond
-## * Send STOP after this message.
-
-const
-  I2C_MSG_STOP* = BIT(1)
-
-## * RESTART I2C transaction for this message.
-##
-##  @note Not all I2C drivers have or require explicit support for this
-##  feature. Some drivers require this be present on a read message
-##  that follows a write, or vice-versa.  Some drivers will merge
-##  adjacent fragments into a single transaction using this flag; some
-##  will not.
-
-const
-  I2C_MSG_RESTART* = BIT(2)
-
-## * Use 10-bit addressing for this message.
-##
-##  @note Not all SoC I2C implementations support this feature.
-
-const
-  I2C_MSG_ADDR_10_BITS* = BIT(3)
+  I2C_MSG_ADDR_10_BITS* = BIT(3) ## Use 10-bit addressing for this
 
 
 ## *
