@@ -14,7 +14,7 @@ template ulen*(item: untyped): untyped =
   uint32(len(item))
 
 template lenBytes*[T](item: openArray[T]): untyped =
-  sizeof(T) * item.len()
+  uint32(sizeof(T) * item.len())
 
 template setOr*[T, F](flags: set[F]): T =
   var st: T

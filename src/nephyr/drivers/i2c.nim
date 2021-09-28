@@ -35,7 +35,7 @@ template regAddressToBytes(reg: untyped): untyped =
 proc message*(data: var openArray[uint8], flags: set[I2CFlag] = {}): i2c_msg =
   result = i2c_msg()
   result.buf = unsafeAddr data[0]
-  result.len = data.lenBytes().uint32
+  result.len = data.lenBytes()
   result.flags = setOr[I2CFlag](flags)
 
 proc message*(data: varargs[uint8], flags: set[I2CFlag] = {}): i2c_msg =
