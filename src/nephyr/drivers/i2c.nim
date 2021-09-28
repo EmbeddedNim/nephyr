@@ -13,24 +13,28 @@ import typetraits
 
 type
 
-  I2cAddress* = distinct uint8
-  I2cRegister* = distinct uint8 | distinct uint16
+  I2cAddr* = distinct uint8
+  I2cReg8* = distinct uint8 
+  I2cReg16* = distinct uint16
+  I2cRegister* = I2cReg8 | I2cReg16
 
   I2cDevice* = ref object
-    dev: ptr device
-    address: I2cAddress
+    bus: ptr device
+    address: I2cAddr
 
 template regAddressToBytes(reg: untyped): i2cMsg =
   var msg = i2c_msg()
   ##  register address
   var wr_addr: array[sizeof(reg), uint8]
-  when distinctBase(I2cRegister) == uint8:
+  when distinctBase(typeof(reg), true) is uint8:
     assert wr_addr.len() == 1
     wr_addr[0] = uint8(devAddr)
-  elif distinctBase(I2cRegister) == uint16:
+  elif distinctBase(typeof(reg), true) is uint16:
     assert wr_addr.len() == 2
-    wr_addr[0] = uint8(devAddr shr 8)
-    wr_addr[1] = uint8(devAddr)
+    wr_addr[0] = uint8(reg.uint16 shr 8)
+    wr_addr[1] = uint8(reg)
+  
+  wr_addr
 
 when defined(ExperimentalI2CApi):
   # This is a holder for breaking out the i2c api a bit more
@@ -62,12 +66,12 @@ when defined(ExperimentalI2CApi):
 ## Basic I2C api to read/write from a register (or command) then the resulting data 
 ## ======================================================================================= ##
 
-proc initI2cDevice*(devname: cstring, address: I2cAddress): I2cDevice =
+proc initI2cDevice*(devname: cstring, address: I2cAddr): I2cDevice =
   result = I2cDevice()
-  result.dev = device_get_binding(devname)
+  result.bus = device_get_binding(devname)
   result.address = address
 
-  if result.dev.isNil():
+  if result.bus.isNil():
     raise newException(OSError, "error finding i2c device: " & $devname)
 
 
@@ -84,13 +88,13 @@ proc writeRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8])
   msgs[0].flags = I2C_MSG_WRITE
 
   ##  Data to be written, and STOP after this.
-  msgs[1].buf = data
+  msgs[1].buf = addr data[0]
   msgs[1].len = data.lenBytes()
   msgs[1].flags = I2C_MSG_WRITE or I2C_MSG_STOP
 
-  check: i2c_transfer(i2c_dev, addr(msgs[0]), 2, i2cDev.address)
+  check: i2c_transfer(i2cDev.bus, addr(msgs[0]), msgs.len(), i2cDev.address)
 
-proc readRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]): seq[uint8] =
+proc readRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: var openArray[uint8]) =
 
   ## reg address
   var wr_addr = regAddressToBytes(reg)
@@ -99,13 +103,13 @@ proc readRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]):
   ## Setup I2C messages
   ## 
   ## Send the address to read from
-  msgs[0].buf = wr_addr
+  msgs[0].buf = addr wr_addr[0]
   msgs[0].len = wr_addr.lenBytes()
   msgs[0].flags = I2C_MSG_WRITE
 
   ##  Read from device. STOP after this.
-  msgs[1].buf = data
+  msgs[1].buf = addr data[0]
   msgs[1].len = data.lenBytes()
   msgs[1].flags = I2C_MSG_READ or I2C_MSG_STOP
 
-  check: i2c_transfer(i2c_dev, addr(msgs[0]), 2, i2cDev.address)
+  check: i2c_transfer(i2cDev.bus, addr(msgs[0]), msgs.len().uint8, i2cDev.address.uint16)
