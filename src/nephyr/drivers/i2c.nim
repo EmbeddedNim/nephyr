@@ -20,7 +20,8 @@ type
     dev: ptr device
     address: I2cAddress
 
-template regAddressToBytes(reg: untyped): untyped =
+template regAddressToBytes(reg: untyped): i2cMsg =
+  var msg = i2c_msg()
   ##  register address
   var wr_addr: array[sizeof(reg), uint8]
   when distinctBase(I2cRegister) == uint8:
@@ -31,36 +32,29 @@ template regAddressToBytes(reg: untyped): untyped =
     wr_addr[0] = uint8(devAddr shr 8)
     wr_addr[1] = uint8(devAddr)
 
-
-proc message*(data: var openArray[uint8], flags: set[I2CFlag] = {}): i2c_msg =
+func i2cData*(data: var openArray[uint8], flags: set[I2CFlag] = {}): i2cMsg =
   result = i2c_msg()
   result.buf = unsafeAddr data[0]
   result.len = data.lenBytes()
   result.flags = setOr[I2CFlag](flags)
 
-proc message*(data: varargs[uint8], flags: set[I2CFlag] = {}): i2c_msg =
-  message(data, flags)
+func i2cData*(data: varargs[uint8], flags: set[I2CFlag] = {}): i2cMsg =
+  i2cData(data, flags)
 
-proc transfer*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8], ) =
+proc writeRegData*(reg: I2cRegister, data: openArray[uint8], stop = true): openArray[i2cMsg] =
+  result = array[2, i2cMsg]
+  result[0] = i2cData(data, I2C_MSG_WRITE)
+  result[1] = i2cData(data, I2C_MSG_WRITE or I2C_MSG_STOP)
 
-  var msgs: array[2, i2c_msg]
+proc readRegData*(reg: I2cRegister, data: openArray[uint8], stop = true): openArray[i2cMsg] =
+  result = array[2, i2cMsg]
+  result[0] = i2cData(data, I2C_MSG_READ)
+  result[1] = i2cData(data, I2C_MSG_READ or I2C_MSG_STOP)
 
-  ##  Setup I2C messages
-  var wr_addr = regAddressToBytes(reg)
+proc transfer*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[i2cMsg]) =
+  check: i2c_transfer(i2c_dev, addr(data[0]), data.len(), i2cDev.address)
 
-  ##  Send the address to write to
-  msgs[0].buf = addr wr_addr[0]
-  msgs[0].len = wr_addr.lenBytes()
-  msgs[0].flags = I2C_MSG_WRITE
-
-  ##  Data to be written, and STOP after this.
-  msgs[1].buf = data
-  msgs[1].len = data.lenBytes()
-  msgs[1].flags = I2C_MSG_WRITE or I2C_MSG_STOP
-
-  return i2c_transfer(i2c_dev, addr(msgs[0]), 2, i2cDev.address)
-
-proc writeBytes*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8], ) =
+proc writeBytes*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]) =
 
   var msgs: array[2, i2c_msg]
 
@@ -78,7 +72,7 @@ proc writeBytes*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8], ) 
   msgs[1].len = data.len()
   msgs[1].flags = I2C_MSG_WRITE or I2C_MSG_STOP
 
-  return i2c_transfer(i2c_dev, addr(msgs[0]), 2, i2cDev.address)
+  check: i2c_transfer(i2c_dev, addr(msgs[0]), 2, i2cDev.address)
 
 proc readBytes*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]): seq[uint8] =
   var msgs: array[2, i2c_msg]
@@ -99,4 +93,4 @@ proc readBytes*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]): se
   msgs[1].len = data.lenBytes()
   msgs[1].flags = I2C_MSG_READ or I2C_MSG_STOP
 
-  return i2c_transfer(i2c_dev, addr(msgs[0]), 2, i2cDev.address)
+  check: i2c_transfer(i2c_dev, addr(msgs[0]), 2, i2cDev.address)
