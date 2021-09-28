@@ -50,15 +50,14 @@ proc readBytes*(dev: SpiDevice): seq[uint8] =
 
   var
     rx_buf = @[0x0'u8, 0x0]
-    rx_bufs = @[spi_buf(buf: addr rx_buf[0], len: csize_t(sizeof(uint8) *
-        rx_buf.len()))]
+    rx_bufs = @[spi_buf(buf: addr rx_buf[0], len: rx_buf.lenBytes())]
     rx_bset = spi_buf_set(buffers: addr(rx_bufs[0]), count: rx_bufs.len().csize_t)
 
   var
     tx_buf = [0x0'u8, ]
     tx_bufs = @[spi_buf(buf: addr tx_buf[0], len: csize_t(sizeof(uint8) *
         tx_buf.len()))]
-    tx_bset = spi_buf_set(buffers: addr(tx_bufs[0]), count: tx_bufs.len().csize_t)
+    tx_bset = spi_buf_set(buffers: addr(tx_bufs[0]), count: tx_bufs.lenBytes())
 
   check: spi_transceive(dev.spi_ptr, addr dev.cfg, addr tx_bset, addr rx_bset)
 
