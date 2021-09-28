@@ -32,27 +32,36 @@ template regAddressToBytes(reg: untyped): i2cMsg =
     wr_addr[0] = uint8(devAddr shr 8)
     wr_addr[1] = uint8(devAddr)
 
-func i2cData*(data: var openArray[uint8], flags: set[I2CFlag] = {}): i2cMsg =
-  result = i2c_msg()
-  result.buf = unsafeAddr data[0]
-  result.len = data.lenBytes()
-  result.flags = setOr[I2CFlag](flags)
+when defined(ExperimentalI2CApi):
+  # This is a holder for breaking out the i2c api a bit more
 
-func i2cData*(data: varargs[uint8], flags: set[I2CFlag] = {}): i2cMsg =
-  i2cData(data, flags)
+  func i2cData*(data: var openArray[uint8], flags: set[I2CFlag] = {}): i2cMsg =
+    result = i2c_msg()
+    result.buf = unsafeAddr data[0]
+    result.len = data.lenBytes()
+    result.flags = setOr[I2CFlag](flags)
 
-proc writeRegData*(reg: I2cRegister, data: openArray[uint8], stop = true): openArray[i2cMsg] =
-  result = array[2, i2cMsg]
-  result[0] = i2cData(data, I2C_MSG_WRITE)
-  result[1] = i2cData(data, I2C_MSG_WRITE or I2C_MSG_STOP)
+  func i2cData*(data: varargs[uint8], flags: set[I2CFlag] = {}): i2cMsg =
+    i2cData(data, flags)
 
-proc readRegData*(reg: I2cRegister, data: openArray[uint8], stop = true): openArray[i2cMsg] =
-  result = array[2, i2cMsg]
-  result[0] = i2cData(data, I2C_MSG_READ)
-  result[1] = i2cData(data, I2C_MSG_READ or I2C_MSG_STOP)
+  proc writeRegData*(reg: I2cRegister, data: openArray[uint8], stop = true): openArray[i2cMsg] =
+    result = array[2, i2cMsg]
+    result[0] = i2cData(data, I2C_MSG_WRITE)
+    result[1] = i2cData(data, I2C_MSG_WRITE or I2C_MSG_STOP)
 
-proc transfer*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[i2cMsg]) =
-  check: i2c_transfer(i2c_dev, addr(data[0]), data.len(), i2cDev.address)
+  proc readRegData*(reg: I2cRegister, data: openArray[uint8], stop = true): openArray[i2cMsg] =
+    result = array[2, i2cMsg]
+    result[0] = i2cData(data, I2C_MSG_READ)
+    result[1] = i2cData(data, I2C_MSG_READ or I2C_MSG_STOP)
+
+  proc transfer*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[i2cMsg]) =
+    check: i2c_transfer(i2c_dev, addr(data[0]), data.len(), i2cDev.address)
+
+
+## ======================================================================================= ##
+## Basic I2C api to read/write from a register (or command) then the resulting data 
+## ======================================================================================= ##
+
 
 proc writeRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]) =
   ## Setup I2C messages
