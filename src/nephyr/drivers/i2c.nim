@@ -16,8 +16,6 @@ type
   I2cAddress* = distinct uint8
   I2cRegister* = distinct uint8 | distinct uint16
 
-  I2cFlag* = distinct uint8
-
   I2cDevice* = ref object
     dev: ptr device
     address: I2cAddress
@@ -38,7 +36,7 @@ proc message*(data: var openArray[uint8], flags: set[I2CFlag] = {}): i2c_msg =
   result = i2c_msg()
   result.buf = unsafeAddr data[0]
   result.len = data.lenBytes().uint32
-  result.flags = setOr[uint8](flags)
+  result.flags = setOr[I2CFlag](flags)
 
 proc message*(data: varargs[uint8], flags: set[I2CFlag] = {}): i2c_msg =
   message(data, flags)

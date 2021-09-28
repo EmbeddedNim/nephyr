@@ -25,6 +25,8 @@
 import ../wrapper_utils
 import ../zdevice
 
+NephyrDefineFlag(I2cFlag, uint8)
+
 ##
 ##  The following #defines are used to configure the I2C controller.
 ##
@@ -50,19 +52,20 @@ const
   ##
   ##  I2C_MSG_* are I2C Message flags.
   ##
-  I2C_MSG_WRITE* = (0 shl 0) ## Write message to I2C
+  I2C_MSG_WRITE* = I2cFlag(0 shl 0) ## Write message to I2C
 
-  I2C_MSG_READ* = BIT(0) ## Read message from I2C
+  I2C_MSG_READ* = I2cFlag(BIT(0)) ## Read message from I2C
 
-  I2C_MSG_RW_MASK* = BIT(0) ## @cond
+  I2C_MSG_RW_MASK* = I2cFlag(BIT(0)) ## @cond
 
-  I2C_MSG_STOP* = BIT(1) ## Send STOP after this
+  I2C_MSG_STOP* = I2cFlag(BIT(1)) ## Send STOP after this
 
-  I2C_MSG_RESTART* = BIT(2) ## RESTART I2C transaction for this
+  I2C_MSG_RESTART* = I2cFlag(BIT(2)) ## RESTART I2C transaction for this
 
-  I2C_MSG_ADDR_10_BITS* = BIT(3) ## Use 10-bit addressing for this
+  I2C_MSG_ADDR_10_BITS* = I2cFlag(BIT(3)) ## Use 10-bit addressing for this
 
-  I2C_SLAVE_FLAGS_ADDR_10_BITS* = BIT(0)
+  I2C_SLAVE_FLAGS_ADDR_10_BITS* = I2cFlag(BIT(0))
+
 
 template I2C_SPEED_SET*(speed: untyped): untyped =
   (((speed) shl I2C_SPEED_SHIFT) and I2C_SPEED_MASK)
@@ -92,7 +95,7 @@ type
     buf*: ptr uint8             ## * Data buffer in bytes
     ## * Length of buffer in bytes
     len*: uint32               ## * Flags for this message
-    flags*: uint8
+    flags*: I2cFlag
 
 
   i2c_api_configure_t* = proc (dev: ptr device; dev_config: uint32): cint
