@@ -12,11 +12,6 @@ import sequtils
 export cmtoken
 export general
 
-# var
-#   cs_ctrl: spi_cs_control
-#   spi_cfg: spi_config
-#   spi_dev: ptr device
-
 type
 
   SpiDevice* = ref object

@@ -1,3 +1,5 @@
+import bitops
+
 import nephyr/general
 import zephyr_c/zdevicetree
 import zephyr_c/zdevice
@@ -14,6 +16,8 @@ type
   I2cAddress* = distinct uint8
   I2cRegister* = distinct uint8 | distinct uint16
 
+  I2cFlag* = distinct uint8
+
   I2cDevice* = ref object
     dev: ptr device
     address: I2cAddress
@@ -29,7 +33,36 @@ template regAddressToBytes(reg: untyped): untyped =
     wr_addr[0] = uint8(devAddr shr 8)
     wr_addr[1] = uint8(devAddr)
 
-proc writeBytes*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]) =
+
+proc message*(data: var openArray[uint8], flags: set[I2CFlag] = {}): i2c_msg =
+  result = i2c_msg()
+  result.buf = unsafeAddr data[0]
+  result.len = data.lenBytes().uint32
+  result.flags = setOr[uint8](flags)
+
+proc message*(data: varargs[uint8], flags: set[I2CFlag] = {}): i2c_msg =
+  message(data, flags)
+
+proc transfer*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8], ) =
+
+  var msgs: array[2, i2c_msg]
+
+  ##  Setup I2C messages
+  var wr_addr = regAddressToBytes(reg)
+
+  ##  Send the address to write to
+  msgs[0].buf = addr wr_addr[0]
+  msgs[0].len = wr_addr.lenBytes()
+  msgs[0].flags = I2C_MSG_WRITE
+
+  ##  Data to be written, and STOP after this.
+  msgs[1].buf = data
+  msgs[1].len = data.lenBytes()
+  msgs[1].flags = I2C_MSG_WRITE or I2C_MSG_STOP
+
+  return i2c_transfer(i2c_dev, addr(msgs[0]), 2, i2cDev.address)
+
+proc writeBytes*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8], ) =
 
   var msgs: array[2, i2c_msg]
 
