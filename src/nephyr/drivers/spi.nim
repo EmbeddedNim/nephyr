@@ -25,7 +25,6 @@ type
     spi_ptr: ptr device
 
 
-
 template spiDeviceInit*(node_label: untyped, cs_label: untyped; spi_freq: Hertz, cs_delay=2): SpiDevice =
   var dev = SpiDevice()
 
@@ -45,8 +44,7 @@ template spiDeviceInit*(node_label: untyped, cs_label: untyped; spi_freq: Hertz,
   
   dev
 
-
-proc spi_read*(dev: SpiDevice): seq[uint8] =
+proc readBytes*(dev: SpiDevice): seq[uint8] =
 
   var
     rx_buf = @[0x0'u8, 0x0]
