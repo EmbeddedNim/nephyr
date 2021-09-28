@@ -54,14 +54,13 @@ proc readRegData*(reg: I2cRegister, data: openArray[uint8], stop = true): openAr
 proc transfer*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[i2cMsg]) =
   check: i2c_transfer(i2c_dev, addr(data[0]), data.len(), i2cDev.address)
 
-proc writeBytes*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]) =
-
-  var msgs: array[2, i2c_msg]
-
-  ##  Setup I2C messages
+proc writeRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]) =
+  ## Setup I2C messages
   var wr_addr = regAddressToBytes(reg)
 
-  ##  Send the address to write to
+  var msgs: array[2, i2c_msg]
+  ## reg the address to write to
+
   msgs[0].buf = addr wr_addr[0]
   msgs[0].len = wr_addr.lenBytes()
 
@@ -74,16 +73,15 @@ proc writeBytes*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]) =
 
   check: i2c_transfer(i2c_dev, addr(msgs[0]), 2, i2cDev.address)
 
-proc readBytes*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]): seq[uint8] =
-  var msgs: array[2, i2c_msg]
+proc readRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]): seq[uint8] =
 
-  ##  Now try to read back from FRAM
-  ##  FRAM address
+  ## reg address
   var wr_addr = regAddressToBytes(reg)
 
-  ##  Setup I2C messages
+  var msgs: array[2, i2c_msg]
+  ## Setup I2C messages
   ## 
-  ##  Send the address to read from
+  ## Send the address to read from
   msgs[0].buf = wr_addr
   msgs[0].len = wr_addr.lenBytes()
   msgs[0].flags = I2C_MSG_WRITE
