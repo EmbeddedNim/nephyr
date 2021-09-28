@@ -69,7 +69,7 @@ proc writeBytes*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]) =
 
   ##  Data to be written, and STOP after this.
   msgs[1].buf = data
-  msgs[1].len = data.len()
+  msgs[1].len = data.lenBytes()
   msgs[1].flags = I2C_MSG_WRITE or I2C_MSG_STOP
 
   check: i2c_transfer(i2c_dev, addr(msgs[0]), 2, i2cDev.address)
@@ -85,7 +85,7 @@ proc readBytes*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]): se
   ## 
   ##  Send the address to read from
   msgs[0].buf = wr_addr
-  msgs[0].len = 2'u
+  msgs[0].len = wr_addr.lenBytes()
   msgs[0].flags = I2C_MSG_WRITE
 
   ##  Read from device. STOP after this.
