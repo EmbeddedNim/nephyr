@@ -20,7 +20,7 @@ type
     spi_ptr: ptr device
 
 
-template spiDeviceInit*(node_label: untyped, cs_label: untyped; spi_freq: Hertz,
+template initSpiDevice*(node_label: untyped, cs_label: untyped; spi_freq: Hertz,
     cs_delay = 2): SpiDevice =
   var dev = SpiDevice()
 

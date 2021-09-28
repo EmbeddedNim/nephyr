@@ -62,6 +62,14 @@ when defined(ExperimentalI2CApi):
 ## Basic I2C api to read/write from a register (or command) then the resulting data 
 ## ======================================================================================= ##
 
+proc initI2cDevice*(devname: cstring, address: I2cAddress): I2cDevice =
+  result = I2cDevice()
+  result.dev = device_get_binding(devname)
+  result.address = address
+
+  if result.dev.isNil():
+    raise newException(OSError, "error finding i2c device: " & $devname)
+
 
 proc writeRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]) =
   ## Setup I2C messages
