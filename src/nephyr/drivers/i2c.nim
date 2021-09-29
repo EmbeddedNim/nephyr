@@ -75,7 +75,12 @@ proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice 
   result.address = address
 
   if result.bus.isNil():
-    raise newException(OSError, "error finding i2c device: " & $devname)
+    let emsg = 
+      when typeof(devname) is cstring:
+        "error finding i2c device: " & devname
+      elif typeof(devname) is ptr device:
+        "error finding i2c device: 0x" & $(cast[int](devname).toHex())
+    raise newException(OSError, emsg)
 
 
 proc writeRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]) =
@@ -108,11 +113,15 @@ proc readRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: var openArray[uint
   ## Send the address to read from
   msgs[0].buf = addr wr_addr[0]
   msgs[0].len = wr_addr.lenBytes()
-  msgs[0].flags = I2C_MSG_WRITE
+  msgs[0].flags = I2C_MSG_WRITE or I2C_MSG_STOP
 
   ##  Read from device. STOP after this.
   msgs[1].buf = addr data[0]
   msgs[1].len = data.lenBytes()
   msgs[1].flags = I2C_MSG_READ or I2C_MSG_STOP
 
+  echo "readReg: ", repr(msgs)
+  for msg in msgs:
+    echo "msg: ", repr(msg)
+    echo "msg:data: ", repr(msg.buf[])
   check: i2c_transfer(i2cDev.bus, addr(msgs[0]), msgs.len().uint8, i2cDev.address.uint16)

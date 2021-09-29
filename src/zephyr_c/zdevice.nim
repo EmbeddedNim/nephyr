@@ -122,8 +122,8 @@ type
 import strutils
 import strformat
 
-proc `$`*(dev: ptr device): string =
-  "devptr[0x" & cast[int](dev).toHex() & "]"
+# proc `$`*(dev: ptr device): string =
+#   "devptr[0x" & cast[int](dev).toHex() & "]"
 
 ## *
 ##  @def DEVICE_NAME_GET
