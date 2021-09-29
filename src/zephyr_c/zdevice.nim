@@ -119,6 +119,12 @@ type
       pm* {.header: "device.h".}: ptr pm_device
 
 
+import strutils
+import strformat
+
+proc `$`*(dev: ptr device): string =
+  "devptr[0x" & cast[int](dev).toHex() & "]"
+
 ## *
 ##  @def DEVICE_NAME_GET
 ##

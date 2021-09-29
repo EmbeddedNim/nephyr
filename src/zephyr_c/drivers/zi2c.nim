@@ -13,6 +13,7 @@
 ##
 
 
+const hdr = "<drivers/i2c.h>"
 
 
 ## *
@@ -270,7 +271,7 @@ type
 ##
 
 proc i2c_configure*(dev: ptr device; dev_config: uint32): cint {.syscall,
-    importc: "i2c_configure", header: "i2c.h".}
+    importc: "i2c_configure", header: hdr.}
 
 
 
@@ -303,7 +304,7 @@ proc i2c_configure*(dev: ptr device; dev_config: uint32): cint {.syscall,
 ##
 
 proc i2c_transfer*(dev: ptr device; msgs: ptr i2c_msg; num_msgs: uint8; devAddr: uint16): cint {.
-    syscall, importc: "i2c_transfer", header: "i2c.h".}
+    syscall, importc: "i2c_transfer", header: hdr.}
 
 
 
@@ -321,7 +322,7 @@ proc i2c_transfer*(dev: ptr device; msgs: ptr i2c_msg; num_msgs: uint8; devAddr:
 ##
 
 proc i2c_recover_bus*(dev: ptr device): cint {.syscall, importc: "i2c_recover_bus",
-    header: "i2c.h".}
+    header: hdr.}
 
 
 
@@ -351,7 +352,7 @@ proc i2c_recover_bus*(dev: ptr device): cint {.syscall, importc: "i2c_recover_bu
 ##
 
 proc i2c_slave_register*(dev: ptr device; cfg: ptr i2c_slave_config): cint {.
-    importc: "i2c_slave_register", header: "i2c.h".}
+    importc: "i2c_slave_register", header: hdr.}
 
 
 
@@ -373,7 +374,7 @@ proc i2c_slave_register*(dev: ptr device; cfg: ptr i2c_slave_config): cint {.
 ##
 
 proc i2c_slave_unregister*(dev: ptr device; cfg: ptr i2c_slave_config): cint {.
-    importc: "i2c_slave_unregister", header: "i2c.h".}
+    importc: "i2c_slave_unregister", header: hdr.}
 
 
 
@@ -392,7 +393,7 @@ proc i2c_slave_unregister*(dev: ptr device; cfg: ptr i2c_slave_config): cint {.
 ##
 
 proc i2c_slave_driver_register*(dev: ptr device): cint {.syscall,
-    importc: "i2c_slave_driver_register", header: "i2c.h".}
+    importc: "i2c_slave_driver_register", header: hdr.}
 
 
 ## *
@@ -410,7 +411,7 @@ proc i2c_slave_driver_register*(dev: ptr device): cint {.syscall,
 ##
 
 proc i2c_slave_driver_unregister*(dev: ptr device): cint {.syscall,
-    importc: "i2c_slave_driver_unregister", header: "i2c.h".}
+    importc: "i2c_slave_driver_unregister", header: hdr.}
 
 
 ##
@@ -435,7 +436,7 @@ proc i2c_slave_driver_unregister*(dev: ptr device): cint {.syscall,
 ##
 
 proc i2c_write*(dev: ptr device; buf: ptr uint8; num_bytes: uint32; `addr`: uint16): cint {.
-    importc: "i2c_write", header: "i2c.h".}
+    importc: "i2c_write", header: hdr.}
 
 
 
@@ -455,7 +456,7 @@ proc i2c_write*(dev: ptr device; buf: ptr uint8; num_bytes: uint32; `addr`: uint
 ##
 
 proc i2c_read*(dev: ptr device; buf: ptr uint8; num_bytes: uint32; `addr`: uint16): cint {.
-    importc: "i2c_read", header: "i2c.h".}
+    importc: "i2c_read", header: hdr.}
 
 
 
@@ -480,7 +481,7 @@ proc i2c_read*(dev: ptr device; buf: ptr uint8; num_bytes: uint32; `addr`: uint1
 
 proc i2c_write_read*(dev: ptr device; `addr`: uint16; write_buf: pointer;
                     num_write: csize_t; read_buf: pointer; num_read: csize_t): cint {.
-    importc: "i2c_write_read", header: "i2c.h".}
+    importc: "i2c_write_read", header: hdr.}
 
 
 
@@ -505,7 +506,7 @@ proc i2c_write_read*(dev: ptr device; `addr`: uint16; write_buf: pointer;
 
 proc i2c_burst_read*(dev: ptr device; dev_addr: uint16; start_addr: uint8;
                     buf: ptr uint8; num_bytes: uint32): cint {.
-    importc: "i2c_burst_read", header: "i2c.h".}
+    importc: "i2c_burst_read", header: hdr.}
 
 
 
@@ -533,7 +534,7 @@ proc i2c_burst_read*(dev: ptr device; dev_addr: uint16; start_addr: uint8;
 
 proc i2c_burst_write*(dev: ptr device; dev_addr: uint16; start_addr: uint8;
                      buf: ptr uint8; num_bytes: uint32): cint {.
-    importc: "i2c_burst_write", header: "i2c.h".}
+    importc: "i2c_burst_write", header: hdr.}
 
 
 
@@ -555,7 +556,7 @@ proc i2c_burst_write*(dev: ptr device; dev_addr: uint16; start_addr: uint8;
 
 proc i2c_reg_read_byte*(dev: ptr device; dev_addr: uint16; reg_addr: uint8;
                        value: ptr uint8): cint {.importc: "i2c_reg_read_byte",
-    header: "i2c.h".}
+    header: hdr.}
 
 
 
@@ -580,7 +581,7 @@ proc i2c_reg_read_byte*(dev: ptr device; dev_addr: uint16; reg_addr: uint8;
 
 proc i2c_reg_write_byte*(dev: ptr device; dev_addr: uint16; reg_addr: uint8;
                         value: uint8): cint {.importc: "i2c_reg_write_byte",
-    header: "i2c.h".}
+    header: hdr.}
 
 
 
@@ -606,7 +607,7 @@ proc i2c_reg_write_byte*(dev: ptr device; dev_addr: uint16; reg_addr: uint8;
 
 proc i2c_reg_update_byte*(dev: ptr device; dev_addr: uint8; reg_addr: uint8;
                          mask: uint8; value: uint8): cint {.
-    importc: "i2c_reg_update_byte", header: "i2c.h".}
+    importc: "i2c_reg_update_byte", header: hdr.}
 
 
 
@@ -634,7 +635,7 @@ proc i2c_reg_update_byte*(dev: ptr device; dev_addr: uint8; reg_addr: uint8;
 ##
 
 proc i2c_dump_msgs*(name: cstring; msgs: ptr i2c_msg; num_msgs: uint8; `addr`: uint16) {.
-    importc: "i2c_dump_msgs", header: "i2c.h".}
+    importc: "i2c_dump_msgs", header: hdr.}
 
 
 

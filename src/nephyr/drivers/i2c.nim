@@ -66,9 +66,12 @@ when defined(ExperimentalI2CApi):
 ## Basic I2C api to read/write from a register (or command) then the resulting data 
 ## ======================================================================================= ##
 
-proc initI2cDevice*(devname: cstring, address: I2cAddr): I2cDevice =
+proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice =
   result = I2cDevice()
-  result.bus = device_get_binding(devname)
+  when typeof(devname) is cstring:
+    result.bus = device_get_binding(devname)
+  elif typeof(devname) is ptr device:
+    result.bus = devname
   result.address = address
 
   if result.bus.isNil():
