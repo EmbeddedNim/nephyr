@@ -120,8 +120,4 @@ proc readRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: var openArray[uint
   msgs[1].len = data.lenBytes()
   msgs[1].flags = I2C_MSG_READ or I2C_MSG_STOP
 
-  echo "readReg: ", repr(msgs)
-  for msg in msgs:
-    echo "msg: ", repr(msg)
-    echo "msg:data: ", repr(msg.buf[])
   check: i2c_transfer(i2cDev.bus, addr(msgs[0]), msgs.len().uint8, i2cDev.address.uint16)
