@@ -19,8 +19,9 @@ type
   I2cRegister* = I2cReg8 | I2cReg16
 
   I2cDevice* = ref object
-    bus: ptr device
-    address: I2cAddr
+    bus*: ptr device
+    address*: I2cAddr
+
 
 template regAddressToBytes(reg: untyped): i2cMsg =
   var msg = i2c_msg()
@@ -82,7 +83,6 @@ proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice 
         "error finding i2c device: 0x" & $(cast[int](devname).toHex())
     raise newException(OSError, emsg)
 
-
 proc writeRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]) =
   ## Setup I2C messages
   var wr_addr = regAddressToBytes(reg)
@@ -93,7 +93,7 @@ proc writeRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8])
   msgs[0].buf = addr wr_addr[0]
   msgs[0].len = wr_addr.lenBytes()
 
-  msgs[0].flags = I2C_MSG_WRITE
+  msgs[0].flags = I2C_MSG_WRITE or I2C_MSG_STOP
 
   ##  Data to be written, and STOP after this.
   msgs[1].buf = addr data[0]
