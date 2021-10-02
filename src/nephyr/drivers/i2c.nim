@@ -77,7 +77,7 @@ proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice 
   if result.bus.isNil():
     let emsg = 
       when typeof(devname) is cstring:
-        "error finding i2c device: " & devname
+        "error finding i2c device: " & $devname
       elif typeof(devname) is ptr device:
         "error finding i2c device: 0x" & $(cast[int](devname).toHex())
     raise newException(OSError, emsg)

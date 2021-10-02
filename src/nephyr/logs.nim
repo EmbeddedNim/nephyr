@@ -42,17 +42,23 @@ proc ldup*(str: cstring): cstring = str
 proc ldup*(str: string): cstring =
   ldup(str.cstring())
 
-template initLogs*(name: string) = 
-  const
-      modName = name
-      logimpt = """
+when defined(zephyr):
+  template initLogs*(name: string) = 
+    const
+        modName = name
+        logimpt = """
 
-  /* Display all messages, including debugging ones: */
-  #define LOG_LEVEL LOG_LEVEL_DBG
-  #include <logging/log.h>
-  /* Set the "module" for these log messages: */
-  #define LOG_MODULE_NAME socket_net_nim
+    /* Display all messages, including debugging ones: */
+    #define LOG_LEVEL LOG_LEVEL_DBG
+    #include <logging/log.h>
+    /* Set the "module" for these log messages: */
+    #define LOG_MODULE_NAME socket_net_nim
 
-  LOG_MODULE_REGISTER($1);
-  """ % [modName]
-  {.emit: logimpt.}
+    LOG_MODULE_REGISTER($1);
+    """ % [modName]
+    {.emit: logimpt.}
+
+elif defined(zephyr):
+
+  template initLogs*(name: string) = 
+    discard name
