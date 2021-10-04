@@ -58,7 +58,7 @@ when defined(zephyr):
     """ % [modName]
     {.emit: logimpt.}
 
-elif defined(zephyr):
+else:
 
   template initLogs*(name: string) = 
     discard name

@@ -41,5 +41,5 @@ when defined(zephyr):
         echo getCurrentExceptionMsg()
         abort()
 
-when not defined(zephyr):
+else:
   proc micros*(): uint64 = 1

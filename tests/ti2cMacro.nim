@@ -30,7 +30,7 @@ var dev = initI2cDevice(devptr, 0x06.I2cAddr)
 
 dev.transfer: 
   register: CMD_WRITE
-  read: <0x8 0x7>
+  read: [0x8, 0x7]
   read: CMD_A CMD_B
 
 dev.transfer( 
@@ -40,8 +40,6 @@ dev.transfer(
 )
 
 dev.transfer: 
-  register: CMD_WRITE
-  register: {1000}
   &mikrobus_i2c {
     status = "okay",
     spi-max-frequency = `<100000>`,
