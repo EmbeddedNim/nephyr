@@ -7,7 +7,7 @@ WIP! The API and package layout are still prone to large changes. That being sai
 ## Setup
 
 1. Install Zephyr
-2. Recommended to install Nephyr using `nimble develop`:
+2. Recommended to install Nephyr using `nimble develop` as the library will be changing frequently:
   - `git clone https://github.com/EmbeddedNim/nephyr.git`
   - `cd nephyr/`
   - `nimble develop`
