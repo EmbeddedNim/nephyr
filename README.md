@@ -4,13 +4,31 @@ Nim interface and library for Zephyr RTOS. Run Nim on any microcontroller Zephyr
 
 WIP! The API and package layout are still prone to large changes. That being said, it's possible to run Nim code on Zephyr and once it compiles it's stable.
 
+## Setup
+
+1. Install Zephyr
+2. Recommended to install Nephyr using `nimble develop`:
+  - `git clone https://github.com/EmbeddedNim/nephyr.git`
+  - `cd nephyr/`
+  - `nimble develop`
+
+## Layout
+
+The library layout is broken into two main portions:
+- Nim apis under `src/nephyr/`
+- C Wrappers under `src/zephyr_c/`
+
+## About
+
 Working: 
 - [x] Zephyr networking via POSIX layer (w/ Nim fork)
 - [x] Support for using Zephyr sockets & poll (w/ Nim fork)
 - [x] Nim wrappers for the basics of Zephyr devices and device tree
 - [x] Support for Firmware OTA updates using Nim
 - [x] JSON-RPC using JSON/MsgPack with default RPC methods for OTA updates
-- [~] In progress work to wrap GPIO, SPI, & I2C
+- [x] In progress work to wrap GPIO, SPI, & I2C
+  - C wrappers exist for these, but aren't well tested and Nim api is WIP
+
 
 However, this currently requires a fork of Nim at `elcritch/Nim`. There is work to upstream the changes. 
 
