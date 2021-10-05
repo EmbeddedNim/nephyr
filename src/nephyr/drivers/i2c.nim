@@ -127,12 +127,17 @@ proc readRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: var openArray[uint
 
 import macros
 
-macro transfer*(i2cDev: I2cDevice; args: varargs[untyped]): untyped =
+macro transfer*(i2cDev: I2cDevice; args: untyped): untyped =
 
   echo "args: ", treeRepr args
-  let cnt = newIntLitNode(4)
+  let cnt = newIntLitNode(args.len())
+  echo "cnt: ", treeRepr cnt
+  result = newStmtList()
 
-  result = 
-    quote do:
+  args.expectKind(nnkStmtList)
+  for arg in args.children:
+    echo "arg: ", treeRepr arg
+  
+  result.add quote do:
       var msgs: array[`cnt`, i2c_msg]
       check: i2c_transfer(`i2cDev`.bus, addr(msgs[0]), msgs.len().uint8, `i2cDev`.address.uint16)
