@@ -27,14 +27,3 @@ proc testExample*() =
 
 let devptr: cstring = "i2c0"
 var dev = initI2cDevice(devptr, 0x06.I2cAddr)
-
-dev.transfer: 
-  register: CMD_WRITE
-  read: [0x8, 0x7]
-  read: CMD_A CMD_B
-
-dev.transfer( 
-  register = CMD_WRITE,
-  write = @[0x8, 0x7],
-  read = CMD_A CMD_B,
-)
