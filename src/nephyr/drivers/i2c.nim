@@ -127,16 +127,44 @@ proc readRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: var openArray[uint
 
 import macros
 
+proc parseFlags(args: var seq[NimNode]): (I2cFlag, bool) =
+  var
+    txFlag: I2cFlag 
+    txIsRegister: bool 
+
+  case args[0].strVal:
+  of "read":
+    txFlag = txFlag or I2C_MSG_READ
+  of "write":
+    txFlag = txFlag or I2C_MSG_WRITE
+  of "register":
+    txFlag = txFlag or I2C_MSG_WRITE
+    txIsRegister = true
+  else:
+    error("must be one of I2cFlag type", args[0])
+
+  echo "txFlag: ", repr txFlag
+  return (txFlag, txIsRegister)
+
+
 macro transfer*(i2cDev: I2cDevice; args: untyped): untyped =
 
   echo "args: ", treeRepr args
   let cnt = newIntLitNode(args.len())
-  echo "cnt: ", treeRepr cnt
   result = newStmtList()
 
   args.expectKind(nnkStmtList)
   for arg in args.children:
     echo "arg: ", treeRepr arg
+    arg.expectMinLen(2)
+    var txArgs = args[0..^1]
+
+    var
+      txFlag: I2cFlag 
+      txIsRegister: bool 
+
+    # case arg[1]
+    # arg[1].expectKind(nnkIdent)
   
   result.add quote do:
       var msgs: array[`cnt`, i2c_msg]

@@ -4,7 +4,8 @@ export cmtoken
 template BIT*(n: untyped): untyped =
   1 shl n
 
-template NephyrDefineFlag*(T: untyped, V: typedesc)  =
+template NephyrDefineDistinctFlag*(T: untyped, V: typedesc)  =
+  ## defines a distinct 'flag' type, useful for uint32 options types
   type
     T* = distinct V
   proc `or` *(x, y: T): T {.borrow.}

@@ -21,7 +21,7 @@ proc test_i2c_txn_form1() =
 
   dev.transfer: 
     register: CMD_WRITE
-    read: [0x8, 0x7]
+    read or stop: [0x8, 0x7]
     read: CMD_A CMD_B
 
 when defined(TodoI2cForm2Macro):

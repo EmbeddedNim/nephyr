@@ -26,7 +26,7 @@ const hdr = "<drivers/i2c.h>"
 import ../wrapper_utils
 import ../zdevice
 
-NephyrDefineFlag(I2cFlag, uint8)
+NephyrDefineDistinctFlag(I2cFlag, uint8)
 
 ##
 ##  The following #defines are used to configure the I2C controller.
