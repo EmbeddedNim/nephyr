@@ -6,6 +6,7 @@ import zephyr_c/zdevice
 import zephyr_c/drivers/zi2c
 
 import typetraits
+export zi2c
 
 ## *
 ##  @file Sample app using the Fujitsu MB85RC256V FRAM through ARC I2C.
