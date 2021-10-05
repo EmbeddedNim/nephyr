@@ -38,21 +38,3 @@ dev.transfer(
   write = @[0x8, 0x7],
   read = CMD_A CMD_B,
 )
-
-dev.transfer: 
-  &mikrobus_i2c {
-    status = "okay",
-    spi-max-frequency = `<100000>`,
-  }
-  &mikrobus_spi: 
-    status: "okay"
-
-    click_spi2: spi-device@1 {
-      compatible = "microchip,mcp3204",
-      reg = `<0x1>`,
-      spi-max-frequency = `<100000>`,
-      label = "MCP3201",
-      #io-channel-cells = <1>,
-    }
-
-

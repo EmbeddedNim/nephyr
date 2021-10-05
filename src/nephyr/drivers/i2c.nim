@@ -4,9 +4,11 @@ import nephyr/general
 import zephyr_c/zdevicetree
 import zephyr_c/zdevice
 import zephyr_c/drivers/zi2c
+import zephyr_c/cmtoken
 
 import typetraits
 export zi2c
+export cmtoken, zdevice, zdevicetree
 
 ## *
 ##  @file Sample app using the Fujitsu MB85RC256V FRAM through ARC I2C.
@@ -122,3 +124,15 @@ proc readRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: var openArray[uint
   msgs[1].flags = I2C_MSG_READ or I2C_MSG_STOP
 
   check: i2c_transfer(i2cDev.bus, addr(msgs[0]), msgs.len().uint8, i2cDev.address.uint16)
+
+import macros
+
+macro transfer*(i2cDev: I2cDevice; args: varargs[untyped]): untyped =
+
+  echo "args: ", treeRepr args
+  let cnt = newIntLitNode(4)
+
+  result = 
+    quote do:
+      var msgs: array[`cnt`, i2c_msg]
+      check: i2c_transfer(`i2cDev`.bus, addr(msgs[0]), msgs.len().uint8, `i2cDev`.address.uint16)
