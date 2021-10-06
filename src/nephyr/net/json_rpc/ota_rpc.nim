@@ -15,6 +15,20 @@ proc checkSha1Hash*(val: string, hash: string) =
 
 proc addOTAMethods*(rt: RpcRouter, ota_validation_cb = proc(): bool = true) =
 
+  ##[
+  See [upload proc in rpc_cli.nim](https://github.com/elcritch/zephyr_example-dumb_http_server_/blob/main/utils/rpc_cli.nim) for reference client usage. 
+  
+  Note this requires a properly signed image signed by MCUBoot's imgtooly.py program. Directions [west sign](https://docs.zephyrproject.org/latest/guides/west/sign.html).
+  
+  This api is largely a one-to-one wrapper around the Zephyr api's:
+  - [dfu/flash_img.h](https://github.com/zephyrproject-rtos/zephyr/blob/main/include/dfu/flash_img.h)
+  - [dfu/mcuboot.h](https://github.com/zephyrproject-rtos/zephyr/blob/main/include/dfu/mcuboot.h)
+  
+  Detailed docs for using Zephyr with MCUBoot can be found at [readme-zephyr](https://www.mcuboot.com/documentation/readme-zephyr/). 
+  
+  An overview blog post summarizing MCUBoot can be found [memfault.com mcuboot-overview page](https://interrupt.memfault.com/blog/mcuboot-overview).
+  
+  ]##
   rpc(rt, "firmware-begin") do(img_head: string, sha1_hash: string) -> JsonNode:
     # Call to begin writing a firmware update to the OTA
 
