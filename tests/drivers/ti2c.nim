@@ -27,29 +27,26 @@ proc test_i2c_dev_cstring() =
 #   )
 
 proc test_i2c_do_txn() =
+  # Examples of generic I2C Api
   var dev = i2c_devptr()
   var data: array[3, uint8]
   var data2: Bytes[1]
+  var someData = [0xE3'u8, 0x01, 0x02]
 
-  dev.doTransfers(
+  # Nim nep1 format
+  dev.doTransfer(
     reg(I2cReg16(0x4ffd)),
     read(data),
-    write([uint8 0x1, 0x2], I2C_MSG_STOP),
+    write([0x1'u8, 0x2], I2C_MSG_STOP),
+    write(someData, I2C_MSG_STOP),
     write(bytes(0x1'u8, 0x2)),
     write(bytes(0x1, 0x2), {I2C_MSG_WRITE, I2C_MSG_STOP}),
     read(data),
     read(data2)
   )
 
-  dev.doTransfers(
-    reg I2cReg16(0x4ffd),
-    read data,
-    write([uint8 0x1, 0x2], I2C_MSG_STOP),
-    write bytes(0x1'u8, 0x2),
-    write(bytes(0x1, 0x2), {I2C_MSG_WRITE, I2C_MSG_STOP}),
-    read data,
-    read data2
-  )
+  echo "got data: ", repr data
+  echo "got data2: ", repr data2
 
 test_i2c_devptr()
 test_i2c_dev_cstring()

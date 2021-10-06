@@ -96,25 +96,37 @@ template reg*(msg: var i2c_msg; register: I2cRegister, flag: I2cFlag = I2C_MSG_W
   write(msg, data, flag)
 
 
-macro doTransfers*(dev: var I2cDevice, args: varargs[untyped]) =
+macro doTransfer*(dev: var I2cDevice, args: varargs[untyped]) =
+  ## performs an i2c transfer by iterating through the arguments
+  ## which should be proc's that take an i2c_msg var and
+  ## sets it up. 
+  ## 
+  ## Example usage:
+  ##   var dev = i2c_devptr()
+  ##   var data: array[3, uint8]
+  ##   dev.doTransfer(
+  ##     reg(I2cReg16(0x4ffd)),
+  ##     read(data),
+  ##     write([0x1'u8, 0x2], I2C_MSG_STOP))
+  ## 
+  result = newStmtList()
+
+  # create the new i2cmsg array
   let mvar = genSym(nskVar, "i2cMsgArr")
   let mcnt = newIntLitNode(args.len())
-  result = newStmtList()
+
   result.add quote do:
     var `mvar`: array[`mcnt`, i2c_msg]
-
   args.expectKind(nnkArglist)
+
+  # applies array elements to each arg in turn
   for idx in 0..<args.len():
-    # echo "\n"
-    # echo "arg(repr): ", repr args[idx]
-    # echo "arg: ", treeRepr args[idx]
     let i = newIntLitNode(idx)
     var msg = args[idx]
     msg.insert(1, quote do: `mvar`[`i`])
     result.add msg
-    # result.add quote do:
-      # `mvar`[`i`].`args[idx]`
   
+  # call the i2c_transfer
   result.add quote do:
       check: i2c_transfer(`dev`.bus, addr(`mvar`[0]), `mvar`.len().uint8, `dev`.address.uint16)
   echo "doTransfers: "
@@ -159,66 +171,3 @@ proc readRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: var openArray[uint
   msgs[1].flags = I2C_MSG_READ or I2C_MSG_STOP
 
   check: i2c_transfer(i2cDev.bus, addr(msgs[0]), msgs.len().uint8, i2cDev.address.uint16)
-
-
-proc parseFlags(args: var seq[NimNode]): (I2cFlag, bool) =
-  var
-    txFlag: I2cFlag 
-    txIsRegister: bool 
-
-  var idx = 0
-  while idx < args.len():
-    if args[idx].kind != nnkIdent:
-      break;
-
-    case args[idx].strVal:
-    of "or":
-      discard "skip"
-    of "read":
-      txFlag = txFlag or I2C_MSG_READ
-    of "write":
-      txFlag = txFlag or I2C_MSG_WRITE
-    of "register":
-      txFlag = txFlag or I2C_MSG_WRITE
-      txIsRegister = true
-    else:
-      error("must be one of I2cFlag type, found: " & repr(args[idx]), args[idx])
-    
-    inc idx
-    
-  args = args[idx..^1]
-
-  echo "txFlag: ", repr txFlag
-  return (txFlag, txIsRegister)
-
-
-macro transfer*(i2cDev: I2cDevice; args: varargs[untyped]): untyped =
-
-  echo "<".repeat(20)
-  echo "stmt: ", repr args
-  echo "args: ", treeRepr args
-  let cnt = newIntLitNode(args.len())
-  result = newStmtList()
-
-  args.expectKind(nnkArglist)
-  for arg in args.children:
-    echo "\n"
-    echo "arg(repr): ", repr arg
-    echo "arg: ", treeRepr arg
-    arg.expectLen(2)
-    arg.expectKind(nnkExprEqExpr)
-    # var txArgs = arg[0..^1]
-
-    # let (txFlag, txIsReg) = txArgs.parseFlags()
-
-    # echo "<<< txflags post: "
-    # for txa in txArgs: echo "txarg: ", treeRepr txa
-    # echo ">>> txflags post done\n\n\n"
-
-    # case arg[1]
-    # arg[1].expectKind(nnkIdent)
-  
-  # result.add quote do:
-      # var msgs: array[`cnt`, i2c_msg]
-      # check: i2c_transfer(`i2cDev`.bus, addr(msgs[0]), msgs.len().uint8, `i2cDev`.address.uint16)
-  echo ">".repeat(20)
