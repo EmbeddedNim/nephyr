@@ -1,5 +1,6 @@
 import nephyr/drivers/i2c
 export i2c
+import macros
 
 proc i2c_devptr(): I2cDevice =
   let devptr = DEVICE_DT_GET(DT_NODELABEL(tok"i2c1"))
@@ -77,4 +78,8 @@ proc test_i2c_do_txn() =
 test_i2c_devptr()
 test_i2c_dev_cstring()
 # test_i2c_txn_form2()
-test_i2c_do_txn()
+when defined(ZephyrDebugMacros):
+  expandMacros:
+    test_i2c_do_txn()
+else:
+  test_i2c_do_txn()

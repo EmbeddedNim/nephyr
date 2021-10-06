@@ -133,8 +133,6 @@ macro doTransfer*(dev: var I2cDevice, args: varargs[untyped]) =
   # call the i2c_transfer
   result.add quote do:
       check: i2c_transfer(`dev`.bus, addr(`mvar`[0]), `mvar`.len().uint8, `dev`.address.uint16)
-  echo "doTransfers: "
-  echo result.repr
 
 ## ======================================================================================= ##
 ## Basic I2C api to read/write from a register (or command) then the resulting data 
