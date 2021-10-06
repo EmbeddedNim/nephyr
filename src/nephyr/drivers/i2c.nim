@@ -1,6 +1,8 @@
 import bitops
+import macros
 
 import nephyr/general
+import nephyr/utils
 import zephyr_c/zdevicetree
 import zephyr_c/zdevice
 import zephyr_c/drivers/zi2c
@@ -8,26 +10,15 @@ import zephyr_c/cmtoken
 
 import typetraits
 export zi2c
-export cmtoken, zdevice, zdevicetree
-
-const
-  ##
-  ##  I2C_MSG_* are I2C Message flags.
-  ##
-  msg_w* = I2C_MSG_WRITE
-  msg_r* = I2C_MSG_READ
-  msg_s* = I2C_MSG_STOP
-  msg_x* = I2C_MSG_RESTART
-  msg_a10* = I2C_MSG_ADDR_10_BITS
-
+export utils, cmtoken, zdevice, zdevicetree
 
 type
-  I2cMsg * {.size: sizeof(uint8).} = enum
-    write = I2C_MSG_WRITE,
-    read = I2C_MSG_READ,
-    stop = I2C_MSG_STOP,
-    restart = I2C_MSG_RESTART,
-    addr10 = I2C_MSG_ADDR_10_BITS
+  # I2cMsg * {.size: sizeof(uint8).} = enum
+  #   write = I2C_MSG_WRITE,
+  #   read = I2C_MSG_READ,
+  #   stop = I2C_MSG_STOP,
+  #   restart = I2C_MSG_RESTART,
+  #   addr10 = I2C_MSG_ADDR_10_BITS
 
   I2cAddr* = distinct uint8
   I2cReg8* = distinct uint8 
@@ -48,7 +39,7 @@ template regAddressToBytes(reg: untyped): untyped =
   elif reg is I2cReg16:
     assert wr_addr.len() == 2
     wr_addr[0] = uint8(reg.uint16 shr 8)
-    wr_addr[1] = uint8(reg)
+    wr_addr[1] = uint8(reg.uint16 and 0xFF'u8)
   
   wr_addr
 
@@ -85,25 +76,49 @@ proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice 
         "error finding i2c device: 0x" & $(cast[int](devname).toHex())
     raise newException(OSError, emsg)
 
-template unsafeI2cMsg*(args: varargs[uint8], flag: I2cFlag): i2c_msg =
-  var data: array[args.len(), uint8]
-  let dl = uint32(data.len() * sizeof(uint8))
-  for idx in 0..<args.len(): data[idx] = args[idx]
 
-  i2c_msg(buf: unsafeAddr data[0], len: dl, flags: flag)
+proc read*(msg: var i2c_msg; data: var openArray[uint8], flag = I2cFlag(0)) =
+  msg.buf = unsafeAddr data[0]
+  msg.len = data.lenBytes()
+  msg.flags = flag or I2C_MSG_READ
 
-template unsafeI2cMsg*(register: I2cRegister): i2c_msg =
-  let regData = regAddressToBytes(register)
-  unsafeI2cMsg(regData, I2C_MSG_WRITE)
+proc write*(msg: var i2c_msg; args: openArray[uint8], flag: I2cFlag) =
+  msg.buf = unsafeAddr args[0]
+  msg.len = args.lenBytes()
+  msg.flags = flag or I2C_MSG_WRITE
 
-template doTransfers*(dev: var I2cDevice, args: varargs[i2c_msg]) =
-  when not (args.len() < 256):
-    {.fatal: "must be less than 256 i2c messages".}
-  var msgs: array[args.len(), i2c_msg]
+
+proc write*(msg: var i2c_msg; args: openArray[uint8]; flags: set[I2cFlag] = {}) =
+  write(msg, args, cast[I2cFlag](flags))
+
+template reg*(msg: var i2c_msg; register: I2cRegister, flag: I2cFlag = I2C_MSG_WRITE) =
+  let data = regAddressToBytes(register)
+  write(msg, data, flag)
+
+
+macro doTransfers*(dev: var I2cDevice, args: varargs[untyped]) =
+  let mvar = genSym(nskVar, "i2cMsgArr")
+  let mcnt = newIntLitNode(args.len())
+  result = newStmtList()
+  result.add quote do:
+    var `mvar`: array[`mcnt`, i2c_msg]
+
+  args.expectKind(nnkArglist)
   for idx in 0..<args.len():
-    echo "msg: ", repr(args[idx])
-    msgs[idx] = args[idx]
-  check: i2c_transfer(dev.bus, addr(msgs[0]), msgs.len().uint8, dev.address.uint16)
+    # echo "\n"
+    # echo "arg(repr): ", repr args[idx]
+    # echo "arg: ", treeRepr args[idx]
+    let i = newIntLitNode(idx)
+    var msg = args[idx]
+    msg.insert(1, quote do: `mvar`[`i`])
+    result.add msg
+    # result.add quote do:
+      # `mvar`[`i`].`args[idx]`
+  
+  result.add quote do:
+      check: i2c_transfer(`dev`.bus, addr(`mvar`[0]), `mvar`.len().uint8, `dev`.address.uint16)
+  echo "doTransfers: "
+  echo result.repr
 
 
 proc writeRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]) =
@@ -145,7 +160,6 @@ proc readRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: var openArray[uint
 
   check: i2c_transfer(i2cDev.bus, addr(msgs[0]), msgs.len().uint8, i2cDev.address.uint16)
 
-import macros
 
 proc parseFlags(args: var seq[NimNode]): (I2cFlag, bool) =
   var
