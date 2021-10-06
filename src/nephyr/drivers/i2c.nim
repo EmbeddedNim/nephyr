@@ -49,7 +49,7 @@ template regAddressToBytes(reg: untyped): untyped =
   elif reg is I2cReg16:
     assert wr_addr.len() == 2
     wr_addr[0] = uint8(reg.uint16 shr 8)
-    wr_addr[1] = uint8(reg)
+    wr_addr[1] = uint8(reg.uint16 and 0xFF'u8)
   
   wr_addr
 
@@ -103,9 +103,7 @@ proc i2cWrite*(msg: var i2c_msg; args: varargs[uint8]) =
 
 template i2cReg*(msg: var i2c_msg; register: I2cRegister, flag: I2cFlag = I2C_MSG_WRITE) =
   let data = regAddressToBytes(register)
-  msg.buf = unsafeAddr data[0]
-  msg.len = data.lenBytes()
-  msg.flags = flag or I2C_MSG_WRITE
+  i2cWrite(msg, data, flag)
 
 
 macro doTransfers*(dev: var I2cDevice, args: varargs[untyped]) =
