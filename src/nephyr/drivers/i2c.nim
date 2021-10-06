@@ -11,17 +11,6 @@ import typetraits
 export zi2c
 export cmtoken, zdevice, zdevicetree
 
-const
-  ##
-  ##  I2C_MSG_* are I2C Message flags.
-  ##
-  msg_w* = I2C_MSG_WRITE
-  msg_r* = I2C_MSG_READ
-  msg_s* = I2C_MSG_STOP
-  msg_x* = I2C_MSG_RESTART
-  msg_a10* = I2C_MSG_ADDR_10_BITS
-
-
 type
   I2cMsg * {.size: sizeof(uint8).} = enum
     write = I2C_MSG_WRITE,
