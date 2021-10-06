@@ -94,7 +94,7 @@ proc msgWrite*(msg: var i2c_msg; args: openArray[uint8]; flags: set[I2cFlag] = {
 
 template msgReg*(msg: var i2c_msg; register: I2cRegister, flag: I2cFlag = I2C_MSG_WRITE) =
   let data = regAddressToBytes(register)
-  msgRegister(msg, data, flag)
+  msgWrite(msg, data, flag)
 
 
 macro doTransfers*(dev: var I2cDevice, args: varargs[untyped]) =
