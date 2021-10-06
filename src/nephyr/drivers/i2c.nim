@@ -93,8 +93,14 @@ proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice 
         "error finding i2c device: 0x" & $(cast[int](devname).toHex())
     raise newException(OSError, emsg)
 
-proc unsafeI2cMsg*(data: varargs[uint8], flag: I2cFlag): i2c_msg =
-  i2c_msg(buf: unsafeAddr data[0], len: uint8(data.lenBytes()), flags: flag)
+template unsafeI2cMsg*(args: varargs[uint8], flag: I2cFlag): i2c_msg =
+  when not (args.len() < 256):
+    {.fatal: "i2c message must be less than 256 bytes".}
+  var data: array[args.len(), uint8]
+  let dl = uint8(data.len() * sizeof(uint8))
+  for idx in 0..<args.len(): data[idx] = args[idx]
+
+  i2c_msg(buf: unsafeAddr data[0], len: dl, flags: flag)
 # template unsafeI2cMsg*(data: varargs[uint8], flag: I2cFlag): i2c_msg =
   # var arr: array[data.len(), uint8] = data
   # i2c_msg(buf: addr arr[0], len: uint8(arr.lenBytes()), flags: flag)
