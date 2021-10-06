@@ -35,8 +35,8 @@ proc test_i2c_do_txn() =
     reg(I2cReg16(0x4ffd)),
     read(data),
     write([uint8 0x1, 0x2], I2C_MSG_STOP),
-    write(data(0x1'u8, 0x2)),
-    write(data(0x1, 0x2), {I2C_MSG_WRITE, I2C_MSG_STOP}),
+    write(bytes(0x1'u8, 0x2)),
+    write(bytes(0x1, 0x2), {I2C_MSG_WRITE, I2C_MSG_STOP}),
     read(data),
     read(data2)
   )
@@ -45,8 +45,8 @@ proc test_i2c_do_txn() =
     reg I2cReg16(0x4ffd),
     read data,
     write([uint8 0x1, 0x2], I2C_MSG_STOP),
-    write data(0x1'u8, 0x2),
-    write(data(0x1, 0x2), {I2C_MSG_WRITE, I2C_MSG_STOP}),
+    write bytes(0x1'u8, 0x2),
+    write(bytes(0x1, 0x2), {I2C_MSG_WRITE, I2C_MSG_STOP}),
     read data,
     read data2
   )

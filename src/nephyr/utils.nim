@@ -22,6 +22,9 @@ template setOr*[T, F](flags: set[F]): T =
     st = st or T(flg)
   st
 
+template bytes*(args: varargs[uint8]): openArray[uint8] =
+  args
+
 proc joinBytes32*[T](bs: openArray[uint8], count: range[0..4], top=false): T =
   ## Join's an array of bytes into an integer
   var n = 0'u32

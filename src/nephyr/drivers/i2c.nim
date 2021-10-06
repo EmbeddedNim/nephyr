@@ -2,6 +2,7 @@ import bitops
 import macros
 
 import nephyr/general
+import nephyr/utils
 import zephyr_c/zdevicetree
 import zephyr_c/zdevice
 import zephyr_c/drivers/zi2c
@@ -9,7 +10,7 @@ import zephyr_c/cmtoken
 
 import typetraits
 export zi2c
-export cmtoken, zdevice, zdevicetree
+export utils, cmtoken, zdevice, zdevicetree
 
 type
   # I2cMsg * {.size: sizeof(uint8).} = enum
@@ -75,8 +76,6 @@ proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice 
         "error finding i2c device: 0x" & $(cast[int](devname).toHex())
     raise newException(OSError, emsg)
 
-template data*(args: varargs[uint8]): openArray[uint8] =
-  args
 
 proc read*(msg: var i2c_msg; data: var openArray[uint8], flag = I2cFlag(0)) =
   msg.buf = unsafeAddr data[0]
