@@ -85,16 +85,21 @@ proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice 
         "error finding i2c device: 0x" & $(cast[int](devname).toHex())
     raise newException(OSError, emsg)
 
-template unsafeI2cMsg*(args: varargs[uint8], flag: I2cFlag): i2c_msg =
+template unsafeI2cRead*(data: var openArray[uint8], flag = I2cFlag(0)): i2c_msg =
+  i2c_msg(buf: unsafeAddr data[0], len: data.len() * sizeof(uint8), flags: flag or I2C_MSG_READ)
+
+template unsafeI2cWrite*(args: varargs[uint8], flag: I2cFlag): i2c_msg =
   var data: array[args.len(), uint8]
   let dl = uint32(data.len() * sizeof(uint8))
   for idx in 0..<args.len(): data[idx] = args[idx]
+  i2c_msg(buf: unsafeAddr data[0], len: data.len() * sizeof(uint8), flags: flag or I2C_MSG_WRITE)
 
-  i2c_msg(buf: unsafeAddr data[0], len: dl, flags: flag)
+template unsafeI2cWrite*(args: varargs[uint8]): i2c_msg =
+  unsafeI2cWrite(args, I2C_MSG_WRITE)
 
-template unsafeI2cMsg*(register: I2cRegister): i2c_msg =
+template unsafeI2cReg*(register: I2cRegister, flag: I2cFlag = I2C_MSG_WRITE): i2c_msg =
   let regData = regAddressToBytes(register)
-  unsafeI2cMsg(regData, I2C_MSG_WRITE)
+  i2c_msg(buf: unsafeAddr data[0], len: data.len() * sizeof(uint8), flags: flag)
 
 template doTransfers*(dev: var I2cDevice, args: varargs[i2c_msg]) =
   when not (args.len() < 256):
