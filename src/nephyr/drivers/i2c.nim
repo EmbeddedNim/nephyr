@@ -10,9 +10,16 @@ import typetraits
 export zi2c
 export cmtoken, zdevice, zdevicetree
 
-## *
-##  @file Sample app using the Fujitsu MB85RC256V FRAM through ARC I2C.
-##
+const
+  ##
+  ##  I2C_MSG_* are I2C Message flags.
+  ##
+  i2cWrite* = I2C_MSG_WRITE
+  i2cRead* = I2C_MSG_READ
+  i2cStop* = I2C_MSG_STOP
+  i2cRestart* = I2C_MSG_RESTART
+  i2cAddr10Bit* = I2C_MSG_ADDR_10_BITS
+
 
 type
 
@@ -86,6 +93,20 @@ proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice 
         "error finding i2c device: 0x" & $(cast[int](devname).toHex())
     raise newException(OSError, emsg)
 
+proc unsafeI2cMsg*(data: varargs[uint8], flag: I2cFlag): i2c_msg =
+  i2c_msg(buf: unsafeAddr data[0], len: uint8(data.lenBytes()), flags: flag)
+# template unsafeI2cMsg*(data: varargs[uint8], flag: I2cFlag): i2c_msg =
+  # var arr: array[data.len(), uint8] = data
+  # i2c_msg(buf: addr arr[0], len: uint8(arr.lenBytes()), flags: flag)
+
+template doTransfers*(dev: var I2cDevice, args: varargs[i2c_msg]) =
+  var msgs: array[args.len(), i2c_msg]
+  for idx in 0..<args.len():
+    echo "msg: ", repr(args[idx])
+    msgs[idx] = args[idx]
+  check: i2c_transfer(dev.bus, addr(msgs[0]), msgs.len().uint8, dev.address.uint16)
+
+
 proc writeRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]) =
   ## Setup I2C messages
   var wr_addr = regAddressToBytes(reg)
@@ -132,40 +153,57 @@ proc parseFlags(args: var seq[NimNode]): (I2cFlag, bool) =
     txFlag: I2cFlag 
     txIsRegister: bool 
 
-  case args[0].strVal:
-  of "read":
-    txFlag = txFlag or I2C_MSG_READ
-  of "write":
-    txFlag = txFlag or I2C_MSG_WRITE
-  of "register":
-    txFlag = txFlag or I2C_MSG_WRITE
-    txIsRegister = true
-  else:
-    error("must be one of I2cFlag type", args[0])
+  var idx = 0
+  while idx < args.len():
+    if args[idx].kind != nnkIdent:
+      break;
+
+    case args[idx].strVal:
+    of "or":
+      discard "skip"
+    of "read":
+      txFlag = txFlag or I2C_MSG_READ
+    of "write":
+      txFlag = txFlag or I2C_MSG_WRITE
+    of "register":
+      txFlag = txFlag or I2C_MSG_WRITE
+      txIsRegister = true
+    else:
+      error("must be one of I2cFlag type, found: " & repr(args[idx]), args[idx])
+    
+    inc idx
+    
+  args = args[idx..^1]
 
   echo "txFlag: ", repr txFlag
   return (txFlag, txIsRegister)
 
 
-macro transfer*(i2cDev: I2cDevice; args: untyped): untyped =
+macro transfer*(i2cDev: I2cDevice; args: varargs[untyped]): untyped =
 
+  echo "<".repeat(20)
+  echo "stmt: ", repr args
   echo "args: ", treeRepr args
   let cnt = newIntLitNode(args.len())
   result = newStmtList()
 
-  args.expectKind(nnkStmtList)
+  # args.expectKind(nnkStmtList)
   for arg in args.children:
+    echo "arg(repr): ", repr arg
     echo "arg: ", treeRepr arg
-    arg.expectMinLen(2)
-    var txArgs = args[0..^1]
+    # arg.expectMinLen(2)
+    # var txArgs = arg[0..^1]
 
-    var
-      txFlag: I2cFlag 
-      txIsRegister: bool 
+    # let (txFlag, txIsReg) = txArgs.parseFlags()
+
+    # echo "<<< txflags post: "
+    # for txa in txArgs: echo "txarg: ", treeRepr txa
+    # echo ">>> txflags post done\n\n\n"
 
     # case arg[1]
     # arg[1].expectKind(nnkIdent)
   
-  result.add quote do:
-      var msgs: array[`cnt`, i2c_msg]
-      check: i2c_transfer(`i2cDev`.bus, addr(msgs[0]), msgs.len().uint8, `i2cDev`.address.uint16)
+  # result.add quote do:
+      # var msgs: array[`cnt`, i2c_msg]
+      # check: i2c_transfer(`i2cDev`.bus, addr(msgs[0]), msgs.len().uint8, `i2cDev`.address.uint16)
+  echo ">".repeat(20)

@@ -16,25 +16,23 @@ proc test_i2c_dev_cstring() =
   var dev = initI2cDevice(devname, 0x47.I2cAddr)
   echo "dev: ", repr dev
   
-proc test_i2c_txn_form1() =
+proc test_i2c_txn_form2() =
   var dev = i2c_devptr()
+  dev.transfer( 
+    register = CMD_WRITE,
+    write = @[0x8, 0x7],
+    write or stop = @[0x8, 0x7],
+    read = CMD_A CMD_B,
+  )
 
-  dev.transfer: 
-    register: CMD_WRITE
-    read or stop: [0x8, 0x7]
-    read: CMD_A CMD_B
-
-when defined(TodoI2cForm2Macro):
-  ## keeping this here for now, this might be the "better" format
-  proc test_i2c_txn_form2() =
-    var dev = i2c_devptr()
-
-    dev.transfer( 
-      register = CMD_WRITE,
-      write = @[0x8, 0x7],
-      read = CMD_A CMD_B,
-    )
+proc test_i2c_do_txn() =
+  var dev = i2c_devptr()
+  dev.doTransfers(
+    unsafeI2cMsg(0x1, 0x2, I2C_MSG_WRITE),
+    unsafeI2cMsg([0x1'u8, 0x2], I2C_MSG_READ)
+  )
 
 test_i2c_devptr()
 test_i2c_dev_cstring()
-test_i2c_txn_form1()
+test_i2c_txn_form2()
+test_i2c_do_txn()
