@@ -12,14 +12,14 @@ import typetraits
 export zi2c
 export utils, cmtoken, zdevice, zdevicetree
 
-type
-  # I2cMsg * {.size: sizeof(uint8).} = enum
-  #   write = I2C_MSG_WRITE,
-  #   read = I2C_MSG_READ,
-  #   stop = I2C_MSG_STOP,
-  #   restart = I2C_MSG_RESTART,
-  #   addr10 = I2C_MSG_ADDR_10_BITS
+const
+  WRITE* = I2C_MSG_WRITE
+  READ* = I2C_MSG_READ
+  STOP* = I2C_MSG_STOP
+  RESTART* = I2C_MSG_RESTART
+  ADDR10* = I2C_MSG_ADDR_10_BITS
 
+type
   I2cAddr* = distinct uint8
   I2cReg8* = distinct uint8 
   I2cReg16* = distinct uint16
@@ -93,7 +93,7 @@ proc write*(msg: var i2c_msg; args: openArray[uint8], flag: I2cFlag) =
 proc write*(msg: var i2c_msg; args: openArray[uint8]; flags: set[I2cFlag] = {}) =
   write(msg, args, cast[I2cFlag](flags))
 
-template reg*(msg: var i2c_msg; register: I2cRegister, flag: I2cFlag = I2C_MSG_WRITE) =
+template regWrite*(msg: var i2c_msg; register: I2cRegister, flag: I2cFlag = I2C_MSG_WRITE) =
   let data = regAddressToBytes(register)
   write(msg, data, flag)
 

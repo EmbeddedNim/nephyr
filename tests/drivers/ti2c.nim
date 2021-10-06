@@ -30,19 +30,18 @@ proc test_i2c_do_txn() =
   # Examples of generic I2C Api
   var dev = i2c_devptr()
   var data: array[3, uint8]
-  var data2: Bytes[1]
+  var data2 = newSeq[uint8](8)
   var someData = [0xE3'u8, 0x01, 0x02]
 
   # Nim nep1 format
   dev.doTransfer(
-    reg(I2cReg16(0x4ffd)),
-    read(data),
-    write([0x1'u8, 0x2], I2C_MSG_STOP),
+    regWrite(I2cReg16(0x4ffd)), # writes i2c register/command
+    read(data), # i2c read into array
+    read(data2), # i2c read into seq
+    write([0x1'u8, 0x2], I2C_MSG_STOP), # i2c write w/ stop
     write(someData, I2C_MSG_STOP),
     write(bytes(0x1'u8, 0x2)),
     write(bytes(0x1, 0x2), {I2C_MSG_WRITE, I2C_MSG_STOP}),
-    read(data),
-    read(data2)
   )
 
   echo "got data: ", repr data
