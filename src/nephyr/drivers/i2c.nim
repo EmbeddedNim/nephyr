@@ -104,9 +104,9 @@ macro doTransfers*(dev: var I2cDevice, args: varargs[untyped]) =
 
   args.expectKind(nnkArglist)
   for idx in 0..<args.len():
-    echo "\n"
-    echo "arg(repr): ", repr args[idx]
-    echo "arg: ", treeRepr args[idx]
+    # echo "\n"
+    # echo "arg(repr): ", repr args[idx]
+    # echo "arg: ", treeRepr args[idx]
     let i = newIntLitNode(idx)
     var msg = args[idx]
     msg.insert(1, quote do: `mvar`[`i`])
