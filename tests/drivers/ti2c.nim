@@ -16,15 +16,15 @@ proc test_i2c_dev_cstring() =
   var dev = initI2cDevice(devname, 0x47.I2cAddr)
   echo "dev: ", repr dev
   
-proc test_i2c_txn_form2() =
-  var dev = i2c_devptr()
-  dev.transfer( 
-    {write} = CMD_WRITE,
-    {write} = [0x8, 0x7],
-    {read, stop} = @[0x8, 0x7],
-    {read, restart} = @[0x8, 0x7],
-    {read, stop} = [CMD_A, CMD_B],
-  )
+# proc test_i2c_txn_form2() =
+#   var dev = i2c_devptr()
+#   dev.transfer( 
+#     {write} = CMD_WRITE,
+#     {write} = [0x8, 0x7],
+#     {read, stop} = @[0x8, 0x7],
+#     {read, restart} = @[0x8, 0x7],
+#     {read, stop} = [CMD_A, CMD_B],
+#   )
 
 proc test_i2c_do_txn() =
   var dev = i2c_devptr()
@@ -53,5 +53,5 @@ proc test_i2c_do_txn() =
 
 test_i2c_devptr()
 test_i2c_dev_cstring()
-test_i2c_txn_form2()
+# test_i2c_txn_form2()
 test_i2c_do_txn()
