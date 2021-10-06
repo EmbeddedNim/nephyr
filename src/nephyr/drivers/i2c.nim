@@ -106,7 +106,6 @@ template doTransfers*(dev: var I2cDevice, args: varargs[i2c_msg]) =
     {.fatal: "must be less than 256 i2c messages".}
   var msgs: array[args.len(), i2c_msg]
   for idx in 0..<args.len():
-    echo "msg: ", repr(args[idx])
     msgs[idx] = args[idx]
   check: i2c_transfer(dev.bus, addr(msgs[0]), msgs.len().uint8, dev.address.uint16)
 
