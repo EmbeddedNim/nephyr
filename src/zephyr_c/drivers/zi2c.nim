@@ -50,6 +50,7 @@ const
 
   I2C_MODE_MASTER* = BIT(4) ## Controller to act as
 
+const
   ##
   ##  I2C_MSG_* are I2C Message flags.
   ##
@@ -57,7 +58,6 @@ const
 
   I2C_MSG_READ* = I2cFlag(BIT(0)) ## Read message from I2C
 
-  I2C_MSG_RW_MASK* = I2cFlag(BIT(0)) ## @cond
 
   I2C_MSG_STOP* = I2cFlag(BIT(1)) ## Send STOP after this
 
@@ -65,6 +65,9 @@ const
 
   I2C_MSG_ADDR_10_BITS* = I2cFlag(BIT(3)) ## Use 10-bit addressing for this
 
+  # I2C_MSG_RW_MASK* = I2cFlag(BIT(0)) ## @cond
+
+const
   I2C_SLAVE_FLAGS_ADDR_10_BITS* = I2cFlag(BIT(0))
 
 

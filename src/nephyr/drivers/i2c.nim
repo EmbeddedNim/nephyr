@@ -14,14 +14,20 @@ const
   ##
   ##  I2C_MSG_* are I2C Message flags.
   ##
-  i2cWrite* = I2C_MSG_WRITE
-  i2cRead* = I2C_MSG_READ
-  i2cStop* = I2C_MSG_STOP
-  i2cRestart* = I2C_MSG_RESTART
-  i2cAddr10Bit* = I2C_MSG_ADDR_10_BITS
+  msg_w* = I2C_MSG_WRITE
+  msg_r* = I2C_MSG_READ
+  msg_s* = I2C_MSG_STOP
+  msg_x* = I2C_MSG_RESTART
+  msg_a10* = I2C_MSG_ADDR_10_BITS
 
 
 type
+  I2cMsg * {.size: sizeof(uint8).} = enum
+    write = I2C_MSG_WRITE,
+    read = I2C_MSG_READ,
+    stop = I2C_MSG_STOP,
+    restart = I2C_MSG_RESTART,
+    addr10 = I2C_MSG_ADDR_10_BITS
 
   I2cAddr* = distinct uint8
   I2cReg8* = distinct uint8 
@@ -33,14 +39,13 @@ type
     address*: I2cAddr
 
 
-template regAddressToBytes(reg: untyped): i2cMsg =
-  var msg = i2c_msg()
+template regAddressToBytes(reg: untyped): untyped =
   ##  register address
   var wr_addr: array[sizeof(reg), uint8]
-  when distinctBase(typeof(reg), true) is uint8:
+  when reg is I2cReg8:
     assert wr_addr.len() == 1
-    wr_addr[0] = uint8(devAddr)
-  elif distinctBase(typeof(reg), true) is uint16:
+    wr_addr[0] = uint8(reg)
+  elif reg is I2cReg16:
     assert wr_addr.len() == 2
     wr_addr[0] = uint8(reg.uint16 shr 8)
     wr_addr[1] = uint8(reg)
@@ -58,19 +63,6 @@ when defined(ExperimentalI2CApi):
 
   func i2cData*(data: varargs[uint8], flags: set[I2CFlag] = {}): i2cMsg =
     i2cData(data, flags)
-
-  proc writeRegData*(reg: I2cRegister, data: openArray[uint8], stop = true): openArray[i2cMsg] =
-    result = array[2, i2cMsg]
-    result[0] = i2cData(data, I2C_MSG_WRITE)
-    result[1] = i2cData(data, I2C_MSG_WRITE or I2C_MSG_STOP)
-
-  proc readRegData*(reg: I2cRegister, data: openArray[uint8], stop = true): openArray[i2cMsg] =
-    result = array[2, i2cMsg]
-    result[0] = i2cData(data, I2C_MSG_READ)
-    result[1] = i2cData(data, I2C_MSG_READ or I2C_MSG_STOP)
-
-  proc transfer*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[i2cMsg]) =
-    check: i2c_transfer(i2c_dev, addr(data[0]), data.len(), i2cDev.address)
 
 
 ## ======================================================================================= ##
@@ -94,18 +86,19 @@ proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice 
     raise newException(OSError, emsg)
 
 template unsafeI2cMsg*(args: varargs[uint8], flag: I2cFlag): i2c_msg =
-  when not (args.len() < 256):
-    {.fatal: "i2c message must be less than 256 bytes".}
   var data: array[args.len(), uint8]
-  let dl = uint8(data.len() * sizeof(uint8))
+  let dl = uint32(data.len() * sizeof(uint8))
   for idx in 0..<args.len(): data[idx] = args[idx]
 
   i2c_msg(buf: unsafeAddr data[0], len: dl, flags: flag)
-# template unsafeI2cMsg*(data: varargs[uint8], flag: I2cFlag): i2c_msg =
-  # var arr: array[data.len(), uint8] = data
-  # i2c_msg(buf: addr arr[0], len: uint8(arr.lenBytes()), flags: flag)
+
+template unsafeI2cMsg*(register: I2cRegister): i2c_msg =
+  let regData = regAddressToBytes(register)
+  unsafeI2cMsg(regData, I2C_MSG_WRITE)
 
 template doTransfers*(dev: var I2cDevice, args: varargs[i2c_msg]) =
+  when not (args.len() < 256):
+    {.fatal: "must be less than 256 i2c messages".}
   var msgs: array[args.len(), i2c_msg]
   for idx in 0..<args.len():
     echo "msg: ", repr(args[idx])
@@ -193,11 +186,13 @@ macro transfer*(i2cDev: I2cDevice; args: varargs[untyped]): untyped =
   let cnt = newIntLitNode(args.len())
   result = newStmtList()
 
-  # args.expectKind(nnkStmtList)
+  args.expectKind(nnkArglist)
   for arg in args.children:
+    echo "\n"
     echo "arg(repr): ", repr arg
     echo "arg: ", treeRepr arg
-    # arg.expectMinLen(2)
+    arg.expectLen(2)
+    arg.expectKind(nnkExprEqExpr)
     # var txArgs = arg[0..^1]
 
     # let (txFlag, txIsReg) = txArgs.parseFlags()

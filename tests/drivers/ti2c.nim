@@ -24,10 +24,18 @@ proc test_i2c_txn_form2() =
     write or stop = @[0x8, 0x7],
     read = CMD_A CMD_B,
   )
+  dev.transfer( 
+    {read} = CMD_WRITE,
+    {write} = @[0x8, 0x7],
+    {read, stop} = @[0x8, 0x7],
+    {read, restart} = @[0x8, 0x7],
+    {read, stop} = CMD_A CMD_B,
+  )
 
 proc test_i2c_do_txn() =
   var dev = i2c_devptr()
   dev.doTransfers(
+    unsafeI2cMsg(I2cReg8 0x1),
     unsafeI2cMsg(0x1, 0x2, I2C_MSG_WRITE),
     unsafeI2cMsg([0x1'u8, 0x2], I2C_MSG_READ)
   )
