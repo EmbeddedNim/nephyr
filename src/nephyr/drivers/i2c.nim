@@ -30,7 +30,7 @@ type
     address*: I2cAddr
 
 
-template regAddressToBytes(reg: untyped): untyped =
+template regAddressToBytes*(reg: untyped): untyped =
   ##  register address
   var wr_addr: array[sizeof(reg), uint8]
   when reg is I2cReg8:
@@ -40,6 +40,8 @@ template regAddressToBytes(reg: untyped): untyped =
     assert wr_addr.len() == 2
     wr_addr[0] = uint8(reg.uint16 shr 8)
     wr_addr[1] = uint8(reg.uint16 and 0xFF'u8)
+  else:
+    {.fatal: "only I2cRegister types supported".}
   
   wr_addr
 

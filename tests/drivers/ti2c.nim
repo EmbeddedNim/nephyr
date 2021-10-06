@@ -26,6 +26,33 @@ proc test_i2c_dev_cstring() =
 #     {read, stop} = [CMD_A, CMD_B],
 #   )
 
+proc test_raw_zephyr_api*() =
+  ## Setup I2C messages
+  var dev = i2c_devptr()
+  var wr_addr = regAddressToBytes(I2cReg8 0x44)
+  var data = [0x0'u8, 0x0, 0x0]
+  var rxdata = [0x0'u8, 0x0, 0x0]
+
+  var msgs: array[3, i2c_msg]
+  ## reg the address to write to
+
+  msgs[0].buf = addr wr_addr[0]
+  msgs[0].len = wr_addr.lenBytes()
+
+  msgs[0].flags = I2C_MSG_WRITE or I2C_MSG_STOP
+
+  ##  Data to be written, and STOP after this.
+  msgs[1].buf = addr data[0]
+  msgs[1].len = data.lenBytes()
+  msgs[1].flags = I2C_MSG_WRITE or I2C_MSG_STOP
+
+  ##  Data to be read, and STOP after this.
+  msgs[2].buf = addr rxdata[0]
+  msgs[2].len = rxdata.lenBytes()
+  msgs[2].flags = I2C_MSG_READ or I2C_MSG_STOP
+
+  check: i2c_transfer(dev.bus, addr(msgs[0]), msgs.len().uint8, dev.address.uint16)
+
 proc test_i2c_do_txn() =
   # Examples of generic I2C Api
   var dev = i2c_devptr()
