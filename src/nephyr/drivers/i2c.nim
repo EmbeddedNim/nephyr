@@ -80,15 +80,18 @@ proc i2cRead*(msg: var i2c_msg; data: var openArray[uint8], flag = I2cFlag(0)) =
   msg.len = data.lenBytes()
   msg.flags = flag or I2C_MSG_READ
 
-proc i2cWrite*(msg: var i2c_msg; args: varargs[uint8], flag: I2cFlag) =
+proc i2cWrite*(msg: var i2c_msg; args: openArray[uint8], flag: I2cFlag) =
   msg.buf = unsafeAddr args[0]
   msg.len = args.lenBytes()
   msg.flags = flag or I2C_MSG_WRITE
 
-proc i2cWrite*(msg: var i2c_msg; args: varargs[uint8]) =
-  msg.buf = unsafeAddr args[0]
-  msg.len = args.lenBytes()
-  msg.flags = I2C_MSG_WRITE
+proc i2cWriteStop*(msg: var i2c_msg; args: varargs[uint8]) =
+  i2cWrite(msg, args, I2C_MSG_WRITE or I2C_MSG_STOP)
+template data*(args: varargs[uint8]): openArray[uint8] =
+  args
+
+proc i2cWrite*(msg: var i2c_msg; args: openArray[uint8]; flags: set[I2cFlag] = {}) =
+  i2cWrite(msg, args, cast[I2cFlag](flags))
 
 template i2cReg*(msg: var i2c_msg; register: I2cRegister, flag: I2cFlag = I2C_MSG_WRITE) =
   let data = regAddressToBytes(register)
