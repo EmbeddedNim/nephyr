@@ -31,17 +31,13 @@ proc test_i2c_do_txn() =
   var data: array[3, uint8]
   var data2: array[1, uint8]
 
-  var rmsg = unsafeI2cReg(I2cReg8 0x1)
   dev.doTransfers(
-    rmsg,
-    unsafeI2cWrite([uint8 0x1, 0x2], I2C_MSG_STOP),
-    unsafeI2cWrite([0x1'u8, 0x2]),
-    unsafeI2cWrite(0x1, 0x2),
-    unsafeI2cRead(data),
-    unsafeI2cRead(data2)
-  )
-  dev.handleTransfers(
-    i2cRead(data)
+    i2cRead(data),
+    i2cWrite([uint8 0x1, 0x2], I2C_MSG_STOP),
+    i2cWrite([0x1'u8, 0x2]),
+    i2cWrite(0x1, 0x2),
+    i2cRead(data),
+    i2cRead(data2)
   )
 
 test_i2c_devptr()

@@ -91,23 +91,24 @@ proc i2cRead*(msg: var i2c_msg; data: var openArray[uint8], flag = I2cFlag(0)) =
   msg.len = data.lenBytes()
   msg.flags = flag or I2C_MSG_READ
 
-proc unsafeI2cRead*(data: var openArray[uint8], flag = I2cFlag(0)): i2c_msg =
-  result = i2c_msg(buf: unsafeAddr data[0], len: data.lenBytes(), flags: flag or I2C_MSG_READ)
+proc i2cWrite*(msg: var i2c_msg; args: varargs[uint8], flag: I2cFlag) =
+  msg.buf = unsafeAddr args[0]
+  msg.len = args.lenBytes()
+  msg.flags = flag or I2C_MSG_WRITE
 
-proc unsafeI2cWrite*(args: varargs[uint8], flag: I2cFlag): i2c_msg =
-  result = i2c_msg(buf: unsafeAddr args[0], len: args.lenBytes(), flags: flag or I2C_MSG_WRITE)
+proc i2cWrite*(msg: var i2c_msg; args: varargs[uint8]) =
+  msg.buf = unsafeAddr args[0]
+  msg.len = args.lenBytes()
+  msg.flags = I2C_MSG_WRITE
 
-proc unsafeI2cWrite*(args: varargs[uint8]): i2c_msg =
-  result = unsafeI2cWrite(args, I2C_MSG_WRITE)
-
-proc unsafeI2cReg*(register: I2cRegister, flag: I2cFlag = I2C_MSG_WRITE): i2c_msg =
+template i2cReg*(msg: var i2c_msg; register: I2cRegister, flag: I2cFlag = I2C_MSG_WRITE) =
   let data = regAddressToBytes(register)
-  result = i2c_msg(buf: unsafeAddr data[0], len: data.lenBytes(), flags: flag)
+  msg.buf = unsafeAddr data[0]
+  msg.len = data.lenBytes()
+  msg.flags = flag or I2C_MSG_WRITE
 
-macro handleTransfers*(dev: var I2cDevice, args: varargs[untyped]) =
-  echo "handleTransfers <".repeat(20)
-  echo "stmt: ", repr args
-  echo "args: ", treeRepr args
+
+macro doTransfers*(dev: var I2cDevice, args: varargs[untyped]) =
   let mvar = genSym(nskVar, "i2cMsgArr")
   let mcnt = newIntLitNode(args.len())
   result = newStmtList()
@@ -128,17 +129,8 @@ macro handleTransfers*(dev: var I2cDevice, args: varargs[untyped]) =
   
   result.add quote do:
       check: i2c_transfer(`dev`.bus, addr(`mvar`[0]), `mvar`.len().uint8, `dev`.address.uint16)
-  echo "done: "
+  echo "doTransfers: "
   echo result.repr
-
-
-template doTransfers*(dev: var I2cDevice, args: varargs[i2c_msg]) =
-  when not (args.len() < 256):
-    {.fatal: "must be less than 256 i2c messages".}
-  var msgs: array[args.len(), i2c_msg]
-  for idx in 0..<args.len():
-    msgs[idx] = args[idx]
-  check: i2c_transfer(dev.bus, addr(msgs[0]), msgs.len().uint8, dev.address.uint16)
 
 
 proc writeRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]) =
