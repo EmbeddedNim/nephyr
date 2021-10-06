@@ -1,4 +1,7 @@
 
+type 
+  Bytes*[N: static[int]] = array[N, uint8]
+
 proc doCheck*(ret: int): int {.discardable.} =
   if ret != 0:
     raise newException(OSError, "error id: " & $(ret))

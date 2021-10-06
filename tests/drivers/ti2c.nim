@@ -29,7 +29,7 @@ proc test_i2c_txn_form2() =
 proc test_i2c_do_txn() =
   var dev = i2c_devptr()
   var data: array[3, uint8]
-  var data2: array[1, uint8]
+  var data2: Bytes[1]
 
   dev.doTransfers(
     reg(I2cReg16(0x4ffd)),
