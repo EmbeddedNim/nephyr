@@ -12,12 +12,12 @@ export zi2c
 export cmtoken, zdevice, zdevicetree
 
 type
-  I2cMsg * {.size: sizeof(uint8).} = enum
-    write = I2C_MSG_WRITE,
-    read = I2C_MSG_READ,
-    stop = I2C_MSG_STOP,
-    restart = I2C_MSG_RESTART,
-    addr10 = I2C_MSG_ADDR_10_BITS
+  # I2cMsg * {.size: sizeof(uint8).} = enum
+  #   write = I2C_MSG_WRITE,
+  #   read = I2C_MSG_READ,
+  #   stop = I2C_MSG_STOP,
+  #   restart = I2C_MSG_RESTART,
+  #   addr10 = I2C_MSG_ADDR_10_BITS
 
   I2cAddr* = distinct uint8
   I2cReg8* = distinct uint8 
@@ -78,23 +78,23 @@ proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice 
 template data*(args: varargs[uint8]): openArray[uint8] =
   args
 
-proc msgRead*(msg: var i2c_msg; data: var openArray[uint8], flag = I2cFlag(0)) =
+proc read*(msg: var i2c_msg; data: var openArray[uint8], flag = I2cFlag(0)) =
   msg.buf = unsafeAddr data[0]
   msg.len = data.lenBytes()
   msg.flags = flag or I2C_MSG_READ
 
-proc msgWrite*(msg: var i2c_msg; args: openArray[uint8], flag: I2cFlag) =
+proc write*(msg: var i2c_msg; args: openArray[uint8], flag: I2cFlag) =
   msg.buf = unsafeAddr args[0]
   msg.len = args.lenBytes()
   msg.flags = flag or I2C_MSG_WRITE
 
 
-proc msgWrite*(msg: var i2c_msg; args: openArray[uint8]; flags: set[I2cFlag] = {}) =
-  msgWrite(msg, args, cast[I2cFlag](flags))
+proc write*(msg: var i2c_msg; args: openArray[uint8]; flags: set[I2cFlag] = {}) =
+  write(msg, args, cast[I2cFlag](flags))
 
-template msgReg*(msg: var i2c_msg; register: I2cRegister, flag: I2cFlag = I2C_MSG_WRITE) =
+template reg*(msg: var i2c_msg; register: I2cRegister, flag: I2cFlag = I2C_MSG_WRITE) =
   let data = regAddressToBytes(register)
-  msgWrite(msg, data, flag)
+  write(msg, data, flag)
 
 
 macro doTransfers*(dev: var I2cDevice, args: varargs[untyped]) =
