@@ -56,10 +56,6 @@ when defined(ExperimentalI2CApi):
     i2cData(data, flags)
 
 
-## ======================================================================================= ##
-## Basic I2C api to read/write from a register (or command) then the resulting data 
-## ======================================================================================= ##
-
 proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice =
   result = I2cDevice()
   when typeof(devname) is cstring:
@@ -76,6 +72,12 @@ proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice 
         "error finding i2c device: 0x" & $(cast[int](devname).toHex())
     raise newException(OSError, emsg)
 
+## ======================================================================================= ##
+## Generic I2C api that creates a set of i2c_msg's, set's up the 
+## transaction and calls i2c_transfer. 
+## 
+## TODO: async versions
+## ======================================================================================= ##
 
 proc read*(msg: var i2c_msg; data: var openArray[uint8], flag = I2cFlag(0)) =
   msg.buf = unsafeAddr data[0]
@@ -131,6 +133,10 @@ macro doTransfer*(dev: var I2cDevice, args: varargs[untyped]) =
       check: i2c_transfer(`dev`.bus, addr(`mvar`[0]), `mvar`.len().uint8, `dev`.address.uint16)
   echo "doTransfers: "
   echo result.repr
+
+## ======================================================================================= ##
+## Basic I2C api to read/write from a register (or command) then the resulting data 
+## ======================================================================================= ##
 
 
 proc writeRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: openArray[uint8]) =
