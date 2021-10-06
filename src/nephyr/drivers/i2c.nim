@@ -75,27 +75,26 @@ proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice 
         "error finding i2c device: 0x" & $(cast[int](devname).toHex())
     raise newException(OSError, emsg)
 
-proc i2cRead*(msg: var i2c_msg; data: var openArray[uint8], flag = I2cFlag(0)) =
+template data*(args: varargs[uint8]): openArray[uint8] =
+  args
+
+proc msgRead*(msg: var i2c_msg; data: var openArray[uint8], flag = I2cFlag(0)) =
   msg.buf = unsafeAddr data[0]
   msg.len = data.lenBytes()
   msg.flags = flag or I2C_MSG_READ
 
-proc i2cWrite*(msg: var i2c_msg; args: openArray[uint8], flag: I2cFlag) =
+proc msgWrite*(msg: var i2c_msg; args: openArray[uint8], flag: I2cFlag) =
   msg.buf = unsafeAddr args[0]
   msg.len = args.lenBytes()
   msg.flags = flag or I2C_MSG_WRITE
 
-proc i2cWriteStop*(msg: var i2c_msg; args: varargs[uint8]) =
-  i2cWrite(msg, args, I2C_MSG_WRITE or I2C_MSG_STOP)
-template data*(args: varargs[uint8]): openArray[uint8] =
-  args
 
-proc i2cWrite*(msg: var i2c_msg; args: openArray[uint8]; flags: set[I2cFlag] = {}) =
-  i2cWrite(msg, args, cast[I2cFlag](flags))
+proc msgWrite*(msg: var i2c_msg; args: openArray[uint8]; flags: set[I2cFlag] = {}) =
+  msgWrite(msg, args, cast[I2cFlag](flags))
 
-template i2cReg*(msg: var i2c_msg; register: I2cRegister, flag: I2cFlag = I2C_MSG_WRITE) =
+template msgReg*(msg: var i2c_msg; register: I2cRegister, flag: I2cFlag = I2C_MSG_WRITE) =
   let data = regAddressToBytes(register)
-  i2cWrite(msg, data, flag)
+  msgRegister(msg, data, flag)
 
 
 macro doTransfers*(dev: var I2cDevice, args: varargs[untyped]) =

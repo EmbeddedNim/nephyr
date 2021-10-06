@@ -32,13 +32,13 @@ proc test_i2c_do_txn() =
   var data2: array[1, uint8]
 
   dev.doTransfers(
-    i2cReg(I2cReg16 0x4ffd),
-    i2cRead(data),
-    i2cWrite([uint8 0x1, 0x2], I2C_MSG_STOP),
-    i2cWrite(data(0x1'u8, 0x2)),
-    i2cWrite(data(0x1, 0x2), {I2C_MSG_WRITE, I2C_MSG_STOP}),
-    i2cRead(data),
-    i2cRead(data2)
+    msgReg(I2cReg16 0x4ffd),
+    msgRead(data),
+    msgWrite([uint8 0x1, 0x2], I2C_MSG_STOP),
+    msgWrite(data(0x1'u8, 0x2)),
+    msgWrite(data(0x1, 0x2), {I2C_MSG_WRITE, I2C_MSG_STOP}),
+    msgRead(data),
+    msgRead(data2)
   )
 
 test_i2c_devptr()
