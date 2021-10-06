@@ -40,6 +40,9 @@ proc test_i2c_do_txn() =
     unsafeI2cRead(data),
     unsafeI2cRead(data2)
   )
+  dev.handleTransfers(
+    i2cRead(data)
+  )
 
 test_i2c_devptr()
 test_i2c_dev_cstring()

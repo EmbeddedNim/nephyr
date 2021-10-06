@@ -1,4 +1,5 @@
 import bitops
+import macros
 
 import nephyr/general
 import zephyr_c/zdevicetree
@@ -85,6 +86,11 @@ proc initI2cDevice*(devname: cstring | ptr device, address: I2cAddr): I2cDevice 
         "error finding i2c device: 0x" & $(cast[int](devname).toHex())
     raise newException(OSError, emsg)
 
+proc i2cRead*(msg: var i2c_msg; data: var openArray[uint8], flag = I2cFlag(0)) =
+  msg.buf = unsafeAddr data[0]
+  msg.len = data.lenBytes()
+  msg.flags = flag or I2C_MSG_READ
+
 proc unsafeI2cRead*(data: var openArray[uint8], flag = I2cFlag(0)): i2c_msg =
   result = i2c_msg(buf: unsafeAddr data[0], len: data.lenBytes(), flags: flag or I2C_MSG_READ)
 
@@ -97,6 +103,34 @@ proc unsafeI2cWrite*(args: varargs[uint8]): i2c_msg =
 proc unsafeI2cReg*(register: I2cRegister, flag: I2cFlag = I2C_MSG_WRITE): i2c_msg =
   let data = regAddressToBytes(register)
   result = i2c_msg(buf: unsafeAddr data[0], len: data.lenBytes(), flags: flag)
+
+macro handleTransfers*(dev: var I2cDevice, args: varargs[untyped]) =
+  echo "handleTransfers <".repeat(20)
+  echo "stmt: ", repr args
+  echo "args: ", treeRepr args
+  let mvar = genSym(nskVar, "i2cMsgArr")
+  let mcnt = newIntLitNode(args.len())
+  result = newStmtList()
+  result.add quote do:
+    var `mvar`: array[`mcnt`, i2c_msg]
+
+  args.expectKind(nnkArglist)
+  for idx in 0..<args.len():
+    echo "\n"
+    echo "arg(repr): ", repr args[idx]
+    echo "arg: ", treeRepr args[idx]
+    let i = newIntLitNode(idx)
+    var msg = args[idx]
+    msg.insert(1, quote do: `mvar`[`i`])
+    result.add msg
+    # result.add quote do:
+      # `mvar`[`i`].`args[idx]`
+  
+  result.add quote do:
+      check: i2c_transfer(`dev`.bus, addr(`mvar`[0]), `mvar`.len().uint8, `dev`.address.uint16)
+  echo "done: "
+  echo result.repr
+
 
 template doTransfers*(dev: var I2cDevice, args: varargs[i2c_msg]) =
   when not (args.len() < 256):
@@ -146,7 +180,6 @@ proc readRegister*(i2cDev: I2cDevice; reg: I2cRegister; data: var openArray[uint
 
   check: i2c_transfer(i2cDev.bus, addr(msgs[0]), msgs.len().uint8, i2cDev.address.uint16)
 
-import macros
 
 proc parseFlags(args: var seq[NimNode]): (I2cFlag, bool) =
   var
