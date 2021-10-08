@@ -25,7 +25,7 @@ type
   I2cReg16* = distinct uint16
   I2cRegister* = I2cReg8 | I2cReg16
 
-  I2cDevice* = ref object
+  I2cDevice* = object
     bus*: ptr device
     address*: I2cAddr
 
@@ -114,6 +114,11 @@ macro doTransfer*(dev: var I2cDevice, args: varargs[untyped]) =
   ##     write([0x1'u8, 0x2], I2C_MSG_STOP))
   ## 
   result = newStmtList()
+
+  if args.len() == 0:
+    result.add quote do:
+      check: i2c_transfer(`dev`.bus, nil, 0, `dev`.address.uint16)
+    return
 
   # create the new i2cmsg array
   let mvar = genSym(nskVar, "i2cMsgArr")
