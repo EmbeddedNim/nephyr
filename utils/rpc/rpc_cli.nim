@@ -136,10 +136,7 @@ proc runRpc(opts: RpcOptions, margs: JsonNode) =
     for (f,v) in margs.pairs():
       call[f] = v
 
-    let domain = if opts.ipAddr.family == IpAddressFamily.IPv6: Domain.AF_INET6 else: Domain.AF_INET6 
-    let client: Socket = newSocket(buffered=false, domain=domain)
-
-    print(colYellow, "[connecting to server ip addr: ", repr opts.ipAddr,"]")
+    let client: Socket = newSocket(buffered=false)
     client.connect($opts.ipAddr, opts.port)
     print(colYellow, "[connected to server ip addr: ", $opts.ipAddr,"]")
     print(colBlue, "[call: ", $call, "]")

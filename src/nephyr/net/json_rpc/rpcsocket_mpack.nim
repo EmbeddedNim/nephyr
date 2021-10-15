@@ -66,15 +66,13 @@ proc rpcMsgPackReadHandler*(srv: TcpServerInfo[RpcRouter], result: ReadyKey, sou
   except TimeoutError:
     echo("control server: error: socket timeout: ", $sourceClient.getFd().int)
 
-proc startRpcSocketServer*(port: Port; router: var RpcRouter, addresses: varargs[IpAddress]) =
+
+proc startRpcSocketServer*(port: Port; router: var RpcRouter) =
   logi("starting mpack rpc server: buffer: %s", $router.buffer)
 
-  var ipaddrs: seq[IpAddress] = addresses.toSeq()
   startSocketServer[RpcRouter](
-    port=port,
-    addresses=ipaddrs,
+    port,
     readHandler=rpcMsgPackReadHandler,
     writeHandler=rpcMsgPackWriteHandler,
     data=router)
-    
 
