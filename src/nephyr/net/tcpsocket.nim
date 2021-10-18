@@ -40,7 +40,7 @@ type
 
   TcpServerInfo*[T] = ref object 
     select*: Selector[T]
-    server*: Socket
+    servers*: seq[Socket]
     clients*: ref Table[SocketHandle, Socket]
     writeHandler*: TcpServerHandler[T]
     readHandler*: TcpServerHandler[T]
@@ -48,9 +48,9 @@ type
   TcpServerHandler*[T] = proc (srv: TcpServerInfo[T], selected: ReadyKey, client: Socket, data: T) {.nimcall.}
 
 
-proc createServerInfo[T](server: Socket, selector: Selector[T]): TcpServerInfo[T] = 
+proc createServerInfo[T](selector: Selector[T], servers: seq[Socket]): TcpServerInfo[T] = 
   result = new(TcpServerInfo[T])
-  result.server = server
+  result.servers = servers
   result.select = selector
   result.clients = newTable[SocketHandle, Socket]()
 
@@ -62,18 +62,20 @@ proc processWrites[T](selected: ReadyKey, srv: TcpServerInfo[T], data: T) =
 
 proc processReads[T](selected: ReadyKey, srv: TcpServerInfo[T], data: T) = 
   logd("process reads on: fd:%d srvfd:%d", selected.fd, srv.server.getFd().int)
-  if SocketHandle(selected.fd) == srv.server.getFd():
-    var client: Socket = new(Socket)
-    srv.server.accept(client)
+  for server in srv.servers:
+    if SocketHandle(selected.fd) == server.getFd():
+      var client: Socket = new(Socket)
+      server.accept(client)
 
-    client.getFd().setBlocking(false)
-    srv.select.registerHandle(client.getFd(), {Event.Read}, data)
-    srv.clients[client.getFd()] = client
+      client.getFd().setBlocking(false)
+      srv.select.registerHandle(client.getFd(), {Event.Read}, data)
+      srv.clients[client.getFd()] = client
 
-    let id: int = client.getFd().int
-    logd("client connected: %d", id)
+      let id: int = client.getFd().int
+      logd("client connected: %d", id)
+      return
 
-  elif srv.clients.hasKey(SocketHandle(selected.fd)):
+  if srv.clients.hasKey(SocketHandle(selected.fd)):
     let sourceClient: Socket = newSocket(SocketHandle(selected.fd))
     let sourceFd = selected.fd
     let data = getData(srv.select, sourceFd)
@@ -96,8 +98,9 @@ proc processReads[T](selected: ReadyKey, srv: TcpServerInfo[T], data: T) =
       discard posix.close(sourceFd.cint)
       logd("client read error: %s", $(sourceFd))
 
-  else:
-    raise newException(OSError, "unknown socket id: " & $selected.fd.int)
+    return
+
+  raise newException(OSError, "unknown socket id: " & $selected.fd.int)
 
 
 proc echoReadHandler*(srv: TcpServerInfo[string], result: ReadyKey, sourceClient: Socket, data: string) =
@@ -114,25 +117,27 @@ proc echoReadHandler*(srv: TcpServerInfo[string], result: ReadyKey, sourceClient
         # continue
       client.send(data & message & "\r\L")
 
-proc startSocketServer*[T](port: Port, readHandler: TcpServerHandler[T], writeHandler: TcpServerHandler[T], data: var T) =
-  var server: Socket = newSocket()
+proc startSocketServer*[T](port: Port, addresses: seq[IpAddress], readHandler: TcpServerHandler[T], writeHandler: TcpServerHandler[T], data: var T) =
   var select: Selector[T] = newSelector[T]()
+  var servers = newSeq[Socket]()
+  for ipaddr in addresses:
+    logi "Server: starting "
+    let domain = if ipaddr.family == IpAddressFamily.IPv6: Domain.AF_INET6 else: Domain.AF_INET6 
+    var server: Socket = newSocket(domain=domain)
 
-  logi "Server: starting "
+    server.setSockOpt(OptReuseAddr, true)
+    server.getFd().setBlocking(false)
+    server.bindAddr(port, $ipaddr)
+    server.listen()
+    servers.add server
 
-  server.setSockOpt(OptReuseAddr, true)
-  server.getFd().setBlocking(false)
-  server.bindAddr(port)
-  server.listen()
-
-  logi "Server: started on port: ", port
-
-  var srv = createServerInfo[T](server, select)
+    logi "Server: started on: ip: ", $ipaddr, " port: ", $port
+    select.registerHandle(server.getFd(), {Event.Read}, data)
+  
+  var srv = createServerInfo[T](select, servers)
   srv.readHandler = readHandler
   srv.writeHandler = writeHandler
 
-  select.registerHandle(server.getFd(), {Event.Read}, data)
-  
   while true:
     var results: seq[ReadyKey] = select.select(-1)
   
@@ -147,7 +152,8 @@ proc startSocketServer*[T](port: Port, readHandler: TcpServerHandler[T], writeHa
 
   
   select.close()
-  server.close()
+  for server in servers:
+    server.close()
 
 # when isMainModule:
   # startSocketServer(Port(5555), readHandler=echoReadHandler, writeHandler=nil)
