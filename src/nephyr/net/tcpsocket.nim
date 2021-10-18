@@ -114,24 +114,25 @@ proc echoReadHandler*(srv: TcpServerInfo[string], result: ReadyKey, sourceClient
         # continue
       client.send(data & message & "\r\L")
 
-proc startSocketServer*[T](port: Port, address: IpAddress, readHandler: TcpServerHandler[T], writeHandler: TcpServerHandler[T], data: var T) =
+proc startSocketServer*[T](port: Port, readHandler: TcpServerHandler[T], writeHandler: TcpServerHandler[T], data: var T) =
+  var server: Socket = newSocket()
   var select: Selector[T] = newSelector[T]()
 
   logi "Server: starting "
-  let domain = if address.family == IpAddressFamily.IPv6: Domain.AF_INET6 else: Domain.AF_INET6 
-  var server: Socket = newSocket(domain=domain)
+
   server.setSockOpt(OptReuseAddr, true)
   server.getFd().setBlocking(false)
-  server.bindAddr(port, $address)
+  server.bindAddr(port)
   server.listen()
 
-  logi "Server: started on: ip: ", $address, " port: ", $port
-  select.registerHandle(server.getFd(), {Event.Read}, data)
-  
+  logi "Server: started on port: ", port
+
   var srv = createServerInfo[T](server, select)
   srv.readHandler = readHandler
   srv.writeHandler = writeHandler
 
+  select.registerHandle(server.getFd(), {Event.Read}, data)
+  
   while true:
     var results: seq[ReadyKey] = select.select(-1)
   
