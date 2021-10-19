@@ -14,6 +14,23 @@ const
   TAG = "socketrpc"
   MsgChunk {.intdefine.} = 1400
 
+type 
+  TcpClientDisconnected* = object of OSError
+  TcpClientError* = object of OSError
+
+template sendWrap*(socket: Socket, data: untyped) =
+  try:
+    socket.send(data)
+  except OSError as err:
+    if err.errorCode == ENOTCONN:
+      var etcp = newException(TcpClientDisconnected, "")
+      etcp.errorCode = err.errorCode
+      raise etcp
+
+    else:
+      raise err
+
+
 proc sendChunks*(sourceClient: Socket, rmsg: string) =
   let rN = rmsg.len()
   # logd("rpc handler send client: %d bytes", rN)
@@ -22,7 +39,7 @@ proc sendChunks*(sourceClient: Socket, rmsg: string) =
     var j = min(i + MsgChunk, rN) 
     # logd("rpc handler sending: i: %s j: %s ", $i, $j)
     var sl = rmsg[i..<j]
-    sourceClient.send(move sl)
+    sourceClient.sendWrap(move sl)
     i = j
 
 proc sendLength*(sourceClient: Socket, rmsg: string) =
@@ -32,12 +49,9 @@ proc sendLength*(sourceClient: Socket, rmsg: string) =
     rmsgSz[i] = char(rmsgN and 0xFF)
     rmsgN = rmsgN shr 8
 
-  sourceClient.send(move rmsgSz)
+  sourceClient.sendWrap(move rmsgSz)
 
-type 
-  TcpClientDisconnected* = object of OSError
-  TcpClientError* = object of OSError
-
+type
   TcpServerInfo*[T] = ref object 
     select*: Selector[T]
     servers*: seq[Socket]
@@ -115,19 +129,20 @@ proc echoReadHandler*(srv: TcpServerInfo[string], result: ReadyKey, sourceClient
     for cfd, client in srv.clients:
       # if sourceClient.getFd() == cfd.getFd():
         # continue
-      client.send(data & message & "\r\L")
+      client.sendWrap(data & message & "\r\L")
 
-proc startSocketServer*[T](port: Port, addresses: seq[IpAddress], readHandler: TcpServerHandler[T], writeHandler: TcpServerHandler[T], data: var T) =
+proc startSocketServer*[T](port: Port, ipaddrs: openArray[IpAddress], readHandler: TcpServerHandler[T], writeHandler: TcpServerHandler[T], data: var T) =
   var select: Selector[T] = newSelector[T]()
   var servers = newSeq[Socket]()
-  for ipaddr in addresses:
+  for ipaddr in ipaddrs:
     logi "Server: starting "
     let domain = if ipaddr.family == IpAddressFamily.IPv6: Domain.AF_INET6 else: Domain.AF_INET6 
-    var server: Socket = newSocket(domain=domain)
+    # var server: Socket = newSocket(domain=domain)
+    var server: Socket = newSocket()
 
     server.setSockOpt(OptReuseAddr, true)
     server.getFd().setBlocking(false)
-    server.bindAddr(port, $ipaddr)
+    server.bindAddr(port)
     server.listen()
     servers.add server
 
