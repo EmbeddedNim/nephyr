@@ -103,14 +103,14 @@ proc processReads[T](selected: ReadyKey, srv: TcpServerInfo[T], data: T) =
       discard srv.clients.pop(sourceFd.SocketHandle, client)
       srv.select.unregister(sourceFd)
       discard posix.close(sourceFd.cint)
-      logd("client disconnected: fd: %s", $sourceFd)
+      loge("client disconnected: fd: ", $sourceFd)
 
     except TcpClientError as err:
       srv.clients.del(sourceFd.SocketHandle)
       srv.select.unregister(sourceFd)
 
       discard posix.close(sourceFd.cint)
-      logd("client read error: %s", $(sourceFd))
+      loge("client read error: ", $(sourceFd))
 
     return
 
