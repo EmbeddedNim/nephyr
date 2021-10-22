@@ -24,11 +24,11 @@ when defined(zephyr):
   proc k_uptime_get*(): uint64 {.importc: "$1", header: "kernel.h".}
   proc k_cycle_get_32*(): uint32 {.importc: "$1", header: "kernel.h".}
   proc k_cyc_to_us_floor64*(ts: uint64): uint64 {.importc: "$1", header: "kernel.h".}
+  proc printk*(frmt: cstring) {.importc: "$1", varargs, header: "<sys/printk.h>".}
 
   proc micros*(): uint64 =
     let ticks = k_cycle_get_32()
     return k_cyc_to_us_floor64(ticks)
-
 
   template app_main*(blk: untyped): untyped =
 
