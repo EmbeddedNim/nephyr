@@ -1,6 +1,16 @@
 
 import os, strutils, sequtils
 import strformat, tables, sugar
+import os, streams, parsecfg, tables
+
+if getEnv("BOARD") == "" and commandLineParams()[^1].startsWith("zephyr_"):
+  echo "[Nephyr WARNING]: No BOARD variable found. Make sure you source an environment first! "
+  echo "\nEnvironments available: "
+  for f in listFiles("envs/"):
+    echo "\t", "source ", $f
+
+  echo ""
+  raise newException(Exception, "Cannot copmpile without board setting")
 
 type
   NimbleArgs = object
@@ -97,6 +107,39 @@ proc parseNimbleArgs(): NimbleArgs =
 
   if result.debug: echo "[Got nimble args: ", $result, "]\n"
 
+
+# CONFIG_NET_IPV6=y
+
+proc parseCmakeConfig*(buildDir: string,
+                      zephyrDir="zephyr",
+                      configName=".config"): TableRef[string, string] =
+  var 
+    fpath = buildDir / zephyrDir / configName
+    f = readFile(fpath)
+    fs = newStringStream(f)
+    opts = newTable[string, string]()
+
+  if fs != nil:
+    var p: CfgParser
+    open(p, fs, "zephyr.config")
+    while true:
+      var e = next(p)
+      case e.kind
+      of cfgEof: break
+      of cfgSectionStart:   ## a ``[section]`` has been parsed
+        echo("warning ignoring new config section: " & e.section)
+      of cfgKeyValuePair:
+        # echo("key-value-pair: " & e.key & ": " & e.value)
+        if e.value != "n":
+          opts[e.key] = e.value
+      of cfgOption:
+        echo("warning ignoring config option: " & e.key & ": " & e.value)
+      of cfgError:
+        echo(e.msg)
+    close(p)
+  
+  result = opts
+
 when defined(NEPHYR_TASKS_FIX_TEMPLATES):
   task zephyr_list_templates, "List templates available for setup":
     echo "\n[Nephyr] Listing setup templates:\n"
@@ -147,6 +190,17 @@ when defined(NEPHYR_TASKS_FIX_TEMPLATES):
       echo "...copying template: ", fileName, " from: ", tmpltPth, " to: ", getCurrentDir()
       writeFile(nopts.appsrc / nopts.projname / fileName, readFile(tmpltPth) % tmplt_args )
 
+task zephyr_parse_cmake, "Parse CMake configs":
+  let board = getEnv("BOARD") 
+  echo "NIM BOARD: ", board
+
+  let zconf = parseCmakeConfig(buildDir=".." / "build_" & board)
+  echo "ZCONF: net_ipv6? ", zconf.hasKey("CONFIG_NET_IPV6")
+  echo "ZCONF: net_ipv6_router? ", zconf.hasKey("CONFIG_NET_CONFIG_NEED_IPV6_ROUTER")
+  echo "ZCONF: count: ", zconf.len()
+
+  if zconf.hasKey("CONFIG_NET_IPV6"):
+    switch("define", "net_ipv6")
 
 task zephyr_install_headers, "Install nim headers":
   echo "\n[Nephyr] Installing nim headers:"
