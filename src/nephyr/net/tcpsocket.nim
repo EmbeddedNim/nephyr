@@ -19,6 +19,8 @@ type
   TcpClientError* = object of OSError
 
 template sendWrap*(socket: Socket, data: untyped) =
+  # Checks for disconnect errors when sending
+  # This makes it easy to handle dirty disconnects
   try:
     socket.send(data)
   except OSError as err:
