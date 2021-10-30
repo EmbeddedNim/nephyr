@@ -127,7 +127,7 @@ proc addImageUtilMethods*(rt: var RpcRouter) =
     result = %* hdr
 
   rpc(rt, "sys-reboot") do():
-    sysReboot()
+    sysReboot(false)
 
   rpc(rt, "sys-reboot-cold") do():
     sysReboot(coldReboot=true)

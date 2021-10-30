@@ -6,6 +6,7 @@ WIP! The API and package layout are still prone to large changes. That being sai
 
 ## Setup
 
+1. Install Nim (recommend [choosenim](https://github.com/dom96/choosenim) )
 1. Install Zephyr
 2. Recommended to install Nephyr using `nimble develop` as the library will be changing frequently:
   - `git clone https://github.com/EmbeddedNim/nephyr.git`
@@ -27,8 +28,8 @@ Working:
 - [x] Support for Firmware OTA updates using Nim
 - [x] JSON-RPC using JSON/MsgPack with default RPC methods for OTA updates
 - [x] In progress work to wrap GPIO, SPI, & I2C
-  - C wrappers exist for these, but aren't well tested and Nim api is WIP
-
+  - I2c exits, but needs testing
+  - copy i2c to spi/gpio
 
 However, this currently requires a fork of Nim at `elcritch/Nim`. There is work to upstream the changes. 
 

@@ -22,8 +22,8 @@ type
 
 proc parseNimbleArgs(): NimbleArgs =
   var
-    projsrc = "main"
-    default_cache_dir = "." / projsrc / "nimcache"
+    projsrc = "src"
+    default_cache_dir = "." / projsrc / "build"
     progfile = thisDir() / projsrc / "main.nim"
 
   if bin.len() >= 1:
@@ -54,11 +54,11 @@ proc parseNimbleArgs(): NimbleArgs =
     elif paramStr(idx).startsWith("--nimcache"):
       pre_idf_cache_set = true
 
-  if not projsrc.endsWith("main"):
+  if not projsrc.endsWith("src"):
     if override_srcdir:
-      echo "  Warning: Zephyr assumes source files will be located in ./main/ folder "
+      echo "  Warning: Zephyr assumes source files will be located in ./src/ folder "
     else:
-      echo "  Error: Zephyr assumes source files will be located in ./main/ folder "
+      echo "  Error: Zephyr assumes source files will be located in ./src/ folder "
       echo "  got source directory: ", projsrc
       quit(1)
 
@@ -86,10 +86,9 @@ proc parseNimbleArgs(): NimbleArgs =
     projname: projectName(),
     projfile: progfile,
     nephyrpath: nephyrPath,
-    zephyr_template: zephyr_template,
+    # zephyr_template: zephyr_template,
     app_template: app_template,
     # forceupdatecache = "--forceUpdateCache" in idf_args
-    wifi_args: wifidefs,
     debug: "--zephyr-debug" in idf_args,
     forceclean: "--clean" in idf_args,
     distclean: "--dist-clean" in idf_args or "--clean-build" in idf_args,
@@ -98,54 +97,55 @@ proc parseNimbleArgs(): NimbleArgs =
 
   if result.debug: echo "[Got nimble args: ", $result, "]\n"
 
-task zephyr_list_templates, "List templates available for setup":
-  echo "\n[Nephyr] Listing setup templates:\n"
-  var nopts = parseNimbleArgs()
-  let 
-    zephyr_template_dir = nopts.nephyrpath / "nephyr" / "build_utils" / "templates" / "zephyr_templates" 
-    app_template_dir = nopts.nephyrpath / "nephyr" / "build_utils" / "templates" / "app_templates" 
-    zephyr_template_files = listDirs(zephyr_template_dir)
-    app_template_files = listDirs(app_template_dir)
+when defined(NEPHYR_TASKS_FIX_TEMPLATES):
+  task zephyr_list_templates, "List templates available for setup":
+    echo "\n[Nephyr] Listing setup templates:\n"
+    var nopts = parseNimbleArgs()
+    let 
+      zephyr_template_dir = nopts.nephyrpath / "nephyr" / "build_utils" / "templates" / "zephyr_templates" 
+      app_template_dir = nopts.nephyrpath / "nephyr" / "build_utils" / "templates" / "app_templates" 
+      zephyr_template_files = listDirs(zephyr_template_dir)
+      app_template_files = listDirs(app_template_dir)
 
-  echo (@["zephyr templates:"] & zephyr_template_files.mapIt(it.relativePath(zephyr_template_dir))).join("\n - ")
-  echo (@["app templates:"] & app_template_files.mapIt(it.relativePath(app_template_dir))).join("\n - ")
+    echo (@["zephyr templates:"] & zephyr_template_files.mapIt(it.relativePath(zephyr_template_dir))).join("\n - ")
+    echo (@["app templates:"] & app_template_files.mapIt(it.relativePath(app_template_dir))).join("\n - ")
 
-task zephyr_setup, "Setup a new Zephyr / nephyr project structure":
-  echo "\n[Nephyr] setting up project:"
-  var nopts = parseNimbleArgs()
+  task zephyr_setup, "Setup a new Zephyr / nephyr project structure":
+    echo "\n[Nephyr] setting up project:"
+    var nopts = parseNimbleArgs()
 
-  echo "...create project source directory" 
-  mkDir(nopts.projsrc)
+    echo "...create project source directory" 
+    mkDir(nopts.projsrc)
 
-  echo "...writing cmake lists" 
-  let
-    cmake_template = readFile(nopts.nephyrpath / "nephyr" / "build_utils" / "templates" / "CMakeLists.txt")
-    zephyr_template_files = listFiles(nopts.nephyrpath / "nephyr" / "build_utils" / "templates" / "zephyr_templates" / nopts.zephyr_template )
-    app_template_files = listFiles(nopts.nephyrpath / "nephyr" / "build_utils" / "templates" / "app_templates" / nopts.app_template )
-  var
-    tmplt_args = @[
-      "NIMBLE_PROJ_NAME", nopts.projname,
-      "NIMBLE_NIMCACHE", nopts.cachedir,
-      ]
+    echo "...writing cmake lists" 
+    let
+      cmake_template = readFile(nopts.nephyrpath / "nephyr" / "build_utils" / "templates" / "CMakeLists.txt")
+      zephyr_template_files: seq[string] = @[] # listFiles(nopts.nephyrpath / "nephyr" / "build_utils" / "templates" / "zephyr_templates" / nopts.zephyr_template )
+      app_template_files: seq[string] = @[] # listFiles(nopts.nephyrpath / "nephyr" / "build_utils" / "templates" / "app_templates" / nopts.app_template )
+    var
+      tmplt_args = @[
+        "NIMBLE_PROJ_NAME", nopts.projname,
+        "NIMBLE_NIMCACHE", nopts.cachedir,
+        ]
 
-  writeFile("CMakeLists.txt", cmake_template % tmplt_args)
+    writeFile("CMakeLists.txt", cmake_template % tmplt_args)
 
-  tmplt_args.insert(["NIMBLE_NIMCACHE", nopts.cachedir.relativePath(nopts.projsrc) ], 0)
+    tmplt_args.insert(["NIMBLE_NIMCACHE", nopts.cachedir.relativePath(nopts.projsrc) ], 0)
 
-  # writeFile(".gitignore", readFile(".gitignore") & "\n" @["build/", "#main/nimcache/"].join("\n") & "\n")
+    # writeFile(".gitignore", readFile(".gitignore") & "\n" @["build/", "#src/nimcache/"].join("\n") & "\n")
 
-  echo fmt"{'\n'}Copying zephyr template files for `{nopts.zephyr_template}`:" 
-  for tmpltPth in zephyr_template_files:
-    let fileName = tmpltPth.extractFilename()
-    echo "...copying template: ", fileName, " from: ", tmpltPth, " to: ", getCurrentDir()
-    writeFile(nopts.projsrc / fileName, readFile(tmpltPth) % tmplt_args )
-  
-  echo fmt"{'\n'}Copying app template files for `{nopts.app_template}`:" 
-  mkdir(nopts.appsrc / nopts.projname)
-  for tmpltPth in app_template_files:
-    let fileName = tmpltPth.extractFilename()
-    echo "...copying template: ", fileName, " from: ", tmpltPth, " to: ", getCurrentDir()
-    writeFile(nopts.appsrc / nopts.projname / fileName, readFile(tmpltPth) % tmplt_args )
+    echo fmt"{'\n'}Copying zephyr template files for `{nopts.zephyr_template}`:" 
+    for tmpltPth in zephyr_template_files:
+      let fileName = tmpltPth.extractFilename()
+      echo "...copying template: ", fileName, " from: ", tmpltPth, " to: ", getCurrentDir()
+      writeFile(nopts.projsrc / fileName, readFile(tmpltPth) % tmplt_args )
+    
+    echo fmt"{'\n'}Copying app template files for `{nopts.app_template}`:" 
+    mkdir(nopts.appsrc / nopts.projname)
+    for tmpltPth in app_template_files:
+      let fileName = tmpltPth.extractFilename()
+      echo "...copying template: ", fileName, " from: ", tmpltPth, " to: ", getCurrentDir()
+      writeFile(nopts.appsrc / nopts.projname / fileName, readFile(tmpltPth) % tmplt_args )
 
 
 task zephyr_install_headers, "Install nim headers":
@@ -168,6 +168,7 @@ task zephyr_clean, "Clean nimcache":
     nopts = parseNimbleArgs()
     cachedir = nopts.cachedir
   
+  echo "cachedir: ", $cachedir
   if dirExists(cachedir):
     echo "...removing nimcache"
     rmDir(cachedir)
@@ -193,8 +194,8 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
 
   echo "\n[Nephyr] Compiling:"
 
-  if not dirExists("main/"):
-    echo "\nWarning! The `main/` directory is required but appear appear to exist\n"
+  if not dirExists("src/"):
+    echo "\nWarning! The `src/` directory is required but appear appear to exist\n"
     echo "Did you run `nimble zephyr_setup` before trying to compile?\n"
 
   if nopts.forceclean or nopts.distclean:
@@ -213,11 +214,10 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
       "--compileOnly",
       "--nimcache:" & nopts.cachedir.quoteShell(),
       "-d:NimAppMain",
-      "-d:" & nopts.zephyr_version
+      # "-d:" & nopts.zephyr_version
     ].join(" ") 
     childargs = nopts.child_args.mapIt(it.quoteShell()).join(" ")
-    wifidefs = nopts.wifi_args
-    compiler_cmd = nimargs & " " & wifidefs & " " & childargs & " " & nopts.projfile.quoteShell() 
+    compiler_cmd = nimargs & " " & childargs & " " & nopts.projfile.quoteShell() 
   
   echo "compiler_cmd: ", compiler_cmd
   echo "compiler_childargs: ", nopts.child_args
@@ -242,12 +242,12 @@ task zephyr_build, "Build Zephyr project":
 ### Actions to ensure correct steps occur before/after certain tasks ###
 
 before zephyr_compile:
-  zephyrConfigure()
+  zephyrConfigureTask()
 
 after zephyr_compile:
   zephyrInstallHeadersTask()
 
 before zephyr_build:
-  zephyrConfigure()
+  zephyrConfigureTask()
   zephyrCompileTask()
   zephyrInstallHeadersTask()

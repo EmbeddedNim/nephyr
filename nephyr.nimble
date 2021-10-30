@@ -12,3 +12,6 @@ bin           = @["nephyr"]
 # Dependencies
 
 requires "nim >= 1.4.8"
+requires "msgpack4nim >= 0.3.1"
+requires "stew >= 0.1.0"
+
