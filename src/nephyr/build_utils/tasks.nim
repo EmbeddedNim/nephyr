@@ -291,7 +291,7 @@ task zephyr_flash, "Flasing Zephyr project":
     quit(2)
 
   # FIXME: make flasher configurable
-  exec("west -v flash -d build_$(BOARD) -r jlink ")
+  exec("west -v flash -d build_${BOARD} -r jlink ")
 
 task zephyr_build, "Build Zephyr project":
   echo "\n[Nephyr] Building Zephyr/west project:"
@@ -300,7 +300,17 @@ task zephyr_build, "Build Zephyr project":
     echo "\nError: west not found. Please run the Zephyr export commands: e.g. ` source ~/zephyrproject/zephyr/zephyr-env.sh` and try again.\n"
     quit(2)
 
-  exec("west build -p auto -d build_${BOARD}")
+  exec("west -v flash -d build_${BOARD} -r jlink ")
+
+task zephyr_sign, "Flasing Zephyr project":
+  echo "\n[Nephyr] Flashing Zephyr/west project:"
+
+  if findExe("west") == "":
+    echo "\nError: west not found. Please run the Zephyr export commands: e.g. ` source ~/zephyrproject/zephyr/zephyr-env.sh` and try again.\n"
+    quit(2)
+
+  # FIXME!!
+  exec("west sign -t imgtool -p ${MCUBOOT}/scripts/imgtool.py -d build_${BOARD} -- --key ${MCUBOOT}/root-rsa-2048.pem")
 
 
 ### Actions to ensure correct steps occur before/after certain tasks ###
