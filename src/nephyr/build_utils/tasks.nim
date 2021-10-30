@@ -283,7 +283,7 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
   cd(nopts.projdir)
   selfExec(compiler_cmd)
 
-task zephyr_flash, "Flasing Zephyr project"
+task zephyr_flash, "Flasing Zephyr project":
   echo "\n[Nephyr] Flashing Zephyr/west project:"
 
   if findExe("west") == "":
