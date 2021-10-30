@@ -283,6 +283,16 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
   cd(nopts.projdir)
   selfExec(compiler_cmd)
 
+task zephyr_flash, "Flasing Zephyr project"
+  echo "\n[Nephyr] Flashing Zephyr/west project:"
+
+  if findExe("west") == "":
+    echo "\nError: west not found. Please run the Zephyr export commands: e.g. ` source ~/zephyrproject/zephyr/zephyr-env.sh` and try again.\n"
+    quit(2)
+
+  # FIXME: make flasher configurable
+  exec("west -v flash -d build_$(BOARD) -r jlink ")
+
 task zephyr_build, "Build Zephyr project":
   echo "\n[Nephyr] Building Zephyr/west project:"
 
