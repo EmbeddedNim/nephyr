@@ -140,6 +140,10 @@ proc parseCmakeConfig*(buildDir: string,
   
   result = opts
 
+
+proc extraArgs(): string =
+  result = if existsEnv("NEPHYR_SHIELDS"): "-- -DSHIELD=\"${NEPHYR_SHIELDS}\"" else: ""
+
 when defined(NEPHYR_TASKS_FIX_TEMPLATES):
   task zephyr_list_templates, "List templates available for setup":
     echo "\n[Nephyr] Listing setup templates:\n"
@@ -239,7 +243,7 @@ task zephyr_clean, "Clean nimcache":
 
   
 task zephyr_configure, "Run CMake configuration":
-  exec("west build -p always -b ${BOARD} -d build_${BOARD} --cmake-only -c ")
+  exec("west build -p always -b ${BOARD} -d build_${BOARD} --cmake-only -c " & extraArgs())
 
 
 task zephyr_compile, "Compile Nim project for Zephyr program":
@@ -279,7 +283,6 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
   if nopts.debug:
     echo "idf compile: command: ", compiler_cmd  
 
-  # selfExec("error")
   cd(nopts.projdir)
   selfExec(compiler_cmd)
 
@@ -290,7 +293,7 @@ task zephyr_build, "Build Zephyr project":
     echo "\nError: west not found. Please run the Zephyr export commands: e.g. ` source ~/zephyrproject/zephyr/zephyr-env.sh` and try again.\n"
     quit(2)
 
-  exec("west build -p always -b ${BOARD} -d build_${BOARD} ")
+  exec("west build -p always -b ${BOARD} -d build_${BOARD} " & extraArgs())
 
 task zephyr_flash, "Flasing Zephyr project":
   echo "\n[Nephyr] Flashing Zephyr/west project:"
