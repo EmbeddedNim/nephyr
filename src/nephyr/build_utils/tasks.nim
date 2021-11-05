@@ -115,6 +115,9 @@ proc parseCmakeConfig*(buildDir: string,
                       configName=".config"): TableRef[string, string] =
   var 
     fpath = buildDir / zephyrDir / configName
+  echo "CMAKE ZCONFG: ", fpath
+  echo "CMAKE ZCONFG: PWD: ", getCurrentDir()
+  var
     f = readFile(fpath)
     fs = newStringStream(f)
     opts = newTable[string, string]()
@@ -198,13 +201,14 @@ task zephyr_parse_cmake, "Parse CMake configs":
   let board = getEnv("BOARD") 
   echo "NIM BOARD: ", board
 
-  let zconf = parseCmakeConfig(buildDir=".." / "build_" & board)
+  let zconf = parseCmakeConfig(buildDir= "build_" & board)
   echo "ZCONF: net_ipv6? ", zconf.hasKey("CONFIG_NET_IPV6")
   echo "ZCONF: net_ipv6_router? ", zconf.hasKey("CONFIG_NET_CONFIG_NEED_IPV6_ROUTER")
   echo "ZCONF: count: ", zconf.len()
 
   if zconf.hasKey("CONFIG_NET_IPV6"):
     switch("define", "net_ipv6")
+    echo "ZCONF: defining ipv6"
 
 task zephyr_install_headers, "Install nim headers":
   echo "\n[Nephyr] Installing nim headers:"
