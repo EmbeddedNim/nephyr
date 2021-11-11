@@ -197,7 +197,8 @@ when defined(NEPHYR_TASKS_FIX_TEMPLATES):
       echo "...copying template: ", fileName, " from: ", tmpltPth, " to: ", getCurrentDir()
       writeFile(nopts.appsrc / nopts.projname / fileName, readFile(tmpltPth) % tmplt_args )
 
-task zephyr_parse_cmake, "Parse CMake configs":
+proc configureFromCmake() =
+  echo "CALLED ZEPHYR_PARSE_CMAKE"
   let board = getEnv("BOARD") 
   echo "NIM BOARD: ", board
 
@@ -247,12 +248,16 @@ task zephyr_clean, "Clean nimcache":
 
   
 task zephyr_configure, "Run CMake configuration":
+  echo "CALLED ZEPHYR_CONFIGURE"
   exec("west build -p always -b ${BOARD} -d build_${BOARD} --cmake-only -c " & extraArgs())
 
 
 task zephyr_compile, "Compile Nim project for Zephyr program":
   # compile nim project
+  let board = getEnv("BOARD") 
+  echo "CALLED ZEPHYR_COMPILE"
   var nopts = parseNimbleArgs() 
+  let zconf = parseCmakeConfig(buildDir= "build_" & board)
 
   echo "\n[Nephyr] Compiling:"
 
@@ -276,6 +281,7 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
       "--compileOnly",
       "--nimcache:" & nopts.cachedir.quoteShell(),
       "-d:NimAppMain",
+      if zconf.hasKey("CONFIG_NET_IPV6"): "-d:net_ipv6" else: ""
       # "-d:" & nopts.zephyr_version
     ].join(" ") 
     childargs = nopts.child_args.mapIt(it.quoteShell()).join(" ")
@@ -324,6 +330,7 @@ task zephyr_sign, "Flasing Zephyr project":
 
 before zephyr_compile:
   zephyrConfigureTask()
+  # zephyrParseCmakeTask()
 
 after zephyr_compile:
   zephyrInstallHeadersTask()
