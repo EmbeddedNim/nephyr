@@ -16,6 +16,12 @@
 ##  @{
 ##
 
+import ../wrapper_utils
+import ../cmtoken
+import ../drivers/zgpio
+
+const hdr = "<devicetree/gpio.h>"
+
 const
   GPIO_ACTIVE_LOW* = (1 shl 0) ## * GPIO pin is active (has logical value '1') in low state.
 
@@ -60,3 +66,10 @@ const
 
   GPIO_PULL_DOWN* = (1 shl 5) ## * Enable GPIO pin pull-down.
 
+
+proc DT_GPIO_LABEL*(name: cminvtoken, group: cminvtoken): cstring {.importc: "DT_GPIO_LABEL",
+                                       header: hdr.}
+proc DT_GPIO_PIN*(name: cminvtoken, group: cminvtoken): gpio_pin_t {.importc: "DT_GPIO_PIN",
+                                       header: hdr.}
+proc DT_GPIO_FLAGS*(name: cminvtoken, group: cminvtoken): uint {.importc: "DT_GPIO_FLAGS",
+                                       header: hdr.}
