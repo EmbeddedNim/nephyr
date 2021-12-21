@@ -15,11 +15,16 @@ export utils, cmtoken, zdevice, zdevicetree
 
 type
 
-  SpiDevice* = ref object
-    cfg: spi_config
-    bus: ptr device
+  SpiReg8* = uint8
+  SpiReg* = SpiReg8
+  SpiReg16* = uint16
+  SpiRegister* = SpiReg8 | SpiReg16
 
-proc initSpiDevice*(dev: ptr device,
+  SpiDevice* = ref object
+    cfg*: spi_config
+    bus*: ptr device
+
+proc initSpiDevice*(bus: ptr device,
                     cs_ctrl: ptr spi_cs_control,
                     operation: uint16,
                     frequency: Hertz,
@@ -27,23 +32,22 @@ proc initSpiDevice*(dev: ptr device,
                     ): SpiDevice =
   if result.bus.isNil():
     let emsg = 
-      when typeof(dev) is cstring:
+      when typeof(bus) is cstring:
         "error finding spi device: " & $dev
-      elif typeof(dev) is cminvtoken:
+      elif typeof(bus) is cminvtoken:
         "error finding spi device: " & dev.toString()
-      elif typeof(dev) is ptr device:
-        "error finding spi device: 0x" & $(cast[int](dev).toHex())
+      elif typeof(bus) is ptr device:
+        "error finding spi device: 0x" & $(cast[int](bus).toHex())
     raise newException(OSError, emsg)
 
   result = SpiDevice()
-  result.bus = dev
+  result.bus = bus
   result.cfg = spi_config(
         frequency: frequency.uint32,
         operation: operation,
         slave: slave, # TODO
         cs: cs_ctrl
     )
-
 
 template DtSpiDevice*(dev: untyped): untyped =
   var devptr: ptr device
@@ -59,25 +63,29 @@ template DtSpiDevice*(dev: untyped): untyped =
 template DtSpiCsDevice*(cs_name: untyped, cs_idx: untyped): ptr spi_cs_control =
   SPI_CS_CONTROL_PTR_DT(DT_NODELABEL(cs_name), cs_idx)
 
+proc read*(txbuf, rxbuf: var spi_buf; data: var openArray[uint8]) =
+  # Create a read-only transaction
+  txbuf.buf = nil
+  txbuf.len = 0
+  rxbuf.buf = unsafeAddr data[0]
+  rxbuf.len = data.lenBytes()
 
-proc readBytes*(dev: SpiDevice): seq[uint8] =
+proc write*(txbuf, rxbuf: var spi_buf; data: openArray[uint8]) =
+  # Create a write-only transaction
+  txbuf.buf = unsafeAddr data[0]
+  txbuf.len = data.lenBytes()
+  rxbuf.buf = nil
+  rxbuf.len = 0
 
-  var
-    rx_buf = @[0x0'u8, 0x0]
-    rx_bufs = @[spi_buf(buf: addr rx_buf[0], len: rx_buf.lenBytes())]
-    rx_bset = spi_buf_set(buffers: addr(rx_bufs[0]), count: rx_bufs.len().csize_t)
+proc writeRead*(txbuf, rxbuf: var spi_buf; writeData: openArray[uint8], readData: var openArray[uint8]) =
+  # Create a write-read transaction
+  txbuf.buf = unsafeAddr writeData[0]
+  txbuf.len = writeData.lenBytes()
+  rxbuf.buf = unsafeAddr readData[0]
+  rxbuf.len = readData.lenBytes()
 
-  var
-    tx_buf = [0x0'u8, ]
-    tx_bufs = @[spi_buf(buf: addr tx_buf[0], len: csize_t(sizeof(uint8) *
-        tx_buf.len()))]
-    tx_bset = spi_buf_set(buffers: addr(tx_bufs[0]), count: tx_bufs.lenBytes())
 
-  check: spi_transceive(dev.bus, addr dev.cfg, addr tx_bset, addr rx_bset)
-
-  result = rx_buf
-
-macro doTransfer*(dev: var SpiDevice, args: varargs[untyped]) =
+macro doTransfers*(dev: var SpiDevice, args: varargs[untyped]) =
   ## performs an i2c transfer by iterating through the arguments
   ## which should be proc's that take an i2c_msg var and
   ## sets it up. 
@@ -98,22 +106,30 @@ macro doTransfer*(dev: var SpiDevice, args: varargs[untyped]) =
     return
 
   # create the new i2cmsg array
-  let mvar = genSym(nskVar, "i2cMsgArr")
-  let mcnt = newIntLitNode(args.len())
+  let
+    mcnt = newIntLitNode(args.len())
+    txvar = genSym(nskVar, "tx_bufs")
+    rxvar = genSym(nskVar, "rx_bufs")
 
   result.add quote do:
-    var `mvar`: array[`mcnt`, i2c_msg]
+    var `txvar`: array[`mcnt`, spi_buf]
+    var `rxvar`: array[`mcnt`, spi_buf]
   args.expectKind(nnkArglist)
 
   # applies array elements to each arg in turn
   for idx in 0..<args.len():
     let i = newIntLitNode(idx)
     var msg = args[idx]
-    msg.insert(1, quote do: `mvar`[`i`])
+    msg.insert(1, quote do: `txvar`[`i`])
+    msg.insert(2, quote do: `rxvar`[`i`])
     result.add msg
   
   # call the i2c_transfer
   result.add quote do:
-      check: spi_transfer(`dev`.bus, addr(`mvar`[0]), `mvar`.len().uint8, `dev`.address.uint16)
+      var
+        tx_bset = spi_buf_set(buffers: addr(`txvar`[0]), count: `txvar`.len().csize_t)
+        rx_bset = spi_buf_set(buffers: addr(`rxvar`[0]), count: `rxvar`.len().csize_t)
+      # check: spi_transfer(`dev`.bus, addr(`mvar`[0]), `mvar`.len().uint8, `dev`.address.uint16)
+      check: spi_transceive(`dev`.bus, addr `dev`.cfg, addr tx_bset, addr rx_bset)
 
 
