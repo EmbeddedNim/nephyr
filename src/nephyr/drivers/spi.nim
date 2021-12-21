@@ -3,14 +3,15 @@ import nephyr/general
 import zephyr_c/cmtoken
 import zephyr_c/wrapper_utils
 import zephyr_c/zdevicetree
+import zephyr_c/drivers/zgpio
 import zephyr_c/drivers/zspi
 import zephyr_c/dt_bindings/dt_gpio
 import zephyr_c/dt_bindings/dt_spi
 
-import sequtils
-
-export cmtoken
-export general
+export zgpio
+export zspi
+export dt_gpio, dt_spi
+export utils, cmtoken, zdevice, zdevicetree
 
 type
 
