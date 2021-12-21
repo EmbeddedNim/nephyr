@@ -1,3 +1,4 @@
+import macros
 
 import nephyr/general
 import zephyr_c/cmtoken
@@ -75,5 +76,44 @@ proc readBytes*(dev: SpiDevice): seq[uint8] =
   check: spi_transceive(dev.bus, addr dev.cfg, addr tx_bset, addr rx_bset)
 
   result = rx_buf
+
+macro doTransfer*(dev: var SpiDevice, args: varargs[untyped]) =
+  ## performs an i2c transfer by iterating through the arguments
+  ## which should be proc's that take an i2c_msg var and
+  ## sets it up. 
+  ## 
+  ## Example usage:
+  ##   var dev = i2c_devptr()
+  ##   var data: array[3, uint8]
+  ##   dev.doTransfer(
+  ##     reg(I2cReg16(0x4ffd)),
+  ##     read(data),
+  ##     write([0x1'u8, 0x2], I2C_MSG_STOP))
+  ## 
+  result = newStmtList()
+
+  if args.len() == 0:
+    result.add quote do:
+      check: i2c_transfer(`dev`.bus, nil, 0, `dev`.address.uint16)
+    return
+
+  # create the new i2cmsg array
+  let mvar = genSym(nskVar, "i2cMsgArr")
+  let mcnt = newIntLitNode(args.len())
+
+  result.add quote do:
+    var `mvar`: array[`mcnt`, i2c_msg]
+  args.expectKind(nnkArglist)
+
+  # applies array elements to each arg in turn
+  for idx in 0..<args.len():
+    let i = newIntLitNode(idx)
+    var msg = args[idx]
+    msg.insert(1, quote do: `mvar`[`i`])
+    result.add msg
+  
+  # call the i2c_transfer
+  result.add quote do:
+      check: spi_transfer(`dev`.bus, addr(`mvar`[0]), `mvar`.len().uint8, `dev`.address.uint16)
 
 
