@@ -100,7 +100,7 @@ const
 ##  @see DT_PHANDLE_BY_IDX()
 ##
 proc DT_GPIO_CTLR_BY_IDX*(node_id: cminvtoken; gpio_pha: cminvtoken; idx: int): cminvtoken {.
-    importc: "DT_GPIO_CTLR_BY_IDX", header: "gpio.h".}
+    importc: "DT_GPIO_CTLR_BY_IDX", header: hdr.}
 
 
 ## *
@@ -113,7 +113,7 @@ proc DT_GPIO_CTLR_BY_IDX*(node_id: cminvtoken; gpio_pha: cminvtoken; idx: int): 
 ##  @see DT_GPIO_CTLR_BY_IDX()
 ##
 proc DT_GPIO_CTLR*(node_id: cminvtoken; gpio_pha: cminvtoken): cminvtoken {.importc: "DT_GPIO_CTLR",
-    header: "gpio.h".}
+    header: hdr.}
 
 
 ## *
@@ -151,7 +151,7 @@ proc DT_GPIO_CTLR*(node_id: cminvtoken; gpio_pha: cminvtoken): cminvtoken {.impo
 ##  @see DT_PHANDLE_BY_IDX()
 ##
 proc DT_GPIO_LABEL_BY_IDX*(node_id: cminvtoken; gpio_pha: cminvtoken; idx: int): cstring {.
-    importc: "DT_GPIO_LABEL_BY_IDX", header: "gpio.h".}
+    importc: "DT_GPIO_LABEL_BY_IDX", header: hdr.}
 
 
 ## *
@@ -163,7 +163,7 @@ proc DT_GPIO_LABEL_BY_IDX*(node_id: cminvtoken; gpio_pha: cminvtoken; idx: int):
 ##  @see DT_GPIO_LABEL_BY_IDX()
 ##
 proc DT_GPIO_LABEL*(node_id: cminvtoken; gpio_pha: cminvtoken): cstring {.importc: "DT_GPIO_LABEL",
-    header: "gpio.h".}
+    header: hdr.}
 
 
 ## *
@@ -207,8 +207,8 @@ proc DT_GPIO_LABEL*(node_id: cminvtoken; gpio_pha: cminvtoken): cstring {.import
 ##  @return the pin cell value at index "idx"
 ##  @see DT_PHA_BY_IDX()
 ##
-proc DT_GPIO_PIN_BY_IDX*(node_id: cminvtoken; gpio_pha: cminvtoken; idx: int): int {.
-    importc: "DT_GPIO_PIN_BY_IDX", header: "gpio.h".}
+proc DT_GPIO_PIN_BY_IDX*(node_id: cminvtoken; gpio_pha: cminvtoken; idx: int): gpio_pin_t {.
+    importc: "DT_GPIO_PIN_BY_IDX", header: hdr.}
 
 
 ## *
@@ -219,8 +219,8 @@ proc DT_GPIO_PIN_BY_IDX*(node_id: cminvtoken; gpio_pha: cminvtoken; idx: int): i
 ##  @return the pin cell value at index 0
 ##  @see DT_GPIO_PIN_BY_IDX()
 ##
-proc DT_GPIO_PIN*(node_id: cminvtoken; gpio_pha: cminvtoken): int {.importc: "DT_GPIO_PIN",
-    header: "gpio.h".}
+proc DT_GPIO_PIN*(node_id: cminvtoken; gpio_pha: cminvtoken): gpio_pin_t {.importc: "DT_GPIO_PIN",
+    header: hdr.}
 
 
 ## *
@@ -265,8 +265,8 @@ proc DT_GPIO_PIN*(node_id: cminvtoken; gpio_pha: cminvtoken): int {.importc: "DT
 ##  @return the flags cell value at index "idx", or zero if there is none
 ##  @see DT_PHA_BY_IDX()
 ##
-proc DT_GPIO_FLAGS_BY_IDX*(node_id: cminvtoken; gpio_pha: cminvtoken; idx: int): int {.
-    importc: "DT_GPIO_FLAGS_BY_IDX", header: "gpio.h".}
+proc DT_GPIO_FLAGS_BY_IDX*(node_id: cminvtoken; gpio_pha: cminvtoken; idx: int): gpio_flags_t {.
+    importc: "DT_GPIO_FLAGS_BY_IDX", header: hdr.}
 
 
 ## *
@@ -277,8 +277,8 @@ proc DT_GPIO_FLAGS_BY_IDX*(node_id: cminvtoken; gpio_pha: cminvtoken; idx: int):
 ##  @return the flags cell value at index 0, or zero if there is none
 ##  @see DT_GPIO_FLAGS_BY_IDX()
 ##
-proc DT_GPIO_FLAGS*(node_id: cminvtoken; gpio_pha: cminvtoken): int {.importc: "DT_GPIO_FLAGS",
-    header: "gpio.h".}
+proc DT_GPIO_FLAGS*(node_id: cminvtoken; gpio_pha: cminvtoken): gpio_flags_t {.importc: "DT_GPIO_FLAGS",
+    header: hdr.}
 
 
 ## *
@@ -290,8 +290,8 @@ proc DT_GPIO_FLAGS*(node_id: cminvtoken; gpio_pha: cminvtoken): int {.importc: "
 ##  @param idx logical index into "gpio_pha"
 ##  @return the label property of the node referenced at index "idx"
 ##
-proc DT_INST_GPIO_LABEL_BY_IDX*(inst: cminvtoken; gpio_pha: cminvtoken; idx: int): int {.
-    importc: "DT_INST_GPIO_LABEL_BY_IDX", header: "gpio.h".}
+proc DT_INST_GPIO_LABEL_BY_IDX*(inst: cminvtoken; gpio_pha: cminvtoken; idx: int): gpio_flags_t {.
+    importc: "DT_INST_GPIO_LABEL_BY_IDX", header: hdr.}
 
 
 ## *
@@ -302,7 +302,7 @@ proc DT_INST_GPIO_LABEL_BY_IDX*(inst: cminvtoken; gpio_pha: cminvtoken; idx: int
 ##  @return the label property of the node referenced at index 0
 ##
 proc DT_INST_GPIO_LABEL*(inst: cminvtoken; gpio_pha: cminvtoken): cstring {.
-    importc: "DT_INST_GPIO_LABEL", header: "gpio.h".}
+    importc: "DT_INST_GPIO_LABEL", header: hdr.}
 
 ## *
 ##  @brief Get a DT_DRV_COMPAT instance's GPIO specifier's pin cell value
@@ -314,8 +314,8 @@ proc DT_INST_GPIO_LABEL*(inst: cminvtoken; gpio_pha: cminvtoken): cstring {.
 ##  @return the pin cell value at index "idx"
 ##  @see DT_GPIO_PIN_BY_IDX()
 ##
-proc DT_INST_GPIO_PIN_BY_IDX*(inst: cminvtoken; gpio_pha: cminvtoken; idx: int): int {.
-    importc: "DT_INST_GPIO_PIN_BY_IDX", header: "gpio.h".}
+proc DT_INST_GPIO_PIN_BY_IDX*(inst: cminvtoken; gpio_pha: cminvtoken; idx: int): gpio_flags_t {.
+    importc: "DT_INST_GPIO_PIN_BY_IDX", header: hdr.}
 
 ## *
 ##  @brief Equivalent to DT_INST_GPIO_PIN_BY_IDX(inst, gpio_pha, 0)
@@ -326,7 +326,7 @@ proc DT_INST_GPIO_PIN_BY_IDX*(inst: cminvtoken; gpio_pha: cminvtoken; idx: int):
 ##  @see DT_INST_GPIO_PIN_BY_IDX()
 ##
 proc DT_INST_GPIO_PIN*(inst: cminvtoken; gpio_pha: cminvtoken): int {.
-    importc: "DT_INST_GPIO_PIN", header: "gpio.h".}
+    importc: "DT_INST_GPIO_PIN", header: hdr.}
 
 ## *
 ##  @brief Get a DT_DRV_COMPAT instance's GPIO specifier's flags cell
@@ -338,8 +338,8 @@ proc DT_INST_GPIO_PIN*(inst: cminvtoken; gpio_pha: cminvtoken): int {.
 ##  @return the flags cell value at index "idx", or zero if there is none
 ##  @see DT_GPIO_FLAGS_BY_IDX()
 ##
-proc DT_INST_GPIO_FLAGS_BY_IDX*(inst: cminvtoken; gpio_pha: cminvtoken; idx: int): int {.
-    importc: "DT_INST_GPIO_FLAGS_BY_IDX", header: "gpio.h".}
+proc DT_INST_GPIO_FLAGS_BY_IDX*(inst: cminvtoken; gpio_pha: cminvtoken; idx: int): gpio_flags_t {.
+    importc: "DT_INST_GPIO_FLAGS_BY_IDX", header: hdr.}
 
 ## *
 ##  @brief Equivalent to DT_INST_GPIO_FLAGS_BY_IDX(inst, gpio_pha, 0)
@@ -349,8 +349,8 @@ proc DT_INST_GPIO_FLAGS_BY_IDX*(inst: cminvtoken; gpio_pha: cminvtoken; idx: int
 ##  @return the flags cell value at index 0, or zero if there is none
 ##  @see DT_INST_GPIO_FLAGS_BY_IDX()
 ##
-proc DT_INST_GPIO_FLAGS*(inst: cminvtoken; gpio_pha: cminvtoken): int {.
-    importc: "DT_INST_GPIO_FLAGS", header: "gpio.h".}
+proc DT_INST_GPIO_FLAGS*(inst: cminvtoken; gpio_pha: cminvtoken): gpio_flags_t {.
+    importc: "DT_INST_GPIO_FLAGS", header: hdr.}
 
 
 ## *

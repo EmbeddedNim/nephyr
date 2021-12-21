@@ -29,4 +29,4 @@ proc test_gpio*() =
     os.sleep(SLEEP_TIME_MS)
     printk("test!\n")
 
-test_gpio()
+assert(compiles(test_gpio()))

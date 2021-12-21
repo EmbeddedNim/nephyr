@@ -27,21 +27,84 @@ import ../zdevice
 
 const hdr = "<drivers/gpio.h>"
 
+
+## *
+##  @brief Identifies a set of pins associated with a port.
+##
+##  The pin with index n is present in the set if and only if the bit
+##  identified by (1U << n) is set.
+##
+type
+  gpio_port_pins_t* = distinct uint32
+
+
+## *
+##  @brief Provides values for a set of pins associated with a port.
+##
+##  The value for a pin with index n is high (physical mode) or active
+##  (logical mode) if and only if the bit identified by (1U << n) is set.
+##  Otherwise the value for the pin is low (physical mode) or inactive
+##  (logical mode).
+##
+##  Values of this type are often paired with a `gpio_port_pins_t` value
+##  that specifies which encoded pin values are valid for the operation.
+##
+type
+  gpio_port_value_t* = distinct uint32
+
+
+
+## *
+##  @brief Provides a type to hold a GPIO pin index.
+##
+##  This reduced-size type is sufficient to record a pin number,
+##  e.g. from a devicetree GPIOS property.
+##
+type
+  gpio_pin_t* = distinct uint8
+
+
+
+## *
+##  @brief Provides a type to hold GPIO devicetree flags.
+##
+##  All GPIO flags that can be expressed in devicetree fit in the low 8
+##  bits of the full flags field, so use a reduced-size type to record
+##  that part of a GPIOS property.
+##
+type
+  gpio_dt_flags_t* = distinct uint8
+
+
+
+## *
+##  @brief Provides a type to hold GPIO configuration flags.
+##
+##  This type is sufficient to hold all flags used to control GPIO
+##  configuration, whether pin or interrupt.
+##
+type
+  gpio_flags_t* = distinct uint32
+
+
+proc `or`*(a, b: gpio_flags_t): gpio_flags_t {.borrow.}
+proc `or`*(a, b: gpio_dt_flags_t): gpio_dt_flags_t {.borrow.}
+
 const
 
-  GPIO_INPUT* = (1'u shl 8) ## * Enables pin as input.
+  GPIO_INPUT* = gpio_flags_t(1'u shl 8) ## * Enables pin as input.
 
-  GPIO_OUTPUT* = (1'u shl 9) ## * Enables pin as output, no change to the output state.
+  GPIO_OUTPUT* = gpio_flags_t(1'u shl 9) ## * Enables pin as output, no change to the output state.
 
-  GPIO_DISCONNECTED* = 0 ## * Disables pin for both input and output.
+  GPIO_DISCONNECTED* = gpio_flags_t(0) ## * Disables pin for both input and output.
 
-  GPIO_OUTPUT_INIT_LOW* = (1'u shl 10) ##  Initializes output to a low state.
+  GPIO_OUTPUT_INIT_LOW* = gpio_flags_t(1'u shl 10) ##  Initializes output to a low state.
 
-  GPIO_OUTPUT_INIT_HIGH* = (1'u shl 11) ##  Initializes output to a high state.
+  GPIO_OUTPUT_INIT_HIGH* = gpio_flags_t(1'u shl 11) ##  Initializes output to a high state.
 
-  GPIO_OUTPUT_INIT_LOGICAL* = (1'u shl 12) ##  Initializes output based on logic level
+  GPIO_OUTPUT_INIT_LOGICAL* = gpio_flags_t(1'u shl 12) ##  Initializes output based on logic level
 
-  GPIO_OUTPUT_LOW* = (GPIO_OUTPUT or GPIO_OUTPUT_INIT_LOW) ## * Configures GPIO pin as output and initializes it to a low state.
+  GPIO_OUTPUT_LOW* = GPIO_OUTPUT or GPIO_OUTPUT_INIT_LOW ## * Configures GPIO pin as output and initializes it to a low state.
 
   GPIO_OUTPUT_HIGH* = (GPIO_OUTPUT or GPIO_OUTPUT_INIT_HIGH) ## * Configures GPIO pin as output and initializes it to a high state.
 
@@ -217,76 +280,6 @@ const
     ##
 
   GPIO_DIR_MASK* = (GPIO_INPUT or GPIO_OUTPUT)
-
-
-## *
-##  @brief Identifies a set of pins associated with a port.
-##
-##  The pin with index n is present in the set if and only if the bit
-##  identified by (1U << n) is set.
-##
-
-type
-  gpio_port_pins_t* = distinct uint32
-
-
-
-
-## *
-##  @brief Provides values for a set of pins associated with a port.
-##
-##  The value for a pin with index n is high (physical mode) or active
-##  (logical mode) if and only if the bit identified by (1U << n) is set.
-##  Otherwise the value for the pin is low (physical mode) or inactive
-##  (logical mode).
-##
-##  Values of this type are often paired with a `gpio_port_pins_t` value
-##  that specifies which encoded pin values are valid for the operation.
-##
-
-type
-  gpio_port_value_t* = distinct uint32
-
-
-
-
-## *
-##  @brief Provides a type to hold a GPIO pin index.
-##
-##  This reduced-size type is sufficient to record a pin number,
-##  e.g. from a devicetree GPIOS property.
-##
-
-type
-  gpio_pin_t* = distinct uint8
-
-
-
-
-## *
-##  @brief Provides a type to hold GPIO devicetree flags.
-##
-##  All GPIO flags that can be expressed in devicetree fit in the low 8
-##  bits of the full flags field, so use a reduced-size type to record
-##  that part of a GPIOS property.
-##
-
-type
-  gpio_dt_flags_t* = distinct uint8
-
-
-
-
-## *
-##  @brief Provides a type to hold GPIO configuration flags.
-##
-##  This type is sufficient to hold all flags used to control GPIO
-##  configuration, whether pin or interrupt.
-##
-
-type
-  gpio_flags_t* = distinct uint32
-
 
 
 ## *
