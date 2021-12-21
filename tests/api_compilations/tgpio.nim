@@ -16,6 +16,7 @@ var
   FLAGS* = DT_GPIO_FLAGS(tok"DT_ALIAS(led0)", tok"gpios")
 
 proc test_gpio*() =
+  var pin2 = DT_GPIO_PIN(DT_ALIAS(tok"led0"), tok"gpios")
   var dev: ptr device
   var led_is_on: bool = true
   var ret: cint
@@ -28,6 +29,7 @@ proc test_gpio*() =
     return
   while true:
     discard gpio_pin_set(dev, PIN1, led_is_on.cint)
+    discard gpio_pin_set(dev, pin2, led_is_on.cint)
     led_is_on = not led_is_on
     os.sleep(SLEEP_TIME_MS)
     printk("test!\n")
