@@ -561,9 +561,6 @@ proc gpio_pin_interrupt_configure*(port: ptr device; pin: gpio_pin_t;
                                   flags: gpio_flags_t): cint {.syscall,
     importc: "gpio_pin_interrupt_configure", header: hdr.}
 
-proc z_impl_gpio_pin_interrupt_configure*(port: ptr device; pin: gpio_pin_t;
-    flags: gpio_flags_t): cint {.importc: "z_impl_gpio_pin_interrupt_configure", header: hdr.}
-
 
 
 
@@ -608,10 +605,6 @@ proc gpio_pin_interrupt_configure_dt*(spec: ptr gpio_dt_spec; flags: gpio_flags_
 proc gpio_pin_configure*(port: ptr device; pin: gpio_pin_t; flags: gpio_flags_t): cint {.
     importc: "gpio_pin_configure", header: hdr.}
 
-proc z_impl_gpio_pin_configure*(port: ptr device; pin: gpio_pin_t; flags: gpio_flags_t): cint {.
-    importc: "z_impl_gpio_pin_configure", header: hdr.} 
-
-
 
 
 ## *
@@ -649,8 +642,6 @@ proc gpio_pin_configure_dt*(spec: ptr gpio_dt_spec; extra_flags: gpio_flags_t): 
 
 proc gpio_port_get_raw*(port: ptr device; value: ptr gpio_port_value_t): cint {.syscall,
     importc: "gpio_port_get_raw", header: hdr.}
-proc z_impl_gpio_port_get_raw*(port: ptr device; value: ptr gpio_port_value_t): cint {.
-    importc: "z_impl_gpio_port_get_raw", header: hdr.}
 
 
 
@@ -701,9 +692,6 @@ proc gpio_port_get*(port: ptr device; value: ptr gpio_port_value_t): cint {.
 proc gpio_port_set_masked_raw*(port: ptr device; mask: gpio_port_pins_t;
                               value: gpio_port_value_t): cint {.syscall,
     importc: "gpio_port_set_masked_raw", header: hdr.}
-proc z_impl_gpio_port_set_masked_raw*(port: ptr device; mask: gpio_port_pins_t;
-                                     value: gpio_port_value_t): cint {.
-    importc: "z_impl_gpio_port_set_masked_raw", header: hdr.}
 
 
 
@@ -749,8 +737,6 @@ proc gpio_port_set_masked*(port: ptr device; mask: gpio_port_pins_t;
 
 proc gpio_port_set_bits_raw*(port: ptr device; pins: gpio_port_pins_t): cint {.syscall,
     importc: "gpio_port_set_bits_raw", header: hdr.}
-proc z_impl_gpio_port_set_bits_raw*(port: ptr device; pins: gpio_port_pins_t): cint {.
-    importc: "z_impl_gpio_port_set_bits_raw", header: hdr.}
 
 
 
@@ -785,8 +771,6 @@ proc gpio_port_set_bits*(port: ptr device; pins: gpio_port_pins_t): cint {.
 
 proc gpio_port_clear_bits_raw*(port: ptr device; pins: gpio_port_pins_t): cint {.
     syscall, importc: "gpio_port_clear_bits_raw", header: hdr.}
-proc z_impl_gpio_port_clear_bits_raw*(port: ptr device; pins: gpio_port_pins_t): cint {.
-    importc: "z_impl_gpio_port_clear_bits_raw", header: hdr.}
 
 
 
@@ -821,8 +805,6 @@ proc gpio_port_clear_bits*(port: ptr device; pins: gpio_port_pins_t): cint {.
 
 proc gpio_port_toggle_bits*(port: ptr device; pins: gpio_port_pins_t): cint {.
     importc: "gpio_port_toggle_bits", header: hdr.}
-proc z_impl_gpio_port_toggle_bits*(port: ptr device; pins: gpio_port_pins_t): cint {.
-    importc: "z_impl_gpio_port_toggle_bits", header: hdr.}
 
 
 
@@ -1052,6 +1034,4 @@ proc gpio_remove_callback*(port: ptr device; callback: ptr gpio_callback): cint 
 
 proc gpio_get_pending_int*(dev: ptr device): cint {.syscall,
     importc: "gpio_get_pending_int", header: hdr.}
-proc z_impl_gpio_get_pending_int*(dev: ptr device): cint {.
-    importc: "z_impl_gpio_get_pending_int", header: hdr.}
 
