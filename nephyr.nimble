@@ -24,3 +24,6 @@ task test_nim_api_compilation, "compile Nim wrapper apis":
   for test in api_test_files:  
     if test.startsWith("t") and test.endswith(".nim") == false: continue
     exec "nim c --compileonly:on " & test
+
+before test:
+  test_nim_api_compilationTask()
