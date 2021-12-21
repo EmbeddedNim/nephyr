@@ -1,7 +1,6 @@
 
 import nephyr/general
 import zephyr_c/cmtoken
-import zephyr_c/wrapper_utils
 import zephyr_c/zdevicetree
 import zephyr_c/drivers/zgpio
 import zephyr_c/drivers/zspi
@@ -16,31 +15,45 @@ export utils, cmtoken, zdevice, zdevicetree
 type
 
   SpiDevice* = ref object
-    cs_ctrl: spi_cs_control
     cfg: spi_config
-    spi_ptr: ptr device
+    bus: ptr device
 
+proc initSpiDevice*(dev: cstring | ptr device | cminvtoken,
+                    cs_label: (cminvtoken, cminvtoken) | ptr spi_cs_control,
+                    operation: uint16,
+                    frequency: Hertz,
+                    cs_delay = 2,
+                    ): SpiDevice =
+  result = SpiDevice()
+  when typeof(dev) is cstring:
+    result.bus = device_get_binding(dev)
+  when typeof(dev) is cminvtoken:
+    result.bus = DEVICE_DT_GET(DT_NODELABEL(dev))
+  elif typeof(dev) is ptr device:
+    result.bus = dev
 
-template initSpiDevice*(node_label: untyped, cs_label: untyped; spi_freq: Hertz,
-    cs_delay = 2): SpiDevice =
-  var dev = SpiDevice()
+  var cs_ctrl: ptr spi_cs_control
+  when typeof(cs_label) is (cminvtoken, cminvtoken):
+    let cs_name: cminvtoken = cs_label[0]
+    let cs_idx: cminvtoken = cs_label[1]
+    discard DT_NODELABEL(tok"cs_name")
+    cs_ctrl = SPI_CS_CONTROL_PTR_DT(DT_NODELABEL(cs_name), cs_idx)
+  elif typeof(cs_label) is ptr device:
+    cs_ctrl  = cs_label
 
-  dev.spi_ptr = DEVICE_DT_GET(DT_NODELABEL(node_label))
-  dev.cs_ctrl =
-    spi_cs_control(
-            gpio_dev: DEVICE_DT_GET(DT_SPI_DEV_CS_GPIOS_CTLR(cs_label)),
-            delay: cs_delay,
-            gpio_pin: DT_SPI_DEV_CS_GPIOS_PIN(cs_label),
-            gpio_dt_flags: DT_SPI_DEV_CS_GPIOS_FLAGS(cs_label)
+  if result.bus.isNil():
+    let emsg = 
+      when typeof(dev) is cstring:
+        "error finding spi device: " & $dev
+      elif typeof(dev) is ptr device:
+        "error finding spi device: 0x" & $(cast[int](dev).toHex())
+    raise newException(OSError, emsg)
+
+  result.cfg = spi_config(
+        frequency: frequency.uint32,
+        operation: operation,
+        cs: cs_ctrl
     )
-
-  dev.cfg = spi_config(
-        frequency: 1_000_000'u32,
-        operation: SPI_WORD_SET(8) or SPI_TRANSFER_MSB or SPI_OP_MODE_MASTER,
-        cs: addr dev.cs_ctrl
-    )
-
-  dev
 
 proc readBytes*(dev: SpiDevice): seq[uint8] =
 
@@ -55,7 +68,7 @@ proc readBytes*(dev: SpiDevice): seq[uint8] =
         tx_buf.len()))]
     tx_bset = spi_buf_set(buffers: addr(tx_bufs[0]), count: tx_bufs.lenBytes())
 
-  check: spi_transceive(dev.spi_ptr, addr dev.cfg, addr tx_bset, addr rx_bset)
+  check: spi_transceive(dev.bus, addr dev.cfg, addr tx_bset, addr rx_bset)
 
   result = rx_buf
 

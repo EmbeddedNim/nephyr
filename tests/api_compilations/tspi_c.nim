@@ -1,18 +1,22 @@
-
 import nephyr
 import nephyr/drivers/spi
 
-var spi_dev: SpiDevice
+var
+  cs_ctrl: spi_cs_control
+  spi_cfg: spi_config
+  spi_dev: ptr device
 
 proc spi_setup*() =
-  var dev: SpiDevice = initSpiDevice(
-    dev = DEVICE_DT_GET(DT_NODELABEL(tok"mikrobus_spi")),
-    frequency = 1_000_000.Hertz,
-    operation = SPI_WORD_SET(8) or SPI_TRANSFER_MSB or SPI_OP_MODE_MASTER,
-    cs_label = (tok"click_spi2", tok"1")
-  )
 
-  spi_dev = dev
+  spi_dev = DEVICE_DT_GET(DT_NODELABEL(tok"mikrobus_spi"))
+  cs_ctrl =
+    SPI_CS_CONTROL_PTR_DT(DT_NODELABEL(tok"click_spi2"), tok`2`)[]
+
+  spi_cfg = spi_config(
+        frequency: 1_000_000'u32,
+        operation: SPI_WORD_SET(8) or SPI_TRANSFER_MSB or SPI_OP_MODE_MASTER,
+        cs: addr cs_ctrl)
+
 
 proc spi_read*(): int =
 
@@ -26,8 +30,8 @@ proc spi_read*(): int =
     tx_bufs = @[spi_buf(buf: addr tx_buf[0], len: csize_t(sizeof(uint8) * tx_buf.len())) ]
     tx_bset = spi_buf_set(buffers: addr(tx_bufs[0]), count: tx_bufs.len().csize_t)
 
+  check: spi_transceive(spi_dev, addr spi_cfg, addr tx_bset, addr rx_bset)
+
   result = joinBytes32[int](rx_buf, 2)
   result = 0b0011_1111_1111_1111 and result
 
-spi_setup()
-spi_read()
