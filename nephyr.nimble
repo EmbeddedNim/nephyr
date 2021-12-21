@@ -17,6 +17,10 @@ requires "stew >= 0.1.0"
 requires "https://github.com/EmbeddedNim/mcu_utils"
 requires "https://github.com/EmbeddedNim/fast_rpc"
 
+import os, sequtils
+
 task test_nim_api_compilation, "compile Nim wrapper apis":
-  exec "nim c --compileonly:on tests/api_compilations/tgpio.nim"
-  exec "nim c --compileonly:on tests/api_compilations/ti2c.nim"
+  let api_test_files = "tests/api_compilations/".listFiles()
+  for test in api_test_files:  
+    if test.startsWith("t") and test.endswith(".nim") == false: continue
+    exec "nim c --compileonly:on " & test
