@@ -18,42 +18,46 @@ type
     cfg: spi_config
     bus: ptr device
 
-proc initSpiDevice*(dev: cstring | ptr device | cminvtoken,
-                    cs_label: (cminvtoken, cminvtoken) | ptr spi_cs_control,
+proc initSpiDevice*(dev: ptr device,
+                    cs_ctrl: ptr spi_cs_control,
                     operation: uint16,
                     frequency: Hertz,
-                    cs_delay = 2,
+                    slave = 0'u16,
                     ): SpiDevice =
-  result = SpiDevice()
-  when typeof(dev) is cstring:
-    result.bus = device_get_binding(dev)
-  when typeof(dev) is cminvtoken:
-    result.bus = DEVICE_DT_GET(DT_NODELABEL(dev))
-  elif typeof(dev) is ptr device:
-    result.bus = dev
-
-  var cs_ctrl: ptr spi_cs_control
-  when typeof(cs_label) is (cminvtoken, cminvtoken):
-    let cs_name: cminvtoken = cs_label[0]
-    let cs_idx: cminvtoken = cs_label[1]
-    discard DT_NODELABEL(tok"cs_name")
-    cs_ctrl = SPI_CS_CONTROL_PTR_DT(DT_NODELABEL(cs_name), cs_idx)
-  elif typeof(cs_label) is ptr device:
-    cs_ctrl  = cs_label
-
   if result.bus.isNil():
     let emsg = 
       when typeof(dev) is cstring:
         "error finding spi device: " & $dev
+      elif typeof(dev) is cminvtoken:
+        "error finding spi device: " & dev.toString()
       elif typeof(dev) is ptr device:
         "error finding spi device: 0x" & $(cast[int](dev).toHex())
     raise newException(OSError, emsg)
 
+  result = SpiDevice()
+  result.bus = dev
   result.cfg = spi_config(
         frequency: frequency.uint32,
         operation: operation,
+        slave: slave, # TODO
         cs: cs_ctrl
     )
+
+
+template DtSpiDevice*(dev: untyped): untyped =
+  var devptr: ptr device
+  when typeof(dev) is cstring:
+    devptr = device_get_binding(dev)
+  when typeof(dev) is cminvtoken:
+    devptr = DEVICE_DT_GET(DT_NODELABEL(dev))
+  elif typeof(dev) is ptr device:
+    devptr = dev
+  
+  devptr
+
+template DtSpiCsDevice*(cs_name: untyped, cs_idx: untyped): ptr spi_cs_control =
+  SPI_CS_CONTROL_PTR_DT(DT_NODELABEL(cs_name), cs_idx)
+
 
 proc readBytes*(dev: SpiDevice): seq[uint8] =
 

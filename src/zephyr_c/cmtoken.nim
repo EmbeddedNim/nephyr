@@ -33,6 +33,7 @@ macro CTOKEN*(macroInvocation: untyped): cminvtoken =
       mi
 
 macro CM_PROC*(macroName: untyped, margs: untyped): untyped =
+  echo "\nCM_PROC: "
   echo "MCM_PROC:MN =",  macroName.treeRepr
   echo "MCM_PROC:ARGS =", margs.treeRepr
   echo "MARGS expand =", margs.expandMacros.treeRepr
@@ -44,7 +45,7 @@ macro CM_PROC*(macroName: untyped, margs: untyped): untyped =
     label = margs.strVal
   else:
     margs.expectKind(nnkCallStrLit)
-    margs[0].expectKind(nnkIdent)
+    # margs[0].expectKind(nnkIdent)
     margs[1].expectKind(nnkRStrLit)
     assert margs[0].strVal == "tok"
     label = margs[1].strVal
@@ -81,3 +82,8 @@ macro CDefineDeclareVar*(name: untyped, macroRepr: untyped, retType: typedesc) =
   result = quote do:
     var myMacroVar {.importc: `macroInvokeName`, global, noinit, nodecl.}: `rt`
     var `name`* = myMacroVar
+
+macro toString*(token: cminvtoken): string = 
+  echo "token.repr: ", token.repr
+  echo "token MARGS expand =", token.expandMacros.treeRepr
+  result = newLit(token.treerepr)
