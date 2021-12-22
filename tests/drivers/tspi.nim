@@ -49,8 +49,7 @@ proc spi_do_trxn*() =
   var dev = spi_devptr()
   var data: array[3, uint8]
   var data2 = newSeq[uint8](8)
-  var data3: Bytes[4]
-  var someData = [0xE3'u8, 0x01, 0x02]
+  var someData: Bytes[4]
 
   # Nim nep1 format
   dev.doTransfers(
@@ -58,7 +57,7 @@ proc spi_do_trxn*() =
     read(data2), # spi read into seq
     write([0x1'u8, 0x2]), # spi write w/ stop
     write(someData),
-    writeRead([0x1'u8, 0x2], someData), # i2c write w/ stop
+    readWrite(someData, [0x1'u8, 0x2]), # i2c write w/ stop
     write(bytes(0x1, 0x2)),
   )
 

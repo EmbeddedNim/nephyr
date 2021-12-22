@@ -77,7 +77,7 @@ proc write*(txbuf, rxbuf: var spi_buf; data: openArray[uint8]) =
   rxbuf.buf = nil
   rxbuf.len = 0
 
-proc writeRead*(txbuf, rxbuf: var spi_buf; writeData: openArray[uint8], readData: var openArray[uint8]) =
+proc readWrite*(txbuf, rxbuf: var spi_buf; readData: var openArray[uint8], writeData: openArray[uint8]) =
   # Create a write-read transaction
   txbuf.buf = unsafeAddr writeData[0]
   txbuf.len = writeData.lenBytes()
