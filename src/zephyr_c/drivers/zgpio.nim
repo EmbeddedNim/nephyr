@@ -53,7 +53,6 @@ type
   gpio_port_value_t* = distinct uint32
 
 
-
 ## *
 ##  @brief Provides a type to hold a GPIO pin index.
 ##
@@ -89,6 +88,9 @@ type
 
 proc `or`*(a, b: gpio_flags_t): gpio_flags_t {.borrow.}
 proc `or`*(a, b: gpio_dt_flags_t): gpio_dt_flags_t {.borrow.}
+
+proc `==`*(a, b: gpio_flags_t): bool {.borrow.}
+proc `==`*(a, b: gpio_dt_flags_t): bool {.borrow.}
 
 const
 

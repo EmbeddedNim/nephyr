@@ -2,6 +2,7 @@ import os
 
 import nephyr
 import nephyr/drivers/gpio
+# import nephyr/drivers/Pins as Pins
 
 const
   SLEEP_TIME_MS* = 100
@@ -34,4 +35,15 @@ proc test_gpio*() =
     os.sleep(SLEEP_TIME_MS)
     printk("test!\n")
 
+proc test_pins*() =
+  # assert GPIO_INPUT == Pins.IN
+  # assert GPIO_OUTPUT == Pins.OUT
+
+  let pin1 = initPin(DT_ALIAS(tok"led1"), Pins.IN)
+  echo "pin: ", repr pin1
+  let pin2 = initPin(tok"led1", Pins.OUT)
+  echo "pin2: ", repr pin2
+
+
 test_gpio()
+test_pins()

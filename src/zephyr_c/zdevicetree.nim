@@ -10,4 +10,5 @@ template DT_ALIAS*(ma: untyped): cminvtoken =
 
 proc DT_LABEL*(name: cminvtoken): cstring {.importc: "$1", header: "devicetree.h".}
 
-
+# macro alias*(ma: untyped): cminvtoken =
+  # CM_PROC(DT_ALIAS, ma)

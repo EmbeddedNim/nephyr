@@ -80,7 +80,7 @@ proc mcp2515_cmd_read_reg*(reg_addr: SpiReg8, data: var openArray[uint8]) =
   var dev = spi_devptr()
   var cmds = [MCP2515_OPCODE_READ, reg_addr]
 
-  # Raw Zephyr API
+  # ===== Raw Zephyr API ===== 
   var
     tx_bufs = @[spi_buf(buf: addr cmds[0], len: csize_t(sizeof(uint8) * cmds.len())) ]
     tx_bset = spi_buf_set(buffers: addr(tx_bufs[0]), count: tx_bufs.len().csize_t)
@@ -91,7 +91,7 @@ proc mcp2515_cmd_read_reg*(reg_addr: SpiReg8, data: var openArray[uint8]) =
 
   check: spi_transceive(dev.bus, addr dev.cfg, addr tx_bset, addr rx_bset)
 
-  # Nephyr API
+  # ===== Nephyr API ===== 
   dev.doTransfers(
     write(cmds), # spi read into array
     read(data), # spi read into seq
