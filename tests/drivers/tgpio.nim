@@ -51,6 +51,8 @@ proc test_pins*() =
   echo "pin10: ", $pin10.level()
   echo "pin20: ", $pin20.level()
 
+  let pin30 = initPin(dt"led20", Pins.OUT, tok"vctl1_gpios")
+  echo "pin30: ", repr pin30
 
 test_gpio()
 test_pins()
