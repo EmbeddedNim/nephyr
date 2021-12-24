@@ -31,10 +31,17 @@ template initPin*(name: cminvtoken, config: GpioFlags, property: cminvtoken): Pi
     port = device_get_binding(label)
 
   var pinobj: Pin = Pin(port: port, pin: pin, mode: config)
-
   check: gpio_pin_configure(pinobj.port, pinobj.pin, config)
   pinobj
 
-
 template initPin*(name: cminvtoken, flags: untyped): Pin =
   initPin(name, flags, tok"gpios")
+
+proc level*(gpio: Pin): int =
+  result = gpio_pin_get(gpio.port, gpio.pin).int
+
+proc level*(gpio: Pin, value: int) =
+  check: gpio_pin_set(gpio.port, gpio.pin, value.cint)
+
+proc toggle*(gpio: Pin) =
+  check: gpio_pin_toggle(gpio.port, gpio.pin)
