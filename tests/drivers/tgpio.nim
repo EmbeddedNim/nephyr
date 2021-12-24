@@ -39,10 +39,10 @@ proc test_pins*() =
   # assert GPIO_INPUT == Pins.IN
   # assert GPIO_OUTPUT == Pins.OUT
 
-  let pin1 = initPin(DT_ALIAS(tok"led1"), Pins.IN)
-  echo "pin: ", repr pin1
-  let pin2 = initPin(tok"led1", Pins.OUT)
-  echo "pin2: ", repr pin2
+  let pin10 = initPin(alias"led10", Pins.IN)
+  echo "pin10: ", repr pin10
+  let pin20 = initPin(dt"led20", Pins.OUT)
+  echo "pin20: ", repr pin20
 
 
 test_gpio()

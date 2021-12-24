@@ -22,19 +22,18 @@ type
   Pin* = object
     port*: ptr device
     pin*: gpio_pin_t
-    flags*: gpio_flags_t
+    mode*: gpio_flags_t
 
-template initPin*(name: cminvtoken, flags: GpioFlags, property: cminvtoken): Pin =
+template initPin*(name: cminvtoken, config: GpioFlags, property: cminvtoken): Pin =
   let
     label = DT_GPIO_LABEL(name, property)
     pin = DT_GPIO_PIN(name, property)
     port = device_get_binding(label)
-    fl: gpio_flags_t = flags
 
-  var p: Pin = Pin(port: port, pin: pin)
+  var pinobj: Pin = Pin(port: port, pin: pin, mode: config)
 
-  var res = gpio_pin_configure(p.port, p.pin.gpio_pin_t, fl)
-  p
+  check: gpio_pin_configure(pinobj.port, pinobj.pin, config)
+  pinobj
 
 
 template initPin*(name: cminvtoken, flags: untyped): Pin =

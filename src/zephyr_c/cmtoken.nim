@@ -33,15 +33,22 @@ macro CTOKEN*(macroInvocation: untyped): cminvtoken =
       mi
 
 macro CM_PROC*(macroName: untyped, margs: untyped): untyped =
-  echo "\nCM_PROC: "
-  echo "MCM_PROC:MN =",  macroName.treeRepr
-  echo "MCM_PROC:ARGS =", margs.treeRepr
-  echo "MARGS expand =", margs.expandMacros.treeRepr
+  # echo "\nCM_PROC: "
+  # echo "MCM_PROC:MN =",  macroName.treeRepr
+  # echo "MCM_PROC:ARGS =", margs.treeRepr
+  # echo "MARGS expand =", margs.expandMacros.treeRepr
   let mn = macroname.repr
 
   var label: string
+  echo "margs:kind: ", margs.kind
   if margs.kind == nnkIdent:
     # assert margs.strVal == "tok"
+    label = margs.strVal
+  elif margs.kind == nnkStrLit:
+    echo "margs:str: ", margs.strVal
+    label = margs.strVal
+  elif margs.kind == nnkRStrLit:
+    echo "margs:str: ", margs.strVal
     label = margs.strVal
   else:
     margs.expectKind(nnkCallStrLit)
