@@ -210,6 +210,10 @@ proc configureFromCmake() =
   if zconf.hasKey("CONFIG_NET_IPV6"):
     switch("define", "net_ipv6")
     echo "ZCONF: defining ipv6"
+  if zconf.hasKey("CONFIG_NET_IPV4"):
+    switch("define", "net_ipv4")
+  if zconf.hasKey("CONFIG_NET_SOCKETS_PACKET"):
+    switch("define", "net_raw")
 
 task zephyr_install_headers, "Install nim headers":
   echo "\n[Nephyr] Installing nim headers:"
