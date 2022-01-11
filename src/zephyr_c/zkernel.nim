@@ -17,6 +17,7 @@
 ##
 
 import zkernel_fixes
+import zsys_clock
 import zthread
 
 const
@@ -37,13 +38,20 @@ type
     K_ISR = 0, K_COOP_THREAD, K_PREEMPT_THREAD
 
 
-## *
-##  @addtogroup thread_apis
-##  @{
-##
 type
   k_thread_user_cb_t* = proc (thread: ptr k_thread; user_data: pointer)
 
+  k_sem* {.importc: "k_sem", header: "kernel.h", incompleteStruct, bycopy.} = object
+    wait_q* {.importc: "wait_q".}: z_wait_q_t
+    count* {.importc: "count".}: cuint
+    limit* {.importc: "limit".}: cuint
+    poll_events* {.importc: "poll_events".}: sys_dlist_t ##  _POLL_EVENT;
+
+  k_heap* {.importc: "k_heap", header: "kernel.h", bycopy.} = object
+    ##  kernel synchronized heap struct
+    heap* {.importc: "heap".}: sys_heap
+    wait_q* {.importc: "wait_q".}: z_wait_q_t
+    lock* {.importc: "lock".}: k_spinlock
 
 ## *
 ##  @brief Iterate over all the threads in the system.
@@ -283,7 +291,7 @@ proc k_thread_user_mode_enter*(entry: k_thread_entry_t; p1: pointer; p2: pointer
 ##  @param thread Thread to grant access to objects
 ##  @param ... list of kernel object pointers
 ##
-proc k_thread_access_grant*(thread: untyped) {.varargs,
+proc k_thread_access_grant*(thread: k_tid_t, args: varargs[ptr k_sem]) {.varargs,
     importc: "k_thread_access_grant", header: "kernel.h".}
 
 
@@ -306,8 +314,6 @@ proc k_thread_access_grant*(thread: untyped) {.varargs,
 ##
 proc k_thread_heap_assign*(thread: ptr k_thread; heap: ptr k_heap) {.inline.} =
   thread.resource_pool = heap
-
-
 
 
 when defined(CONFIG_INIT_STACKS) and defined(CONFIG_THREAD_STACK_INFO):
@@ -336,21 +342,20 @@ when defined(CONFIG_INIT_STACKS) and defined(CONFIG_THREAD_STACK_INFO):
 
 
 
-when (CONFIG_HEAP_MEM_POOL_SIZE > 0):
-  ## *
-  ##  @brief Assign the system heap as a thread's resource pool
-  ##
-  ##  Similar to z_thread_heap_assign(), but the thread will use
-  ##  the kernel heap to draw memory.
-  ##
-  ##  Use with caution, as a malicious thread could perform DoS attacks on the
-  ##  kernel heap.
-  ##
-  ##  @param thread Target thread to assign the system heap for resource requests
-  ##
-  ##
-  proc k_thread_system_pool_assign*(thread: ptr k_thread) {.
-      importc: "k_thread_system_pool_assign", header: "kernel.h".}
+## *
+##  @brief Assign the system heap as a thread's resource pool
+##
+##  Similar to z_thread_heap_assign(), but the thread will use
+##  the kernel heap to draw memory.
+##
+##  Use with caution, as a malicious thread could perform DoS attacks on the
+##  kernel heap.
+##
+##  @param thread Target thread to assign the system heap for resource requests
+##
+##
+proc k_thread_system_pool_assign*(thread: ptr k_thread) {.
+    importc: "k_thread_system_pool_assign", header: "kernel.h".}
 
 
 
@@ -412,8 +417,7 @@ proc k_sleep*(timeout: k_timeout_t): int32 {.syscall, importc: "k_sleep",
 ##  @return Zero if the requested time has elapsed or the number of milliseconds
 ##  left to sleep, if thread was woken up by \ref k_wakeup call.
 ##
-proc k_msleep*(ms: int32): int32 {.inline.} =
-  return k_sleep(Z_TIMEOUT_MS(ms))
+proc k_msleep*(ms: int32): int32 {.syscall, importc: "$1", header: "kernel.h".}
 
 
 ## *
@@ -431,8 +435,7 @@ proc k_msleep*(ms: int32): int32 {.inline.} =
 ##  @return Zero if the requested time has elapsed or the number of microseconds
 ##  left to sleep, if thread was woken up by \ref k_wakeup call.
 ##
-proc k_usleep*(us: int32): int32 {.syscall, importc: "k_usleep",
-                                    header: "kernel.h".}
+proc k_usleep*(ms: int32): int32 {.syscall, importc: "$1", header: "kernel.h".}
 
 
 
@@ -562,9 +565,11 @@ proc k_thread_abort*(thread: k_tid_t) {.syscall, importc: "k_thread_abort",
 ##
 proc k_thread_start*(thread: k_tid_t) {.syscall, importc: "k_thread_start",
                                       header: "kernel.h".}
-proc z_timeout_expires*(timeout: ptr _timeout): k_ticks_t {.
+
+proc z_timeout_expires*(timeout: ptr k_priv_timeout): k_ticks_t {.
     importc: "z_timeout_expires", header: "kernel.h".}
-proc z_timeout_remaining*(timeout: ptr _timeout): k_ticks_t {.
+
+proc z_timeout_remaining*(timeout: ptr k_priv_timeout): k_ticks_t {.
     importc: "z_timeout_remaining", header: "kernel.h".}
 
 
@@ -2760,12 +2765,6 @@ proc K_CONDVAR_DEFINE*(name: untyped) {.importc: "K_CONDVAR_DEFINE",
 ## *
 ##  @cond INTERNAL_HIDDEN
 ##
-type
-  k_sem* {.importc: "k_sem", header: "kernel.h", bycopy.} = object
-    wait_q* {.importc: "wait_q".}: _wait_q_t
-    count* {.importc: "count".}: cuint
-    limit* {.importc: "limit".}: cuint
-    poll_events* {.importc: "poll_events".}: sys_dlist_t ##  _POLL_EVENT;
 
 proc Z_SEM_INITIALIZER*(obj: untyped; initial_count: untyped; count_limit: untyped) {.
     importc: "Z_SEM_INITIALIZER", header: "kernel.h".}
@@ -4711,12 +4710,6 @@ proc k_mem_slab_num_free_get*(slab: ptr k_mem_slab): uint32 {.inline.} =
 ##  @addtogroup heap_apis
 ##  @{
 ##
-##  kernel synchronized heap struct
-type
-  k_heap* {.importc: "k_heap", header: "kernel.h", bycopy.} = object
-    heap* {.importc: "heap".}: sys_heap
-    wait_q* {.importc: "wait_q".}: _wait_q_t
-    lock* {.importc: "lock".}: k_spinlock
 
 ## *
 ##  @brief Initialize a k_heap
