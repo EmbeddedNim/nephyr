@@ -16,6 +16,7 @@
 ##  @}
 ##
 
+import zkernel_fixes
 import zthread
 
 const
@@ -231,7 +232,7 @@ when defined(CONFIG_X86):
 ##
 proc k_thread_create*(new_thread: ptr k_thread; stack: ptr k_thread_stack_t;
                       stack_size: csize_t; entry: k_thread_entry_t; p1: pointer;
-                      p2: pointer; p3: pointer; prio: cint; options: uint32_t;
+                      p2: pointer; p3: pointer; prio: cint; options: uint32;
                       delay: k_timeout_t): k_tid_t {.syscall,
     importc: "k_thread_create", header: "kernel.h".}
 
@@ -394,7 +395,7 @@ proc k_thread_join*(thread: ptr k_thread; timeout: k_timeout_t): cint {.syscall,
 ##  @return Zero if the requested time has elapsed or the number of milliseconds
 ##  left to sleep, if thread was woken up by \ref k_wakeup call.
 ##
-proc k_sleep*(timeout: k_timeout_t): int32_t {.syscall, importc: "k_sleep",
+proc k_sleep*(timeout: k_timeout_t): int32 {.syscall, importc: "k_sleep",
     header: "kernel.h".}
 
 
@@ -411,7 +412,7 @@ proc k_sleep*(timeout: k_timeout_t): int32_t {.syscall, importc: "k_sleep",
 ##  @return Zero if the requested time has elapsed or the number of milliseconds
 ##  left to sleep, if thread was woken up by \ref k_wakeup call.
 ##
-proc k_msleep*(ms: int32_t): int32_t {.inline.} =
+proc k_msleep*(ms: int32): int32 {.inline.} =
   return k_sleep(Z_TIMEOUT_MS(ms))
 
 
@@ -430,7 +431,7 @@ proc k_msleep*(ms: int32_t): int32_t {.inline.} =
 ##  @return Zero if the requested time has elapsed or the number of microseconds
 ##  left to sleep, if thread was woken up by \ref k_wakeup call.
 ##
-proc k_usleep*(us: int32_t): int32_t {.syscall, importc: "k_usleep",
+proc k_usleep*(us: int32): int32 {.syscall, importc: "k_usleep",
                                     header: "kernel.h".}
 
 
@@ -451,7 +452,7 @@ proc k_usleep*(us: int32_t): int32_t {.syscall, importc: "k_usleep",
 ##
 ##  @return N/A
 ##
-proc k_busy_wait*(usec_to_wait: uint32_t) {.syscall, importc: "k_busy_wait",
+proc k_busy_wait*(usec_to_wait: uint32) {.syscall, importc: "k_busy_wait",
     header: "kernel.h".}
 
 
@@ -609,8 +610,8 @@ type
     init_p2* {.importc: "init_p2".}: pointer
     init_p3* {.importc: "init_p3".}: pointer
     init_prio* {.importc: "init_prio".}: cint
-    init_options* {.importc: "init_options".}: uint32_t
-    init_delay* {.importc: "init_delay".}: int32_t
+    init_options* {.importc: "init_options".}: uint32
+    init_delay* {.importc: "init_delay".}: int32
     init_abort* {.importc: "init_abort".}: proc ()
     init_name* {.importc: "init_name".}: cstring
 
@@ -890,7 +891,7 @@ proc k_thread_resume*(thread: k_tid_t) {.syscall, importc: "k_thread_resume",
 ##
 ##  @return N/A
 ##
-proc k_sched_time_slice_set*(slice: int32_t; prio: cint) {.
+proc k_sched_time_slice_set*(slice: int32; prio: cint) {.
     importc: "k_sched_time_slice_set", header: "kernel.h".}
 
 
@@ -1350,7 +1351,7 @@ type
     expiry_fn* {.importc: "expiry_fn".}: proc (timer: ptr k_timer) ##  runs in the context of the thread that calls k_timer_stop()
     stop_fn* {.importc: "stop_fn".}: proc (timer: ptr k_timer) ##  timer period
     period* {.importc: "period".}: k_timeout_t ##  timer status
-    status* {.importc: "status".}: uint32_t ##  user-specific data, also used to support legacy features
+    status* {.importc: "status".}: uint32 ##  user-specific data, also used to support legacy features
     user_data* {.importc: "user_data".}: pointer
 
 proc Z_TIMER_INITIALIZER*(obj: untyped; expiry: untyped; stop: untyped) {.
@@ -1492,7 +1493,7 @@ proc k_timer_stop*(timer: ptr k_timer) {.syscall, importc: "k_timer_stop",
 ##
 ##  @return Timer status.
 ##
-proc k_timer_status_get*(timer: ptr k_timer): uint32_t {.syscall,
+proc k_timer_status_get*(timer: ptr k_timer): uint32 {.syscall,
     importc: "k_timer_status_get", header: "kernel.h".}
 
 
@@ -1515,7 +1516,7 @@ proc k_timer_status_get*(timer: ptr k_timer): uint32_t {.syscall,
 ##
 ##  @return Timer status.
 ##
-proc k_timer_status_sync*(timer: ptr k_timer): uint32_t {.syscall,
+proc k_timer_status_sync*(timer: ptr k_timer): uint32 {.syscall,
     importc: "k_timer_status_sync", header: "kernel.h".}
 when defined(CONFIG_SYS_CLOCK_EXISTS):
   ## *
@@ -1555,7 +1556,7 @@ when defined(CONFIG_SYS_CLOCK_EXISTS):
   ##
   ##  @return Remaining time (in milliseconds).
   ##
-  proc k_timer_remaining_get*(timer: ptr k_timer): uint32_t {.inline.} =
+  proc k_timer_remaining_get*(timer: ptr k_timer): uint32 {.inline.} =
     return k_ticks_to_ms_floor32(k_timer_remaining_ticks(timer))
 
 ## *
@@ -1611,7 +1612,7 @@ proc z_impl_k_timer_user_data_get*(timer: ptr k_timer): pointer {.inline.} =
 ##
 ##  @return Current uptime in ticks.
 ##
-proc k_uptime_ticks*(): int64_t {.syscall, importc: "k_uptime_ticks",
+proc k_uptime_ticks*(): int64 {.syscall, importc: "k_uptime_ticks",
                                 header: "kernel.h".}
 
 
@@ -1630,7 +1631,7 @@ proc k_uptime_ticks*(): int64_t {.syscall, importc: "k_uptime_ticks",
 ##
 ##  @return Current uptime in milliseconds.
 ##
-proc k_uptime_get*(): int64_t {.inline.} =
+proc k_uptime_get*(): int64 {.inline.} =
   return k_ticks_to_ms_floor64(k_uptime_ticks())
 
 ## *
@@ -1652,8 +1653,8 @@ proc k_uptime_get*(): int64_t {.inline.} =
 ##
 ##  @return The low 32 bits of the current uptime, in milliseconds.
 ##
-proc k_uptime_get_32*(): uint32_t {.inline.} =
-  return cast[uint32_t](k_uptime_get())
+proc k_uptime_get_32*(): uint32 {.inline.} =
+  return cast[uint32](k_uptime_get())
 
 ## *
 ##  @brief Get elapsed time.
@@ -1666,10 +1667,10 @@ proc k_uptime_get_32*(): uint32_t {.inline.} =
 ##
 ##  @return Elapsed time.
 ##
-proc k_uptime_delta*(reftime: ptr int64_t): int64_t {.inline.} =
+proc k_uptime_delta*(reftime: ptr int64): int64 {.inline.} =
   var
-    uptime: int64_t
-    delta: int64_t
+    uptime: int64
+    delta: int64
   uptime = k_uptime_get()
   delta = uptime - reftime[]
   reftime[] = uptime
@@ -1683,7 +1684,7 @@ proc k_uptime_delta*(reftime: ptr int64_t): int64_t {.inline.} =
 ##
 ##  @return Current hardware clock up-counter (in cycles).
 ##
-proc k_cycle_get_32*(): uint32_t {.inline.} =
+proc k_cycle_get_32*(): uint32 {.inline.} =
   return arch_k_cycle_get_32()
 
 ## *
@@ -1787,7 +1788,7 @@ proc k_queue_append*(queue: ptr k_queue; data: pointer) {.importc: "k_queue_appe
 ##  @retval 0 on success
 ##  @retval -ENOMEM if there isn't sufficient RAM in the caller's resource pool
 ##
-proc k_queue_alloc_append*(queue: ptr k_queue; data: pointer): int32_t {.syscall,
+proc k_queue_alloc_append*(queue: ptr k_queue; data: pointer): int32 {.syscall,
     importc: "k_queue_alloc_append", header: "kernel.h".}
 
 
@@ -1829,7 +1830,7 @@ proc k_queue_prepend*(queue: ptr k_queue; data: pointer) {.
 ##  @retval 0 on success
 ##  @retval -ENOMEM if there isn't sufficient RAM in the caller's resource pool
 ##
-proc k_queue_alloc_prepend*(queue: ptr k_queue; data: pointer): int32_t {.syscall,
+proc k_queue_alloc_prepend*(queue: ptr k_queue; data: pointer): int32 {.syscall,
     importc: "k_queue_alloc_prepend", header: "kernel.h".}
 
 
@@ -2437,7 +2438,7 @@ type
     base* {.importc: "base".}: ptr stack_data_t
     next* {.importc: "next".}: ptr stack_data_t
     top* {.importc: "top".}: ptr stack_data_t
-    flags* {.importc: "flags".}: uint8_t
+    flags* {.importc: "flags".}: uint8
 
 proc Z_STACK_INITIALIZER*(obj: untyped; stack_buffer: untyped;
                           stack_num_entries: untyped) {.
@@ -2464,7 +2465,7 @@ proc Z_STACK_INITIALIZER*(obj: untyped; stack_buffer: untyped;
 ##  @return N/A
 ##
 proc k_stack_init*(stack: ptr k_stack; buffer: ptr stack_data_t;
-                  num_entries: uint32_t) {.importc: "k_stack_init",
+                  num_entries: uint32) {.importc: "k_stack_init",
     header: "kernel.h".}
 
 
@@ -2481,7 +2482,7 @@ proc k_stack_init*(stack: ptr k_stack; buffer: ptr stack_data_t;
 ##
 ##  @return -ENOMEM if memory couldn't be allocated
 ##
-proc k_stack_alloc_init*(stack: ptr k_stack; num_entries: uint32_t): int32_t {.
+proc k_stack_alloc_init*(stack: ptr k_stack; num_entries: uint32): int32 {.
     syscall, importc: "k_stack_alloc_init", header: "kernel.h".}
 
 
@@ -2581,7 +2582,7 @@ type
     wait_q* {.importc: "wait_q".}: _wait_q_t ## * Mutex wait queue
     ## * Mutex owner
     owner* {.importc: "owner".}: ptr k_thread ## * Current lock count
-    lock_count* {.importc: "lock_count".}: uint32_t ## * Original thread priority
+    lock_count* {.importc: "lock_count".}: uint32 ## * Original thread priority
     owner_orig_prio* {.importc: "owner_orig_prio".}: cint
 
 ## *
@@ -3520,7 +3521,7 @@ type
                                           ##
                                           ##  It can be RUNNING and CANCELING simultaneously.
                                           ##
-    flags* {.importc: "flags".}: uint32_t
+    flags* {.importc: "flags".}: uint32
 
 proc Z_WORK_INITIALIZER*(work_handler: untyped) {.importc: "Z_WORK_INITIALIZER",
     header: "kernel.h".}
@@ -3647,7 +3648,7 @@ type
     pending* {.importc: "pending".}: sys_slist_t ##  Wait queue for idle work thread.
     notifyq* {.importc: "notifyq".}: _wait_q_t ##  Wait queue for threads waiting for the queue to drain.
     drainq* {.importc: "drainq".}: _wait_q_t ##  Flags describing queue state.
-    flags* {.importc: "flags".}: uint32_t
+    flags* {.importc: "flags".}: uint32
 
 ##  Provide the implementation for inline functions declared above
 proc k_work_is_pending*(work: ptr k_work): bool {.inline.} =
@@ -3973,15 +3974,15 @@ type
     ## * Lock
     lock* {.importc: "lock".}: k_spinlock ## * Message size
     msg_size* {.importc: "msg_size".}: csize_t ## * Maximal number of messages
-    max_msgs* {.importc: "max_msgs".}: uint32_t ## * Start of message buffer
+    max_msgs* {.importc: "max_msgs".}: uint32 ## * Start of message buffer
     buffer_start* {.importc: "buffer_start".}: cstring ## * End of message buffer
     buffer_end* {.importc: "buffer_end".}: cstring ## * Read pointer
     read_ptr* {.importc: "read_ptr".}: cstring ## * Write pointer
     write_ptr* {.importc: "write_ptr".}: cstring ## * Number of used messages
-    used_msgs* {.importc: "used_msgs".}: uint32_t
+    used_msgs* {.importc: "used_msgs".}: uint32
     poll_events* {.importc: "poll_events".}: sys_dlist_t ##  _POLL_EVENT;
                                                       ## * Message queue
-    flags* {.importc: "flags".}: uint8_t
+    flags* {.importc: "flags".}: uint8
 
 ## *
 ##  @cond INTERNAL_HIDDEN
@@ -4002,8 +4003,8 @@ type
   k_msgq_attrs* {.importc: "k_msgq_attrs", header: "kernel.h", bycopy.} = object
     msg_size* {.importc: "msg_size".}: csize_t ## * Message Size
     ## * Maximal number of messages
-    max_msgs* {.importc: "max_msgs".}: uint32_t ## * Used messages
-    used_msgs* {.importc: "used_msgs".}: uint32_t
+    max_msgs* {.importc: "max_msgs".}: uint32 ## * Used messages
+    used_msgs* {.importc: "used_msgs".}: uint32
 
 ## *
 ##  @brief Statically define and initialize a message queue.
@@ -4049,7 +4050,7 @@ proc K_MSGQ_DEFINE*(q_name: untyped; q_msg_size: untyped; q_max_msgs: untyped;
 ##  @return N/A
 ##
 proc k_msgq_init*(msgq: ptr k_msgq; buffer: cstring; msg_size: csize_t;
-                  max_msgs: uint32_t) {.importc: "k_msgq_init", header: "kernel.h".}
+                  max_msgs: uint32) {.importc: "k_msgq_init", header: "kernel.h".}
 
 
 ## *
@@ -4071,7 +4072,7 @@ proc k_msgq_init*(msgq: ptr k_msgq; buffer: cstring; msg_size: csize_t;
 ## 	thread's resource pool, or -EINVAL if the size parameters cause
 ## 	an integer overflow.
 ##
-proc k_msgq_alloc_init*(msgq: ptr k_msgq; msg_size: csize_t; max_msgs: uint32_t): cint {.
+proc k_msgq_alloc_init*(msgq: ptr k_msgq; msg_size: csize_t; max_msgs: uint32): cint {.
     syscall, importc: "k_msgq_alloc_init", header: "kernel.h".}
 
 
@@ -4181,7 +4182,7 @@ proc k_msgq_purge*(msgq: ptr k_msgq) {.syscall, importc: "k_msgq_purge",
 ##
 ##  @return Number of unused ring buffer entries.
 ##
-proc k_msgq_num_free_get*(msgq: ptr k_msgq): uint32_t {.syscall,
+proc k_msgq_num_free_get*(msgq: ptr k_msgq): uint32 {.syscall,
     importc: "k_msgq_num_free_get", header: "kernel.h".}
 
 
@@ -4197,7 +4198,7 @@ proc k_msgq_num_free_get*(msgq: ptr k_msgq): uint32_t {.syscall,
 ##
 proc k_msgq_get_attrs*(msgq: ptr k_msgq; attrs: ptr k_msgq_attrs) {.syscall,
     importc: "k_msgq_get_attrs", header: "kernel.h".}
-proc z_impl_k_msgq_num_free_get*(msgq: ptr k_msgq): uint32_t {.inline.} =
+proc z_impl_k_msgq_num_free_get*(msgq: ptr k_msgq): uint32 {.inline.} =
   return msgq.max_msgs - msgq.used_msgs
 
 ## *
@@ -4209,9 +4210,9 @@ proc z_impl_k_msgq_num_free_get*(msgq: ptr k_msgq): uint32_t {.inline.} =
 ##
 ##  @return Number of messages.
 ##
-proc k_msgq_num_used_get*(msgq: ptr k_msgq): uint32_t {.syscall,
+proc k_msgq_num_used_get*(msgq: ptr k_msgq): uint32 {.syscall,
     importc: "k_msgq_num_used_get", header: "kernel.h".}
-proc z_impl_k_msgq_num_used_get*(msgq: ptr k_msgq): uint32_t {.inline.} =
+proc z_impl_k_msgq_num_used_get*(msgq: ptr k_msgq): uint32 {.inline.} =
   return msgq.used_msgs
 
 ## * @}
@@ -4226,10 +4227,10 @@ proc z_impl_k_msgq_num_used_get*(msgq: ptr k_msgq): uint32_t {.inline.} =
 ##
 type
   k_mbox_msg* {.importc: "k_mbox_msg", header: "kernel.h", bycopy.} = object
-    _mailbox* {.importc: "_mailbox".}: uint32_t ## * internal use only - needed for legacy API support
+    _mailbox* {.importc: "_mailbox".}: uint32 ## * internal use only - needed for legacy API support
     ## * size of message (in bytes)
     size* {.importc: "size".}: csize_t ## * application-defined information value
-    info* {.importc: "info".}: uint32_t ## * sender's message data buffer
+    info* {.importc: "info".}: uint32 ## * sender's message data buffer
     tx_data* {.importc: "tx_data".}: pointer ## * internal use only - needed for legacy API support
     _rx_data* {.importc: "_rx_data".}: pointer ## * message data block descriptor
     tx_block* {.importc: "tx_block".}: k_mem_block ## * source thread id
@@ -4389,7 +4390,7 @@ type
     write_index* {.importc: "write_index".}: csize_t ## *< Where in buffer to write
     lock* {.importc: "lock".}: k_spinlock ## *< Synchronization lock
     wait_q* {.importc: "wait_q".}: INNER_C_STRUCT_kernel_2 ## * Wait queue
-    flags* {.importc: "flags".}: uint8_t ## *< Flags
+    flags* {.importc: "flags".}: uint8 ## *< Flags
 
 ## *
 ##  @cond INTERNAL_HIDDEN
@@ -4550,13 +4551,13 @@ type
   k_mem_slab* {.importc: "k_mem_slab", header: "kernel.h", bycopy.} = object
     wait_q* {.importc: "wait_q".}: _wait_q_t
     lock* {.importc: "lock".}: k_spinlock
-    num_blocks* {.importc: "num_blocks".}: uint32_t
+    num_blocks* {.importc: "num_blocks".}: uint32
     block_size* {.importc: "block_size".}: csize_t
     buffer* {.importc: "buffer".}: cstring
     free_list* {.importc: "free_list".}: cstring
-    num_used* {.importc: "num_used".}: uint32_t
+    num_used* {.importc: "num_used".}: uint32
     when defined(CONFIG_MEM_SLAB_TRACE_MAX_UTILIZATION):
-      var max_used* {.importc: "max_used", header: "kernel.h".}: uint32_t
+      var max_used* {.importc: "max_used", header: "kernel.h".}: uint32
 
 proc Z_MEM_SLAB_INITIALIZER*(obj: untyped; slab_buffer: untyped;
                             slab_block_size: untyped; slab_num_blocks: untyped) {.
@@ -4617,7 +4618,7 @@ proc K_MEM_SLAB_DEFINE*(name: untyped; slab_block_size: untyped;
 ##
 ##
 proc k_mem_slab_init*(slab: ptr k_mem_slab; buffer: pointer; block_size: csize_t;
-                      num_blocks: uint32_t): cint {.importc: "k_mem_slab_init",
+                      num_blocks: uint32): cint {.importc: "k_mem_slab_init",
     header: "kernel.h".}
 
 
@@ -4672,7 +4673,7 @@ proc k_mem_slab_free*(slab: ptr k_mem_slab; mem: ptr pointer) {.
 ##
 ##  @return Number of allocated memory blocks.
 ##
-proc k_mem_slab_num_used_get*(slab: ptr k_mem_slab): uint32_t {.inline.} =
+proc k_mem_slab_num_used_get*(slab: ptr k_mem_slab): uint32 {.inline.} =
   return slab.num_used
 
 ## *
@@ -4685,7 +4686,7 @@ proc k_mem_slab_num_used_get*(slab: ptr k_mem_slab): uint32_t {.inline.} =
 ##
 ##  @return Maximum number of allocated memory blocks.
 ##
-proc k_mem_slab_max_used_get*(slab: ptr k_mem_slab): uint32_t {.inline.} =
+proc k_mem_slab_max_used_get*(slab: ptr k_mem_slab): uint32 {.inline.} =
   when defined(CONFIG_MEM_SLAB_TRACE_MAX_UTILIZATION):
     return slab.max_used
   else:
@@ -4702,7 +4703,7 @@ proc k_mem_slab_max_used_get*(slab: ptr k_mem_slab): uint32_t {.inline.} =
 ##
 ##  @return Number of unallocated memory blocks.
 ##
-proc k_mem_slab_num_free_get*(slab: ptr k_mem_slab): uint32_t {.inline.} =
+proc k_mem_slab_num_free_get*(slab: ptr k_mem_slab): uint32 {.inline.} =
   return slab.num_blocks - slab.num_used
 
 ## * @}
@@ -5019,7 +5020,7 @@ proc K_POLL_EVENT_STATIC_INITIALIZER*(_event_type: untyped; _event_mode: untyped
 ##
 ##  @return N/A
 ##
-proc k_poll_event_init*(event: ptr k_poll_event; `type`: uint32_t; mode: cint;
+proc k_poll_event_init*(event: ptr k_poll_event; `type`: uint32; mode: cint;
                         obj: pointer) {.importc: "k_poll_event_init",
                                       header: "kernel.h".}
 
@@ -5135,7 +5136,7 @@ proc k_poll_signal_raise*(sig: ptr k_poll_signal; result: cint): cint {.syscall,
 ## *
 ##  @internal
 ##
-proc z_handle_obj_poll_events*(events: ptr sys_dlist_t; state: uint32_t) {.
+proc z_handle_obj_poll_events*(events: ptr sys_dlist_t; state: uint32) {.
     importc: "z_handle_obj_poll_events", header: "kernel.h".}
 
 
@@ -5226,7 +5227,7 @@ else:
 ##  @internal
 ##
 proc z_init_thread_base*(thread_base: ptr _thread_base; priority: cint;
-                        initial_state: uint32_t; options: cuint) {.
+                        initial_state: uint32; options: cuint) {.
     importc: "z_init_thread_base", header: "kernel.h".}
 when defined(CONFIG_MULTITHREADING):
   ## *
