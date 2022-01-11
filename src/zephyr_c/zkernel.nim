@@ -66,6 +66,8 @@ proc k_thread_foreach*(user_cb: k_thread_user_cb_t; user_data: pointer) {.
 
 
 
+
+
 ## *
 ##  @brief Iterate over all the threads in the system without locking.
 ##
@@ -95,6 +97,8 @@ proc k_thread_foreach*(user_cb: k_thread_user_cb_t; user_data: pointer) {.
 ##
 proc k_thread_foreach_unlocked*(user_cb: k_thread_user_cb_t; user_data: pointer) {.
     importc: "k_thread_foreach_unlocked", header: "kernel.h".}
+
+
 ## * @}
 ## *
 ##  @defgroup thread_apis Thread APIs
@@ -234,6 +238,8 @@ proc k_thread_create*(new_thread: ptr k_thread; stack: ptr k_thread_stack_t;
 
 
 
+
+
 ## *
 ##  @brief Drop a thread's privileges permanently to user mode
 ##
@@ -261,6 +267,8 @@ proc k_thread_user_mode_enter*(entry: k_thread_entry_t; p1: pointer; p2: pointer
 
 
 
+
+
 ## *
 ##  @brief Grant a thread access to a set of kernel objects
 ##
@@ -276,6 +284,8 @@ proc k_thread_user_mode_enter*(entry: k_thread_entry_t; p1: pointer; p2: pointer
 ##
 proc k_thread_access_grant*(thread: untyped) {.varargs,
     importc: "k_thread_access_grant", header: "kernel.h".}
+
+
 
 
 
@@ -343,6 +353,8 @@ when (CONFIG_HEAP_MEM_POOL_SIZE > 0):
 
 
 
+
+
 ## *
 ##  @brief Sleep until a thread exits
 ##
@@ -367,6 +379,8 @@ proc k_thread_join*(thread: ptr k_thread; timeout: k_timeout_t): cint {.syscall,
 
 
 
+
+
 ## *
 ##  @brief Put the current thread to sleep.
 ##
@@ -382,6 +396,8 @@ proc k_thread_join*(thread: ptr k_thread; timeout: k_timeout_t): cint {.syscall,
 ##
 proc k_sleep*(timeout: k_timeout_t): int32_t {.syscall, importc: "k_sleep",
     header: "kernel.h".}
+
+
 
 
 
@@ -419,6 +435,8 @@ proc k_usleep*(us: int32_t): int32_t {.syscall, importc: "k_usleep",
 
 
 
+
+
 ## *
 ##  @brief Cause the current thread to busy wait.
 ##
@@ -438,6 +456,8 @@ proc k_busy_wait*(usec_to_wait: uint32_t) {.syscall, importc: "k_busy_wait",
 
 
 
+
+
 ## *
 ##  @brief Yield the current thread.
 ##
@@ -448,6 +468,8 @@ proc k_busy_wait*(usec_to_wait: uint32_t) {.syscall, importc: "k_busy_wait",
 ##  @return N/A
 ##
 proc k_yield*() {.syscall, importc: "k_yield", header: "kernel.h".}
+
+
 
 
 
@@ -463,6 +485,8 @@ proc k_yield*() {.syscall, importc: "k_yield", header: "kernel.h".}
 ##  @return N/A
 ##
 proc k_wakeup*(thread: k_tid_t) {.syscall, importc: "k_wakeup", header: "kernel.h".}
+
+
 
 
 
@@ -521,6 +545,8 @@ proc k_current_get*(): k_tid_t =
 ##
 proc k_thread_abort*(thread: k_tid_t) {.syscall, importc: "k_thread_abort",
                                       header: "kernel.h".}
+
+
 
 
 
@@ -596,6 +622,8 @@ proc Z_THREAD_INITIALIZER*(thread: untyped; stack: untyped; stack_size: untyped;
 
 
 
+
+
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
@@ -635,6 +663,8 @@ proc K_THREAD_DEFINE*(name: untyped; stack_size: untyped; entry: untyped;
 
 
 
+
+
 ## *
 ##  @brief Get a thread's priority.
 ##
@@ -646,6 +676,8 @@ proc K_THREAD_DEFINE*(name: untyped; stack_size: untyped; entry: untyped;
 ##
 proc k_thread_priority_get*(thread: k_tid_t): cint {.syscall,
     importc: "k_thread_priority_get", header: "kernel.h".}
+
+
 
 
 
@@ -734,6 +766,8 @@ when defined(CONFIG_SCHED_CPU_MASK):
   ##
   proc k_thread_cpu_mask_clear*(thread: k_tid_t): cint {.
       importc: "k_thread_cpu_mask_clear", header: "kernel.h".}
+
+
   ## *
   ##  @brief Sets all CPU enable masks to one
   ##
@@ -748,6 +782,8 @@ when defined(CONFIG_SCHED_CPU_MASK):
   ##
   proc k_thread_cpu_mask_enable_all*(thread: k_tid_t): cint {.
       importc: "k_thread_cpu_mask_enable_all", header: "kernel.h".}
+
+
   ## *
   ##  @brief Enable thread to run on specified CPU
   ##
@@ -762,6 +798,8 @@ when defined(CONFIG_SCHED_CPU_MASK):
   ##
   proc k_thread_cpu_mask_enable*(thread: k_tid_t; cpu: cint): cint {.
       importc: "k_thread_cpu_mask_enable", header: "kernel.h".}
+
+
   ## *
   ##  @brief Prevent thread to run on specified CPU
   ##
@@ -776,6 +814,8 @@ when defined(CONFIG_SCHED_CPU_MASK):
   ##
   proc k_thread_cpu_mask_disable*(thread: k_tid_t; cpu: cint): cint {.
       importc: "k_thread_cpu_mask_disable", header: "kernel.h".}
+
+
 
 
 
@@ -801,6 +841,8 @@ proc k_thread_suspend*(thread: k_tid_t) {.syscall, importc: "k_thread_suspend",
 
 
 
+
+
 ## *
 ##  @brief Resume a suspended thread.
 ##
@@ -815,6 +857,8 @@ proc k_thread_suspend*(thread: k_tid_t) {.syscall, importc: "k_thread_suspend",
 ##
 proc k_thread_resume*(thread: k_tid_t) {.syscall, importc: "k_thread_resume",
                                       header: "kernel.h".}
+
+
 
 
 
@@ -851,6 +895,8 @@ proc k_sched_time_slice_set*(slice: int32_t; prio: cint) {.
 
 
 
+
+
 ## * @}
 ## *
 ##  @addtogroup isr_apis
@@ -868,6 +914,8 @@ proc k_sched_time_slice_set*(slice: int32_t; prio: cint) {.
 ##  @return true if invoked by an ISR.
 ##
 proc k_is_in_isr*(): bool {.importc: "k_is_in_isr", header: "kernel.h".}
+
+
 
 
 
@@ -889,6 +937,8 @@ proc k_is_in_isr*(): bool {.importc: "k_is_in_isr", header: "kernel.h".}
 ##
 proc k_is_preempt_thread*(): cint {.syscall, importc: "k_is_preempt_thread",
                                   header: "kernel.h".}
+
+
 
 
 
@@ -935,6 +985,8 @@ proc k_is_pre_kernel*(): bool {.inline.} =
 ##  @return N/A
 ##
 proc k_sched_lock*() {.importc: "k_sched_lock", header: "kernel.h".}
+
+
 ## *
 ##  @brief Unlock the scheduler.
 ##
@@ -945,6 +997,8 @@ proc k_sched_lock*() {.importc: "k_sched_lock", header: "kernel.h".}
 ##  @return N/A
 ##
 proc k_sched_unlock*() {.importc: "k_sched_unlock", header: "kernel.h".}
+
+
 ## *
 ##  @brief Set current thread's custom data.
 ##
@@ -961,6 +1015,8 @@ proc k_sched_unlock*() {.importc: "k_sched_unlock", header: "kernel.h".}
 ##
 proc k_thread_custom_data_set*(value: pointer) {.syscall,
     importc: "k_thread_custom_data_set", header: "kernel.h".}
+
+
 ## *
 ##  @brief Get current thread's custom data.
 ##
@@ -970,6 +1026,8 @@ proc k_thread_custom_data_set*(value: pointer) {.syscall,
 ##
 proc k_thread_custom_data_get*(): pointer {.syscall,
     importc: "k_thread_custom_data_get", header: "kernel.h".}
+
+
 ## *
 ##  @brief Set current thread name
 ##
@@ -985,6 +1043,10 @@ proc k_thread_custom_data_get*(): pointer {.syscall,
 ##
 proc k_thread_name_set*(thread: k_tid_t; str: cstring): cint {.syscall,
     importc: "k_thread_name_set", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Get thread name
 ##
@@ -995,6 +1057,10 @@ proc k_thread_name_set*(thread: k_tid_t; str: cstring): cint {.syscall,
 ##
 proc k_thread_name_get*(thread: k_tid_t): cstring {.importc: "k_thread_name_get",
     header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Copy the thread name into a supplied buffer
 ##
@@ -1008,6 +1074,10 @@ proc k_thread_name_get*(thread: k_tid_t): cstring {.importc: "k_thread_name_get"
 ##
 proc k_thread_name_copy*(thread: k_tid_t; buf: cstring; size: csize_t): cint {.
     syscall, importc: "k_thread_name_copy", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Get thread state string
 ##
@@ -1018,6 +1088,10 @@ proc k_thread_name_copy*(thread: k_tid_t; buf: cstring; size: csize_t): cint {.
 ##
 proc k_thread_state_str*(thread_id: k_tid_t): cstring {.
     importc: "k_thread_state_str", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @}
 ##
@@ -1047,6 +1121,10 @@ var K_NO_WAIT* {.importc: "K_NO_WAIT", header: "kernel.h".}: int
 ##  @return Timeout delay value.
 ##
 proc K_NSEC*(t: untyped) {.importc: "K_NSEC", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Generate timeout delay from microseconds.
 ##
@@ -1060,6 +1138,10 @@ proc K_NSEC*(t: untyped) {.importc: "K_NSEC", header: "kernel.h".}
 ##  @return Timeout delay value.
 ##
 proc K_USEC*(t: untyped) {.importc: "K_USEC", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Generate timeout delay from cycles.
 ##
@@ -1071,6 +1153,10 @@ proc K_USEC*(t: untyped) {.importc: "K_USEC", header: "kernel.h".}
 ##  @return Timeout delay value.
 ##
 proc K_CYC*(t: untyped) {.importc: "K_CYC", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Generate timeout delay from system ticks.
 ##
@@ -1082,6 +1168,10 @@ proc K_CYC*(t: untyped) {.importc: "K_CYC", header: "kernel.h".}
 ##  @return Timeout delay value.
 ##
 proc K_TICKS*(t: untyped) {.importc: "K_TICKS", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Generate timeout delay from milliseconds.
 ##
@@ -1093,6 +1183,10 @@ proc K_TICKS*(t: untyped) {.importc: "K_TICKS", header: "kernel.h".}
 ##  @return Timeout delay value.
 ##
 proc K_MSEC*(ms: untyped) {.importc: "K_MSEC", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Generate timeout delay from seconds.
 ##
@@ -1104,6 +1198,10 @@ proc K_MSEC*(ms: untyped) {.importc: "K_MSEC", header: "kernel.h".}
 ##  @return Timeout delay value.
 ##
 proc K_SECONDS*(s: untyped) {.importc: "K_SECONDS", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Generate timeout delay from minutes.
 ##
@@ -1115,6 +1213,10 @@ proc K_SECONDS*(s: untyped) {.importc: "K_SECONDS", header: "kernel.h".}
 ##  @return Timeout delay value.
 ##
 proc K_MINUTES*(m: untyped) {.importc: "K_MINUTES", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Generate timeout delay from hours.
 ##
@@ -1126,6 +1228,10 @@ proc K_MINUTES*(m: untyped) {.importc: "K_MINUTES", header: "kernel.h".}
 ##  @return Timeout delay value.
 ##
 proc K_HOURS*(h: untyped) {.importc: "K_HOURS", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Generate infinite timeout delay.
 ##
@@ -1149,6 +1255,10 @@ when defined(CONFIG_TIMEOUT_64BIT):
   ##
   proc K_TIMEOUT_ABS_TICKS*(t: untyped) {.importc: "K_TIMEOUT_ABS_TICKS",
       header: "kernel.h".}
+
+
+
+
   ## *
   ##  @brief Generates an absolute/uptime timeout value from milliseconds
   ##
@@ -1162,6 +1272,10 @@ when defined(CONFIG_TIMEOUT_64BIT):
   ##
   proc K_TIMEOUT_ABS_MS*(t: untyped) {.importc: "K_TIMEOUT_ABS_MS",
                                     header: "kernel.h".}
+
+
+
+
   ## *
   ##  @brief Generates an absolute/uptime timeout value from microseconds
   ##
@@ -1176,6 +1290,10 @@ when defined(CONFIG_TIMEOUT_64BIT):
   ##
   proc K_TIMEOUT_ABS_US*(t: untyped) {.importc: "K_TIMEOUT_ABS_US",
                                     header: "kernel.h".}
+
+
+
+
   ## *
   ##  @brief Generates an absolute/uptime timeout value from nanoseconds
   ##
@@ -1190,6 +1308,10 @@ when defined(CONFIG_TIMEOUT_64BIT):
   ##
   proc K_TIMEOUT_ABS_NS*(t: untyped) {.importc: "K_TIMEOUT_ABS_NS",
                                     header: "kernel.h".}
+
+
+
+
   ## *
   ##  @brief Generates an absolute/uptime timeout value from system cycles
   ##
@@ -1204,6 +1326,12 @@ when defined(CONFIG_TIMEOUT_64BIT):
   ##
   proc K_TIMEOUT_ABS_CYC*(t: untyped) {.importc: "K_TIMEOUT_ABS_CYC",
                                       header: "kernel.h".}
+
+
+
+
+
+
 ## *
 ##  @}
 ##
@@ -1227,6 +1355,10 @@ type
 
 proc Z_TIMER_INITIALIZER*(obj: untyped; expiry: untyped; stop: untyped) {.
     importc: "Z_TIMER_INITIALIZER", header: "kernel.h".}
+
+
+
+
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
@@ -1280,6 +1412,10 @@ type
 ##
 proc K_TIMER_DEFINE*(name: untyped; expiry_fn: untyped; stop_fn: untyped) {.
     importc: "K_TIMER_DEFINE", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Initialize a timer.
 ##
@@ -1294,6 +1430,10 @@ proc K_TIMER_DEFINE*(name: untyped; expiry_fn: untyped; stop_fn: untyped) {.
 proc k_timer_init*(timer: ptr k_timer; expiry_fn: k_timer_expiry_t;
                   stop_fn: k_timer_stop_t) {.importc: "k_timer_init",
     header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Start a timer.
 ##
@@ -1312,6 +1452,10 @@ proc k_timer_init*(timer: ptr k_timer; expiry_fn: k_timer_expiry_t;
 ##
 proc k_timer_start*(timer: ptr k_timer; duration: k_timeout_t; period: k_timeout_t) {.
     syscall, importc: "k_timer_start", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Stop a timer.
 ##
@@ -1332,6 +1476,10 @@ proc k_timer_start*(timer: ptr k_timer; duration: k_timeout_t; period: k_timeout
 ##
 proc k_timer_stop*(timer: ptr k_timer) {.syscall, importc: "k_timer_stop",
                                       header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Read timer status.
 ##
@@ -1346,6 +1494,10 @@ proc k_timer_stop*(timer: ptr k_timer) {.syscall, importc: "k_timer_stop",
 ##
 proc k_timer_status_get*(timer: ptr k_timer): uint32_t {.syscall,
     importc: "k_timer_status_get", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Synchronize thread to timer expiration.
 ##
@@ -1422,6 +1574,10 @@ when defined(CONFIG_SYS_CLOCK_EXISTS):
 ##
 proc k_timer_user_data_set*(timer: ptr k_timer; user_data: pointer) {.syscall,
     importc: "k_timer_user_data_set", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @internal
 ##
@@ -1457,6 +1613,10 @@ proc z_impl_k_timer_user_data_get*(timer: ptr k_timer): pointer {.inline.} =
 ##
 proc k_uptime_ticks*(): int64_t {.syscall, importc: "k_uptime_ticks",
                                 header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Get system uptime.
 ##
@@ -1543,6 +1703,10 @@ proc Z_QUEUE_INITIALIZER*(obj: untyped) {.importc: "Z_QUEUE_INITIALIZER",
     header: "kernel.h".}
 proc z_queue_node_peek*(node: ptr sys_sfnode_t; needs_free: bool): pointer {.
     importc: "z_queue_node_peek", header: "kernel.h".}
+
+
+
+
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
@@ -1562,6 +1726,10 @@ proc z_queue_node_peek*(node: ptr sys_sfnode_t; needs_free: bool): pointer {.
 ##
 proc k_queue_init*(queue: ptr k_queue) {.syscall, importc: "k_queue_init",
                                       header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Cancel waiting on a queue.
 ##
@@ -1579,6 +1747,10 @@ proc k_queue_init*(queue: ptr k_queue) {.syscall, importc: "k_queue_init",
 ##
 proc k_queue_cancel_wait*(queue: ptr k_queue) {.syscall,
     importc: "k_queue_cancel_wait", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Append an element to the end of a queue.
 ##
@@ -1595,6 +1767,10 @@ proc k_queue_cancel_wait*(queue: ptr k_queue) {.syscall,
 ##
 proc k_queue_append*(queue: ptr k_queue; data: pointer) {.importc: "k_queue_append",
     header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Append an element to a queue.
 ##
@@ -1613,6 +1789,10 @@ proc k_queue_append*(queue: ptr k_queue; data: pointer) {.importc: "k_queue_appe
 ##
 proc k_queue_alloc_append*(queue: ptr k_queue; data: pointer): int32_t {.syscall,
     importc: "k_queue_alloc_append", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Prepend an element to a queue.
 ##
@@ -1629,6 +1809,10 @@ proc k_queue_alloc_append*(queue: ptr k_queue; data: pointer): int32_t {.syscall
 ##
 proc k_queue_prepend*(queue: ptr k_queue; data: pointer) {.
     importc: "k_queue_prepend", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Prepend an element to a queue.
 ##
@@ -1647,6 +1831,10 @@ proc k_queue_prepend*(queue: ptr k_queue; data: pointer) {.
 ##
 proc k_queue_alloc_prepend*(queue: ptr k_queue; data: pointer): int32_t {.syscall,
     importc: "k_queue_alloc_prepend", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Inserts an element to a queue.
 ##
@@ -1664,6 +1852,10 @@ proc k_queue_alloc_prepend*(queue: ptr k_queue; data: pointer): int32_t {.syscal
 ##
 proc k_queue_insert*(queue: ptr k_queue; prev: pointer; data: pointer) {.
     importc: "k_queue_insert", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Atomically append a list of elements to a queue.
 ##
@@ -1684,6 +1876,10 @@ proc k_queue_insert*(queue: ptr k_queue; prev: pointer; data: pointer) {.
 ##
 proc k_queue_append_list*(queue: ptr k_queue; head: pointer; tail: pointer): cint {.
     importc: "k_queue_append_list", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Atomically add a list of elements to a queue.
 ##
@@ -1701,6 +1897,10 @@ proc k_queue_append_list*(queue: ptr k_queue; head: pointer; tail: pointer): cin
 ##
 proc k_queue_merge_slist*(queue: ptr k_queue; list: ptr sys_slist_t): cint {.
     importc: "k_queue_merge_slist", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Get an element from a queue.
 ##
@@ -1721,6 +1921,10 @@ proc k_queue_merge_slist*(queue: ptr k_queue; list: ptr sys_slist_t): cint {.
 ##
 proc k_queue_get*(queue: ptr k_queue; timeout: k_timeout_t): pointer {.syscall,
     importc: "k_queue_get", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Remove an element from a queue.
 ##
@@ -1739,6 +1943,10 @@ proc k_queue_get*(queue: ptr k_queue; timeout: k_timeout_t): pointer {.syscall,
 ##
 proc k_queue_remove*(queue: ptr k_queue; data: pointer): bool {.
     importc: "k_queue_remove", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Append an element to a queue only if it's not present already.
 ##
@@ -1755,6 +1963,10 @@ proc k_queue_remove*(queue: ptr k_queue; data: pointer): bool {.
 ##
 proc k_queue_unique_append*(queue: ptr k_queue; data: pointer): bool {.
     importc: "k_queue_unique_append", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Query a queue to see if it has data available.
 ##
@@ -1784,6 +1996,10 @@ proc z_impl_k_queue_is_empty*(queue: ptr k_queue): cint {.inline.} =
 ##
 proc k_queue_peek_head*(queue: ptr k_queue): pointer {.syscall,
     importc: "k_queue_peek_head", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Peek element at the tail of queue.
 ##
@@ -1795,6 +2011,10 @@ proc k_queue_peek_head*(queue: ptr k_queue): pointer {.syscall,
 ##
 proc k_queue_peek_tail*(queue: ptr k_queue): pointer {.syscall,
     importc: "k_queue_peek_tail", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Statically define and initialize a queue.
 ##
@@ -1805,6 +2025,10 @@ proc k_queue_peek_tail*(queue: ptr k_queue): pointer {.syscall,
 ##  @param name Name of the queue.
 ##
 proc K_QUEUE_DEFINE*(name: untyped) {.importc: "K_QUEUE_DEFINE", header: "kernel.h".}
+
+
+
+
 ## * @}
 when defined(CONFIG_USERSPACE):
   ## *
@@ -1834,6 +2058,10 @@ when defined(CONFIG_USERSPACE):
 
   proc Z_FUTEX_DATA_INITIALIZER*(obj: untyped) {.
       importc: "Z_FUTEX_DATA_INITIALIZER", header: "kernel.h".}
+
+
+
+
   ## *
   ##  @defgroup futex_apis FUTEX APIs
   ##  @ingroup kernel_apis
@@ -1860,6 +2088,10 @@ when defined(CONFIG_USERSPACE):
   ##
   proc k_futex_wait*(futex: ptr k_futex; expected: cint; timeout: k_timeout_t): cint {.
       syscall, importc: "k_futex_wait", header: "kernel.h".}
+
+
+
+
   ## *
   ##  @brief Wake one/all threads pending on a futex
   ##
@@ -1876,6 +2108,10 @@ when defined(CONFIG_USERSPACE):
   ##
   proc k_futex_wake*(futex: ptr k_futex; wake_all: bool): cint {.syscall,
       importc: "k_futex_wake", header: "kernel.h".}
+
+
+
+
   ## * @}
 type
   k_fifo* {.importc: "k_fifo", header: "kernel.h", bycopy.} = object
@@ -1886,6 +2122,8 @@ type
 ##
 proc Z_FIFO_INITIALIZER*(obj: untyped) {.importc: "Z_FIFO_INITIALIZER",
                                       header: "kernel.h".}
+
+
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
@@ -1904,6 +2142,8 @@ proc Z_FIFO_INITIALIZER*(obj: untyped) {.importc: "Z_FIFO_INITIALIZER",
 ##  @return N/A
 ##
 proc k_fifo_init*(fifo: untyped) {.importc: "k_fifo_init", header: "kernel.h".}
+
+
 ## *
 ##  @brief Cancel waiting on a FIFO queue.
 ##
@@ -1919,6 +2159,8 @@ proc k_fifo_init*(fifo: untyped) {.importc: "k_fifo_init", header: "kernel.h".}
 ##
 proc k_fifo_cancel_wait*(fifo: untyped) {.importc: "k_fifo_cancel_wait",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Add an element to a FIFO queue.
 ##
@@ -1935,6 +2177,8 @@ proc k_fifo_cancel_wait*(fifo: untyped) {.importc: "k_fifo_cancel_wait",
 ##
 proc k_fifo_put*(fifo: untyped; data: untyped) {.importc: "k_fifo_put",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Add an element to a FIFO queue.
 ##
@@ -1953,6 +2197,8 @@ proc k_fifo_put*(fifo: untyped; data: untyped) {.importc: "k_fifo_put",
 ##
 proc k_fifo_alloc_put*(fifo: untyped; data: untyped) {.importc: "k_fifo_alloc_put",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Atomically add a list of elements to a FIFO.
 ##
@@ -1971,6 +2217,8 @@ proc k_fifo_alloc_put*(fifo: untyped; data: untyped) {.importc: "k_fifo_alloc_pu
 ##
 proc k_fifo_put_list*(fifo: untyped; head: untyped; tail: untyped) {.
     importc: "k_fifo_put_list", header: "kernel.h".}
+
+
 ## *
 ##  @brief Atomically add a list of elements to a FIFO queue.
 ##
@@ -1988,6 +2236,8 @@ proc k_fifo_put_list*(fifo: untyped; head: untyped; tail: untyped) {.
 ##
 proc k_fifo_put_slist*(fifo: untyped; list: untyped) {.importc: "k_fifo_put_slist",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Get an element from a FIFO queue.
 ##
@@ -2007,6 +2257,8 @@ proc k_fifo_put_slist*(fifo: untyped; list: untyped) {.importc: "k_fifo_put_slis
 ##
 proc k_fifo_get*(fifo: untyped; timeout: untyped) {.importc: "k_fifo_get",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Query a FIFO queue to see if it has data available.
 ##
@@ -2022,6 +2274,8 @@ proc k_fifo_get*(fifo: untyped; timeout: untyped) {.importc: "k_fifo_get",
 ##
 proc k_fifo_is_empty*(fifo: untyped) {.importc: "k_fifo_is_empty",
                                     header: "kernel.h".}
+
+
 ## *
 ##  @brief Peek element at the head of a FIFO queue.
 ##
@@ -2037,6 +2291,8 @@ proc k_fifo_is_empty*(fifo: untyped) {.importc: "k_fifo_is_empty",
 ##
 proc k_fifo_peek_head*(fifo: untyped) {.importc: "k_fifo_peek_head",
                                       header: "kernel.h".}
+
+
 ## *
 ##  @brief Peek element at the tail of FIFO queue.
 ##
@@ -2050,6 +2306,8 @@ proc k_fifo_peek_head*(fifo: untyped) {.importc: "k_fifo_peek_head",
 ##
 proc k_fifo_peek_tail*(fifo: untyped) {.importc: "k_fifo_peek_tail",
                                       header: "kernel.h".}
+
+
 ## *
 ##  @brief Statically define and initialize a FIFO queue.
 ##
@@ -2060,6 +2318,8 @@ proc k_fifo_peek_tail*(fifo: untyped) {.importc: "k_fifo_peek_tail",
 ##  @param name Name of the FIFO queue.
 ##
 proc K_FIFO_DEFINE*(name: untyped) {.importc: "K_FIFO_DEFINE", header: "kernel.h".}
+
+
 ## * @}
 type
   k_lifo* {.importc: "k_lifo", header: "kernel.h", bycopy.} = object
@@ -2070,6 +2330,8 @@ type
 ##
 proc Z_LIFO_INITIALIZER*(obj: untyped) {.importc: "Z_LIFO_INITIALIZER",
                                       header: "kernel.h".}
+
+
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
@@ -2088,6 +2350,8 @@ proc Z_LIFO_INITIALIZER*(obj: untyped) {.importc: "Z_LIFO_INITIALIZER",
 ##  @return N/A
 ##
 proc k_lifo_init*(lifo: untyped) {.importc: "k_lifo_init", header: "kernel.h".}
+
+
 ## *
 ##  @brief Add an element to a LIFO queue.
 ##
@@ -2104,6 +2368,8 @@ proc k_lifo_init*(lifo: untyped) {.importc: "k_lifo_init", header: "kernel.h".}
 ##
 proc k_lifo_put*(lifo: untyped; data: untyped) {.importc: "k_lifo_put",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Add an element to a LIFO queue.
 ##
@@ -2122,6 +2388,8 @@ proc k_lifo_put*(lifo: untyped; data: untyped) {.importc: "k_lifo_put",
 ##
 proc k_lifo_alloc_put*(lifo: untyped; data: untyped) {.importc: "k_lifo_alloc_put",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Get an element from a LIFO queue.
 ##
@@ -2141,6 +2409,8 @@ proc k_lifo_alloc_put*(lifo: untyped; data: untyped) {.importc: "k_lifo_alloc_pu
 ##
 proc k_lifo_get*(lifo: untyped; timeout: untyped) {.importc: "k_lifo_get",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Statically define and initialize a LIFO queue.
 ##
@@ -2151,6 +2421,8 @@ proc k_lifo_get*(lifo: untyped; timeout: untyped) {.importc: "k_lifo_get",
 ##  @param name Name of the fifo.
 ##
 proc K_LIFO_DEFINE*(name: untyped) {.importc: "K_LIFO_DEFINE", header: "kernel.h".}
+
+
 ## * @}
 ## *
 ##  @cond INTERNAL_HIDDEN
@@ -2170,6 +2442,8 @@ type
 proc Z_STACK_INITIALIZER*(obj: untyped; stack_buffer: untyped;
                           stack_num_entries: untyped) {.
     importc: "Z_STACK_INITIALIZER", header: "kernel.h".}
+
+
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
@@ -2192,6 +2466,8 @@ proc Z_STACK_INITIALIZER*(obj: untyped; stack_buffer: untyped;
 proc k_stack_init*(stack: ptr k_stack; buffer: ptr stack_data_t;
                   num_entries: uint32_t) {.importc: "k_stack_init",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Initialize a stack.
 ##
@@ -2207,6 +2483,8 @@ proc k_stack_init*(stack: ptr k_stack; buffer: ptr stack_data_t;
 ##
 proc k_stack_alloc_init*(stack: ptr k_stack; num_entries: uint32_t): int32_t {.
     syscall, importc: "k_stack_alloc_init", header: "kernel.h".}
+
+
 ## *
 ##  @brief Release a stack's allocated buffer
 ##
@@ -2220,6 +2498,8 @@ proc k_stack_alloc_init*(stack: ptr k_stack; num_entries: uint32_t): int32_t {.
 ##
 proc k_stack_cleanup*(stack: ptr k_stack): cint {.importc: "k_stack_cleanup",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Push an element onto a stack.
 ##
@@ -2235,6 +2515,8 @@ proc k_stack_cleanup*(stack: ptr k_stack): cint {.importc: "k_stack_cleanup",
 ##
 proc k_stack_push*(stack: ptr k_stack; data: stack_data_t): cint {.syscall,
     importc: "k_stack_push", header: "kernel.h".}
+
+
 ## *
 ##  @brief Pop an element from a stack.
 ##
@@ -2257,6 +2539,8 @@ proc k_stack_push*(stack: ptr k_stack; data: stack_data_t): cint {.syscall,
 ##
 proc k_stack_pop*(stack: ptr k_stack; data: ptr stack_data_t; timeout: k_timeout_t): cint {.
     syscall, importc: "k_stack_pop", header: "kernel.h".}
+
+
 ## *
 ##  @brief Statically define and initialize a stack
 ##
@@ -2269,6 +2553,8 @@ proc k_stack_pop*(stack: ptr k_stack; data: ptr stack_data_t; timeout: k_timeout
 ##
 proc K_STACK_DEFINE*(name: untyped; stack_num_entries: untyped) {.
     importc: "K_STACK_DEFINE", header: "kernel.h".}
+
+
 ## * @}
 ## *
 ##  @cond INTERNAL_HIDDEN
@@ -2303,6 +2589,8 @@ type
 ##
 proc Z_MUTEX_INITIALIZER*(obj: untyped) {.importc: "Z_MUTEX_INITIALIZER",
     header: "kernel.h".}
+
+
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
@@ -2316,6 +2604,8 @@ proc Z_MUTEX_INITIALIZER*(obj: untyped) {.importc: "Z_MUTEX_INITIALIZER",
 ##  @param name Name of the mutex.
 ##
 proc K_MUTEX_DEFINE*(name: untyped) {.importc: "K_MUTEX_DEFINE", header: "kernel.h".}
+
+
 ## *
 ##  @brief Initialize a mutex.
 ##
@@ -2330,6 +2620,8 @@ proc K_MUTEX_DEFINE*(name: untyped) {.importc: "K_MUTEX_DEFINE", header: "kernel
 ##
 proc k_mutex_init*(mutex: ptr k_mutex): cint {.syscall, importc: "k_mutex_init",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Lock a mutex.
 ##
@@ -2353,6 +2645,8 @@ proc k_mutex_init*(mutex: ptr k_mutex): cint {.syscall, importc: "k_mutex_init",
 ##
 proc k_mutex_lock*(mutex: ptr k_mutex; timeout: k_timeout_t): cint {.syscall,
     importc: "k_mutex_lock", header: "kernel.h".}
+
+
 ## *
 ##  @brief Unlock a mutex.
 ##
@@ -2375,6 +2669,8 @@ proc k_mutex_lock*(mutex: ptr k_mutex; timeout: k_timeout_t): cint {.syscall,
 ##
 proc k_mutex_unlock*(mutex: ptr k_mutex): cint {.syscall, importc: "k_mutex_unlock",
     header: "kernel.h".}
+
+
 ## *
 ##  @}
 ##
@@ -2384,6 +2680,8 @@ type
 
 proc Z_CONDVAR_INITIALIZER*(obj: untyped) {.importc: "Z_CONDVAR_INITIALIZER",
     header: "kernel.h".}
+
+
 ## *
 ##  @defgroup condvar_apis Condition Variables APIs
 ##  @ingroup kernel_apis
@@ -2397,6 +2695,8 @@ proc Z_CONDVAR_INITIALIZER*(obj: untyped) {.importc: "Z_CONDVAR_INITIALIZER",
 ##
 proc k_condvar_init*(condvar: ptr k_condvar): cint {.syscall,
     importc: "k_condvar_init", header: "kernel.h".}
+
+
 ## *
 ##  @brief Signals one thread that is pending on the condition variable
 ##
@@ -2405,6 +2705,8 @@ proc k_condvar_init*(condvar: ptr k_condvar): cint {.syscall,
 ##
 proc k_condvar_signal*(condvar: ptr k_condvar): cint {.syscall,
     importc: "k_condvar_signal", header: "kernel.h".}
+
+
 ## *
 ##  @brief Unblock all threads that are pending on the condition
 ##  variable
@@ -2414,6 +2716,8 @@ proc k_condvar_signal*(condvar: ptr k_condvar): cint {.syscall,
 ##
 proc k_condvar_broadcast*(condvar: ptr k_condvar): cint {.syscall,
     importc: "k_condvar_broadcast", header: "kernel.h".}
+
+
 ## *
 ##  @brief Waits on the condition variable releasing the mutex lock
 ##
@@ -2433,6 +2737,8 @@ proc k_condvar_broadcast*(condvar: ptr k_condvar): cint {.syscall,
 ##
 proc k_condvar_wait*(condvar: ptr k_condvar; mutex: ptr k_mutex; timeout: k_timeout_t): cint {.
     syscall, importc: "k_condvar_wait", header: "kernel.h".}
+
+
 ## *
 ##  @brief Statically define and initialize a condition variable.
 ##
@@ -2445,6 +2751,8 @@ proc k_condvar_wait*(condvar: ptr k_condvar; mutex: ptr k_mutex; timeout: k_time
 ##
 proc K_CONDVAR_DEFINE*(name: untyped) {.importc: "K_CONDVAR_DEFINE",
                                       header: "kernel.h".}
+
+
 ## *
 ##  @}
 ##
@@ -2460,6 +2768,8 @@ type
 
 proc Z_SEM_INITIALIZER*(obj: untyped; initial_count: untyped; count_limit: untyped) {.
     importc: "Z_SEM_INITIALIZER", header: "kernel.h".}
+
+
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
@@ -2494,6 +2804,8 @@ var K_SEM_MAX_LIMIT* {.importc: "K_SEM_MAX_LIMIT", header: "kernel.h".}: int
 ##
 proc k_sem_init*(sem: ptr k_sem; initial_count: cuint; limit: cuint): cint {.syscall,
     importc: "k_sem_init", header: "kernel.h".}
+
+
 ## *
 ##  @brief Take a semaphore.
 ##
@@ -2514,6 +2826,8 @@ proc k_sem_init*(sem: ptr k_sem; initial_count: cuint; limit: cuint): cint {.sys
 ##
 proc k_sem_take*(sem: ptr k_sem; timeout: k_timeout_t): cint {.syscall,
     importc: "k_sem_take", header: "kernel.h".}
+
+
 ## *
 ##  @brief Give a semaphore.
 ##
@@ -2527,6 +2841,8 @@ proc k_sem_take*(sem: ptr k_sem; timeout: k_timeout_t): cint {.syscall,
 ##  @return N/A
 ##
 proc k_sem_give*(sem: ptr k_sem) {.syscall, importc: "k_sem_give", header: "kernel.h".}
+
+
 ## *
 ##  @brief Resets a semaphore's count to zero.
 ##
@@ -2540,6 +2856,8 @@ proc k_sem_give*(sem: ptr k_sem) {.syscall, importc: "k_sem_give", header: "kern
 ##
 proc k_sem_reset*(sem: ptr k_sem) {.syscall, importc: "k_sem_reset",
                                 header: "kernel.h".}
+
+
 ## *
 ##  @brief Get a semaphore's count.
 ##
@@ -2551,6 +2869,8 @@ proc k_sem_reset*(sem: ptr k_sem) {.syscall, importc: "k_sem_reset",
 ##
 proc k_sem_count_get*(sem: ptr k_sem): cuint {.syscall, importc: "k_sem_count_get",
     header: "kernel.h".}
+
+
 ## *
 ##  @internal
 ##
@@ -2570,6 +2890,8 @@ proc z_impl_k_sem_count_get*(sem: ptr k_sem): cuint {.inline.} =
 ##
 proc K_SEM_DEFINE*(name: untyped; initial_count: untyped; count_limit: untyped) {.
     importc: "K_SEM_DEFINE", header: "kernel.h".}
+
+
 ## * @}
 ## *
 ##  @cond INTERNAL_HIDDEN
@@ -2593,6 +2915,8 @@ type
 ##
 proc k_work_init*(work: ptr k_work; handler: k_work_handler_t) {.
     importc: "k_work_init", header: "kernel.h".}
+
+
 ## * @brief Busy state flags from the work item.
 ##
 ##  A zero return value indicates the work item appears to be idle.
@@ -2609,6 +2933,8 @@ proc k_work_init*(work: ptr k_work; handler: k_work_handler_t) {.
 ##
 proc k_work_busy_get*(work: ptr k_work): cint {.importc: "k_work_busy_get",
     header: "kernel.h".}
+
+
 ## * @brief Test whether a work item is currently pending.
 ##
 ##  Wrapper to determine whether a work item is in a non-idle dstate.
@@ -2624,6 +2950,8 @@ proc k_work_busy_get*(work: ptr k_work): cint {.importc: "k_work_busy_get",
 ##
 proc k_work_is_pending*(work: ptr k_work): bool {.inline,
     importc: "k_work_is_pending", header: "kernel.h".}
+
+
 ## * @brief Submit a work item to a queue.
 ##
 ##  @param queue pointer to the work queue on which the item should run.  If
@@ -2646,6 +2974,8 @@ proc k_work_is_pending*(work: ptr k_work): bool {.inline,
 ##
 proc k_work_submit_to_queue*(queue: ptr k_work_q; work: ptr k_work): cint {.
     importc: "k_work_submit_to_queue", header: "kernel.h".}
+
+
 ## * @brief Submit a work item to the system queue.
 ##
 ##  @funcprops \isr_ok
@@ -2656,6 +2986,8 @@ proc k_work_submit_to_queue*(queue: ptr k_work_q; work: ptr k_work): cint {.
 ##
 proc k_work_submit*(work: ptr k_work): cint {.importc: "k_work_submit",
     header: "kernel.h".}
+
+
 ## * @brief Wait for last-submitted instance to complete.
 ##
 ##  Resubmissions may occur while waiting, including chained submissions (from
@@ -2682,6 +3014,8 @@ proc k_work_submit*(work: ptr k_work): cint {.importc: "k_work_submit",
 ##
 proc k_work_flush*(work: ptr k_work; sync: ptr k_work_sync): bool {.
     importc: "k_work_flush", header: "kernel.h".}
+
+
 ## * @brief Cancel a work item.
 ##
 ##  This attempts to prevent a pending (non-delayable) work item from being
@@ -2703,6 +3037,8 @@ proc k_work_flush*(work: ptr k_work; sync: ptr k_work_sync): bool {.
 ##
 proc k_work_cancel*(work: ptr k_work): cint {.importc: "k_work_cancel",
     header: "kernel.h".}
+
+
 ## * @brief Cancel a work item and wait for it to complete.
 ##
 ##  Same as k_work_cancel() but does not return until cancellation is complete.
@@ -2735,6 +3071,8 @@ proc k_work_cancel*(work: ptr k_work): cint {.importc: "k_work_cancel",
 ##
 proc k_work_cancel_sync*(work: ptr k_work; sync: ptr k_work_sync): bool {.
     importc: "k_work_cancel_sync", header: "kernel.h".}
+
+
 ## * @brief Initialize a work queue structure.
 ##
 ##  This must be invoked before starting a work queue structure for the first time.
@@ -2746,6 +3084,8 @@ proc k_work_cancel_sync*(work: ptr k_work; sync: ptr k_work_sync): bool {.
 ##
 proc k_work_queue_init*(queue: ptr k_work_q) {.importc: "k_work_queue_init",
     header: "kernel.h".}
+
+
 ## * @brief Initialize a work queue.
 ##
 ##  This configures the work queue thread and starts it running.  The function
@@ -2769,6 +3109,8 @@ proc k_work_queue_start*(queue: ptr k_work_q; stack: ptr k_thread_stack_t;
                         stack_size: csize_t; prio: cint;
                         cfg: ptr k_work_queue_config) {.
     importc: "k_work_queue_start", header: "kernel.h".}
+
+
 ## * @brief Access the thread that animates a work queue.
 ##
 ##  This is necessary to grant a work queue thread access to things the work
@@ -2780,6 +3122,8 @@ proc k_work_queue_start*(queue: ptr k_work_q; stack: ptr k_thread_stack_t;
 ##
 proc k_work_queue_thread_get*(queue: ptr k_work_q): k_tid_t {.inline,
     importc: "k_work_queue_thread_get", header: "kernel.h".}
+
+
 ## * @brief Wait until the work queue has drained, optionally plugging it.
 ##
 ##  This blocks submission to the work queue except when coming from queue
@@ -2805,6 +3149,8 @@ proc k_work_queue_thread_get*(queue: ptr k_work_q): k_tid_t {.inline,
 ##
 proc k_work_queue_drain*(queue: ptr k_work_q; plug: bool): cint {.
     importc: "k_work_queue_drain", header: "kernel.h".}
+
+
 ## * @brief Release a work queue to accept new submissions.
 ##
 ##  This releases the block on new submissions placed when k_work_queue_drain()
@@ -2820,6 +3166,8 @@ proc k_work_queue_drain*(queue: ptr k_work_q; plug: bool): cint {.
 ##
 proc k_work_queue_unplug*(queue: ptr k_work_q): cint {.
     importc: "k_work_queue_unplug", header: "kernel.h".}
+
+
 ## * @brief Initialize a delayable work structure.
 ##
 ##  This must be invoked before scheduling a delayable work structure for the
@@ -2835,6 +3183,8 @@ proc k_work_queue_unplug*(queue: ptr k_work_q): cint {.
 ##
 proc k_work_init_delayable*(dwork: ptr k_work_delayable; handler: k_work_handler_t) {.
     importc: "k_work_init_delayable", header: "kernel.h".}
+
+
 ## *
 ##  @brief Get the parent delayable work structure from a work pointer.
 ##
@@ -2848,6 +3198,8 @@ proc k_work_init_delayable*(dwork: ptr k_work_delayable; handler: k_work_handler
 ##
 proc k_work_delayable_from_work*(work: ptr k_work): ptr k_work_delayable {.inline,
     importc: "k_work_delayable_from_work", header: "kernel.h".}
+
+
 ## * @brief Busy state flags from the delayable work item.
 ##
 ##  @funcprops \isr_ok
@@ -2863,6 +3215,8 @@ proc k_work_delayable_from_work*(work: ptr k_work): ptr k_work_delayable {.inlin
 ##
 proc k_work_delayable_busy_get*(dwork: ptr k_work_delayable): cint {.
     importc: "k_work_delayable_busy_get", header: "kernel.h".}
+
+
 ## * @brief Test whether a delayed work item is currently pending.
 ##
 ##  Wrapper to determine whether a delayed work item is in a non-idle state.
@@ -2879,6 +3233,8 @@ proc k_work_delayable_busy_get*(dwork: ptr k_work_delayable): cint {.
 ##
 proc k_work_delayable_is_pending*(dwork: ptr k_work_delayable): bool {.inline,
     importc: "k_work_delayable_is_pending", header: "kernel.h".}
+
+
 ## * @brief Get the absolute tick count at which a scheduled delayable work
 ##  will be submitted.
 ##
@@ -2894,6 +3250,8 @@ proc k_work_delayable_is_pending*(dwork: ptr k_work_delayable): bool {.inline,
 ##
 proc k_work_delayable_expires_get*(dwork: ptr k_work_delayable): k_ticks_t {.
     inline, importc: "k_work_delayable_expires_get", header: "kernel.h".}
+
+
 ## * @brief Get the number of ticks until a scheduled delayable work will be
 ##  submitted.
 ##
@@ -2909,6 +3267,8 @@ proc k_work_delayable_expires_get*(dwork: ptr k_work_delayable): k_ticks_t {.
 ##
 proc k_work_delayable_remaining_get*(dwork: ptr k_work_delayable): k_ticks_t {.
     inline, importc: "k_work_delayable_remaining_get", header: "kernel.h".}
+
+
 ## * @brief Submit an idle work item to a queue after a delay.
 ##
 ##  Unlike k_work_reschedule_for_queue() this is a no-op if the work item is
@@ -2937,6 +3297,8 @@ proc k_work_delayable_remaining_get*(dwork: ptr k_work_delayable): k_ticks_t {.
 proc k_work_schedule_for_queue*(queue: ptr k_work_q; dwork: ptr k_work_delayable;
                                 delay: k_timeout_t): cint {.
     importc: "k_work_schedule_for_queue", header: "kernel.h".}
+
+
 ## * @brief Submit an idle work item to the system work queue after a
 ##  delay.
 ##
@@ -2952,6 +3314,8 @@ proc k_work_schedule_for_queue*(queue: ptr k_work_q; dwork: ptr k_work_delayable
 ##
 proc k_work_schedule*(dwork: ptr k_work_delayable; delay: k_timeout_t): cint {.
     importc: "k_work_schedule", header: "kernel.h".}
+
+
 ## * @brief Reschedule a work item to a queue after a delay.
 ##
 ##  Unlike k_work_schedule_for_queue() this function can change the deadline of
@@ -2990,6 +3354,8 @@ proc k_work_schedule*(dwork: ptr k_work_delayable; delay: k_timeout_t): cint {.
 proc k_work_reschedule_for_queue*(queue: ptr k_work_q;
                                   dwork: ptr k_work_delayable; delay: k_timeout_t): cint {.
     importc: "k_work_reschedule_for_queue", header: "kernel.h".}
+
+
 ## * @brief Reschedule a work item to the system work queue after a
 ##  delay.
 ##
@@ -3004,6 +3370,8 @@ proc k_work_reschedule_for_queue*(queue: ptr k_work_q;
 ##
 proc k_work_reschedule*(dwork: ptr k_work_delayable; delay: k_timeout_t): cint {.
     importc: "k_work_reschedule", header: "kernel.h".}
+
+
 ## * @brief Flush delayable work.
 ##
 ##  If the work is scheduled, it is immediately submitted.  Then the caller
@@ -3030,6 +3398,8 @@ proc k_work_reschedule*(dwork: ptr k_work_delayable; delay: k_timeout_t): cint {
 ##
 proc k_work_flush_delayable*(dwork: ptr k_work_delayable; sync: ptr k_work_sync): bool {.
     importc: "k_work_flush_delayable", header: "kernel.h".}
+
+
 ## * @brief Cancel delayable work.
 ##
 ##  Similar to k_work_cancel() but for delayable work.  If the work is
@@ -3052,6 +3422,8 @@ proc k_work_flush_delayable*(dwork: ptr k_work_delayable; sync: ptr k_work_sync)
 ##
 proc k_work_cancel_delayable*(dwork: ptr k_work_delayable): cint {.
     importc: "k_work_cancel_delayable", header: "kernel.h".}
+
+
 ## * @brief Cancel delayable work and wait.
 ##
 ##  Like k_work_cancel_delayable() but waits until the work becomes idle.
@@ -3152,6 +3524,8 @@ type
 
 proc Z_WORK_INITIALIZER*(work_handler: untyped) {.importc: "Z_WORK_INITIALIZER",
     header: "kernel.h".}
+
+
 ## * @brief A structure used to submit work after a delay.
 type
   k_work_delayable* {.importc: "k_work_delayable", header: "kernel.h", bycopy.} = object
@@ -3162,6 +3536,8 @@ type
 
 proc Z_WORK_DELAYABLE_INITIALIZER*(work_handler: untyped) {.
     importc: "Z_WORK_DELAYABLE_INITIALIZER", header: "kernel.h".}
+
+
 ## *
 ##  @brief Initialize a statically-defined delayable work item.
 ##
@@ -3180,6 +3556,8 @@ proc Z_WORK_DELAYABLE_INITIALIZER*(work_handler: untyped) {.
 ##
 proc K_WORK_DELAYABLE_DEFINE*(work: untyped; work_handler: untyped) {.
     importc: "K_WORK_DELAYABLE_DEFINE", header: "kernel.h".}
+
+
 ## *
 ##  @cond INTERNAL_HIDDEN
 ##
@@ -3315,6 +3693,8 @@ type
 ##
 proc Z_WORK_USER_INITIALIZER*(work_handler: untyped) {.
     importc: "Z_WORK_USER_INITIALIZER", header: "kernel.h".}
+
+
 ## *
 ##  @brief Initialize a statically-defined user work item.
 ##
@@ -3328,6 +3708,8 @@ proc Z_WORK_USER_INITIALIZER*(work_handler: untyped) {.
 ##
 proc K_WORK_USER_DEFINE*(work: untyped; work_handler: untyped) {.
     importc: "K_WORK_USER_DEFINE", header: "kernel.h".}
+
+
 ## *
 ##  @brief Initialize a userspace work item.
 ##
@@ -3417,6 +3799,8 @@ proc k_work_user_queue_start*(work_q: ptr k_work_user_q;
                               stack: ptr k_thread_stack_t; stack_size: csize_t;
                               prio: cint; name: cstring) {.
     importc: "k_work_user_queue_start", header: "kernel.h".}
+
+
 ## * @}
 ## *
 ##  @cond INTERNAL_HIDDEN
@@ -3452,6 +3836,8 @@ type
 ##
 proc K_WORK_DEFINE*(work: untyped; work_handler: untyped) {.
     importc: "K_WORK_DEFINE", header: "kernel.h".}
+
+
 ## *
 ##  @brief Initialize a statically-defined delayed work item.
 ##
@@ -3476,6 +3862,8 @@ proc K_WORK_DEFINE*(work: untyped; work_handler: untyped) {.
 ##
 proc k_work_poll_init*(work: ptr k_work_poll; handler: k_work_handler_t) {.
     importc: "k_work_poll_init", header: "kernel.h".}
+
+
 ## *
 ##  @brief Submit a triggered work item.
 ##
@@ -3514,6 +3902,8 @@ proc k_work_poll_submit_to_queue*(work_q: ptr k_work_q; work: ptr k_work_poll;
                                   events: ptr k_poll_event; num_events: cint;
                                   timeout: k_timeout_t): cint {.
     importc: "k_work_poll_submit_to_queue", header: "kernel.h".}
+
+
 ## *
 ##  @brief Submit a triggered work item to the system workqueue.
 ##
@@ -3548,6 +3938,8 @@ proc k_work_poll_submit_to_queue*(work_q: ptr k_work_q; work: ptr k_work_poll;
 proc k_work_poll_submit*(work: ptr k_work_poll; events: ptr k_poll_event;
                         num_events: cint; timeout: k_timeout_t): cint {.
     importc: "k_work_poll_submit", header: "kernel.h".}
+
+
 ## *
 ##  @brief Cancel a triggered work item.
 ##
@@ -3564,6 +3956,8 @@ proc k_work_poll_submit*(work: ptr k_work_poll; events: ptr k_poll_event;
 ##
 proc k_work_poll_cancel*(work: ptr k_work_poll): cint {.
     importc: "k_work_poll_cancel", header: "kernel.h".}
+
+
 ## * @}
 ## *
 ##  @defgroup msgq_apis Message Queue APIs
@@ -3595,6 +3989,8 @@ type
 proc Z_MSGQ_INITIALIZER*(obj: untyped; q_buffer: untyped; q_msg_size: untyped;
                         q_max_msgs: untyped) {.importc: "Z_MSGQ_INITIALIZER",
     header: "kernel.h".}
+
+
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
@@ -3632,6 +4028,8 @@ type
 proc K_MSGQ_DEFINE*(q_name: untyped; q_msg_size: untyped; q_max_msgs: untyped;
                     q_align: untyped) {.importc: "K_MSGQ_DEFINE",
                                       header: "kernel.h".}
+
+
 ## *
 ##  @brief Initialize a message queue.
 ##
@@ -3652,6 +4050,8 @@ proc K_MSGQ_DEFINE*(q_name: untyped; q_msg_size: untyped; q_max_msgs: untyped;
 ##
 proc k_msgq_init*(msgq: ptr k_msgq; buffer: cstring; msg_size: csize_t;
                   max_msgs: uint32_t) {.importc: "k_msgq_init", header: "kernel.h".}
+
+
 ## *
 ##  @brief Initialize a message queue.
 ##
@@ -3673,6 +4073,8 @@ proc k_msgq_init*(msgq: ptr k_msgq; buffer: cstring; msg_size: csize_t;
 ##
 proc k_msgq_alloc_init*(msgq: ptr k_msgq; msg_size: csize_t; max_msgs: uint32_t): cint {.
     syscall, importc: "k_msgq_alloc_init", header: "kernel.h".}
+
+
 ## *
 ##  @brief Release allocated buffer for a queue
 ##
@@ -3685,6 +4087,8 @@ proc k_msgq_alloc_init*(msgq: ptr k_msgq; msg_size: csize_t; max_msgs: uint32_t)
 ##
 proc k_msgq_cleanup*(msgq: ptr k_msgq): cint {.importc: "k_msgq_cleanup",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Send a message to a message queue.
 ##
@@ -3708,6 +4112,8 @@ proc k_msgq_cleanup*(msgq: ptr k_msgq): cint {.importc: "k_msgq_cleanup",
 ##
 proc k_msgq_put*(msgq: ptr k_msgq; data: pointer; timeout: k_timeout_t): cint {.
     syscall, importc: "k_msgq_put", header: "kernel.h".}
+
+
 ## *
 ##  @brief Receive a message from a message queue.
 ##
@@ -3730,6 +4136,8 @@ proc k_msgq_put*(msgq: ptr k_msgq; data: pointer; timeout: k_timeout_t): cint {.
 ##
 proc k_msgq_get*(msgq: ptr k_msgq; data: pointer; timeout: k_timeout_t): cint {.
     syscall, importc: "k_msgq_get", header: "kernel.h".}
+
+
 ## *
 ##  @brief Peek/read a message from a message queue.
 ##
@@ -3746,6 +4154,8 @@ proc k_msgq_get*(msgq: ptr k_msgq; data: pointer; timeout: k_timeout_t): cint {.
 ##
 proc k_msgq_peek*(msgq: ptr k_msgq; data: pointer): cint {.syscall,
     importc: "k_msgq_peek", header: "kernel.h".}
+
+
 ## *
 ##  @brief Purge a message queue.
 ##
@@ -3759,6 +4169,8 @@ proc k_msgq_peek*(msgq: ptr k_msgq; data: pointer): cint {.syscall,
 ##
 proc k_msgq_purge*(msgq: ptr k_msgq) {.syscall, importc: "k_msgq_purge",
                                     header: "kernel.h".}
+
+
 ## *
 ##  @brief Get the amount of free space in a message queue.
 ##
@@ -3771,6 +4183,8 @@ proc k_msgq_purge*(msgq: ptr k_msgq) {.syscall, importc: "k_msgq_purge",
 ##
 proc k_msgq_num_free_get*(msgq: ptr k_msgq): uint32_t {.syscall,
     importc: "k_msgq_num_free_get", header: "kernel.h".}
+
+
 ## *
 ##  @brief Get basic attributes of a message queue.
 ##
@@ -3842,6 +4256,8 @@ type
 ##
 proc Z_MBOX_INITIALIZER*(obj: untyped) {.importc: "Z_MBOX_INITIALIZER",
                                       header: "kernel.h".}
+
+
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
@@ -3855,6 +4271,8 @@ proc Z_MBOX_INITIALIZER*(obj: untyped) {.importc: "Z_MBOX_INITIALIZER",
 ##  @param name Name of the mailbox.
 ##
 proc K_MBOX_DEFINE*(name: untyped) {.importc: "K_MBOX_DEFINE", header: "kernel.h".}
+
+
 ## *
 ##  @brief Initialize a mailbox.
 ##
@@ -3865,6 +4283,8 @@ proc K_MBOX_DEFINE*(name: untyped) {.importc: "K_MBOX_DEFINE", header: "kernel.h
 ##  @return N/A
 ##
 proc k_mbox_init*(mbox: ptr k_mbox) {.importc: "k_mbox_init", header: "kernel.h".}
+
+
 ## *
 ##  @brief Send a mailbox message in a synchronous manner.
 ##
@@ -3886,6 +4306,8 @@ proc k_mbox_init*(mbox: ptr k_mbox) {.importc: "k_mbox_init", header: "kernel.h"
 ##
 proc k_mbox_put*(mbox: ptr k_mbox; tx_msg: ptr k_mbox_msg; timeout: k_timeout_t): cint {.
     importc: "k_mbox_put", header: "kernel.h".}
+
+
 ## *
 ##  @brief Send a mailbox message in an asynchronous manner.
 ##
@@ -3903,6 +4325,8 @@ proc k_mbox_put*(mbox: ptr k_mbox; tx_msg: ptr k_mbox_msg; timeout: k_timeout_t)
 ##
 proc k_mbox_async_put*(mbox: ptr k_mbox; tx_msg: ptr k_mbox_msg; sem: ptr k_sem) {.
     importc: "k_mbox_async_put", header: "kernel.h".}
+
+
 ## *
 ##  @brief Receive a mailbox message.
 ##
@@ -3923,6 +4347,8 @@ proc k_mbox_async_put*(mbox: ptr k_mbox; tx_msg: ptr k_mbox_msg; sem: ptr k_sem)
 proc k_mbox_get*(mbox: ptr k_mbox; rx_msg: ptr k_mbox_msg; buffer: pointer;
                 timeout: k_timeout_t): cint {.importc: "k_mbox_get",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Retrieve mailbox message data into a buffer.
 ##
@@ -3940,6 +4366,8 @@ proc k_mbox_get*(mbox: ptr k_mbox; rx_msg: ptr k_mbox_msg; buffer: pointer;
 ##
 proc k_mbox_data_get*(rx_msg: ptr k_mbox_msg; buffer: pointer) {.
     importc: "k_mbox_data_get", header: "kernel.h".}
+
+
 ## * @}
 ## *
 ##  @defgroup pipe_apis Pipe APIs
@@ -3970,6 +4398,8 @@ var K_PIPE_FLAG_ALLOC* {.importc: "K_PIPE_FLAG_ALLOC", header: "kernel.h".}: int
 proc Z_PIPE_INITIALIZER*(obj: untyped; pipe_buffer: untyped;
                         pipe_buffer_size: untyped) {.
     importc: "Z_PIPE_INITIALIZER", header: "kernel.h".}
+
+
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
@@ -3988,6 +4418,8 @@ proc Z_PIPE_INITIALIZER*(obj: untyped; pipe_buffer: untyped;
 ##
 proc K_PIPE_DEFINE*(name: untyped; pipe_buffer_size: untyped; pipe_align: untyped) {.
     importc: "K_PIPE_DEFINE", header: "kernel.h".}
+
+
 ## *
 ##  @brief Initialize a pipe.
 ##
@@ -4003,6 +4435,8 @@ proc K_PIPE_DEFINE*(name: untyped; pipe_buffer_size: untyped; pipe_align: untype
 ##
 proc k_pipe_init*(pipe: ptr k_pipe; buffer: ptr cuchar; size: csize_t) {.
     importc: "k_pipe_init", header: "kernel.h".}
+
+
 ## *
 ##  @brief Release a pipe's allocated buffer
 ##
@@ -4016,6 +4450,8 @@ proc k_pipe_init*(pipe: ptr k_pipe; buffer: ptr cuchar; size: csize_t) {.
 ##
 proc k_pipe_cleanup*(pipe: ptr k_pipe): cint {.importc: "k_pipe_cleanup",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Initialize a pipe and allocate a buffer for it
 ##
@@ -4033,6 +4469,8 @@ proc k_pipe_cleanup*(pipe: ptr k_pipe): cint {.importc: "k_pipe_cleanup",
 ##
 proc k_pipe_alloc_init*(pipe: ptr k_pipe; size: csize_t): cint {.syscall,
     importc: "k_pipe_alloc_init", header: "kernel.h".}
+
+
 ## *
 ##  @brief Write data to a pipe.
 ##
@@ -4054,6 +4492,8 @@ proc k_pipe_alloc_init*(pipe: ptr k_pipe; size: csize_t): cint {.syscall,
 proc k_pipe_put*(pipe: ptr k_pipe; data: pointer; bytes_to_write: csize_t;
                 bytes_written: ptr csize_t; min_xfer: csize_t; timeout: k_timeout_t): cint {.
     syscall, importc: "k_pipe_put", header: "kernel.h".}
+
+
 ## *
 ##  @brief Read data from a pipe.
 ##
@@ -4076,6 +4516,8 @@ proc k_pipe_put*(pipe: ptr k_pipe; data: pointer; bytes_to_write: csize_t;
 proc k_pipe_get*(pipe: ptr k_pipe; data: pointer; bytes_to_read: csize_t;
                 bytes_read: ptr csize_t; min_xfer: csize_t; timeout: k_timeout_t): cint {.
     syscall, importc: "k_pipe_get", header: "kernel.h".}
+
+
 ## *
 ##  @brief Query the number of bytes that may be read from @a pipe.
 ##
@@ -4086,6 +4528,8 @@ proc k_pipe_get*(pipe: ptr k_pipe; data: pointer; bytes_to_read: csize_t;
 ##
 proc k_pipe_read_avail*(pipe: ptr k_pipe): csize_t {.syscall,
     importc: "k_pipe_read_avail", header: "kernel.h".}
+
+
 ## *
 ##  @brief Query the number of bytes that may be written to @a pipe
 ##
@@ -4096,6 +4540,8 @@ proc k_pipe_read_avail*(pipe: ptr k_pipe): csize_t {.syscall,
 ##
 proc k_pipe_write_avail*(pipe: ptr k_pipe): csize_t {.syscall,
     importc: "k_pipe_write_avail", header: "kernel.h".}
+
+
 ## * @}
 ## *
 ##  @cond INTERNAL_HIDDEN
@@ -4115,6 +4561,8 @@ type
 proc Z_MEM_SLAB_INITIALIZER*(obj: untyped; slab_buffer: untyped;
                             slab_block_size: untyped; slab_num_blocks: untyped) {.
     importc: "Z_MEM_SLAB_INITIALIZER", header: "kernel.h".}
+
+
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
@@ -4145,6 +4593,8 @@ proc Z_MEM_SLAB_INITIALIZER*(obj: untyped; slab_buffer: untyped;
 proc K_MEM_SLAB_DEFINE*(name: untyped; slab_block_size: untyped;
                         slab_num_blocks: untyped; slab_align: untyped) {.
     importc: "K_MEM_SLAB_DEFINE", header: "kernel.h".}
+
+
 ## *
 ##  @brief Initialize a memory slab.
 ##
@@ -4169,6 +4619,8 @@ proc K_MEM_SLAB_DEFINE*(name: untyped; slab_block_size: untyped;
 proc k_mem_slab_init*(slab: ptr k_mem_slab; buffer: pointer; block_size: csize_t;
                       num_blocks: uint32_t): cint {.importc: "k_mem_slab_init",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Allocate memory from a memory slab.
 ##
@@ -4193,6 +4645,8 @@ proc k_mem_slab_init*(slab: ptr k_mem_slab; buffer: pointer; block_size: csize_t
 ##
 proc k_mem_slab_alloc*(slab: ptr k_mem_slab; mem: ptr pointer; timeout: k_timeout_t): cint {.
     importc: "k_mem_slab_alloc", header: "kernel.h".}
+
+
 ## *
 ##  @brief Free memory allocated from a memory slab.
 ##
@@ -4206,6 +4660,8 @@ proc k_mem_slab_alloc*(slab: ptr k_mem_slab; mem: ptr pointer; timeout: k_timeou
 ##
 proc k_mem_slab_free*(slab: ptr k_mem_slab; mem: ptr pointer) {.
     importc: "k_mem_slab_free", header: "kernel.h".}
+
+
 ## *
 ##  @brief Get the number of used blocks in a memory slab.
 ##
@@ -4276,6 +4732,8 @@ type
 ##
 proc k_heap_init*(h: ptr k_heap; mem: pointer; bytes: csize_t) {.
     importc: "k_heap_init", header: "kernel.h".}
+
+
 ## * @brief Allocate aligned memory from a k_heap
 ##
 ##  Behaves in all ways like k_heap_alloc(), except that the returned
@@ -4298,6 +4756,8 @@ proc k_heap_init*(h: ptr k_heap; mem: pointer; bytes: csize_t) {.
 proc k_heap_aligned_alloc*(h: ptr k_heap; align: csize_t; bytes: csize_t;
                           timeout: k_timeout_t): pointer {.
     importc: "k_heap_aligned_alloc", header: "kernel.h".}
+
+
 ## *
 ##  @brief Allocate memory from a k_heap
 ##
@@ -4320,6 +4780,8 @@ proc k_heap_aligned_alloc*(h: ptr k_heap; align: csize_t; bytes: csize_t;
 ##
 proc k_heap_alloc*(h: ptr k_heap; bytes: csize_t; timeout: k_timeout_t): pointer {.
     importc: "k_heap_alloc", header: "kernel.h".}
+
+
 ## *
 ##  @brief Free memory allocated by k_heap_alloc()
 ##
@@ -4354,6 +4816,8 @@ var Z_HEAP_MIN_SIZE* {.importc: "Z_HEAP_MIN_SIZE", header: "kernel.h".}: int
 ##
 proc Z_HEAP_DEFINE_IN_SECT*(name: untyped; bytes: untyped; in_section: untyped) {.
     importc: "Z_HEAP_DEFINE_IN_SECT", header: "kernel.h".}
+
+
 ## *
 ##  @brief Define a static k_heap
 ##
@@ -4370,6 +4834,8 @@ proc Z_HEAP_DEFINE_IN_SECT*(name: untyped; bytes: untyped; in_section: untyped) 
 ##
 proc K_HEAP_DEFINE*(name: untyped; bytes: untyped) {.importc: "K_HEAP_DEFINE",
     header: "kernel.h".}
+
+
 ## *
 ##  @brief Define a static k_heap in uncached memory
 ##
@@ -4386,6 +4852,8 @@ proc K_HEAP_DEFINE*(name: untyped; bytes: untyped) {.importc: "K_HEAP_DEFINE",
 ##
 proc K_HEAP_DEFINE_NOCACHE*(name: untyped; bytes: untyped) {.
     importc: "K_HEAP_DEFINE_NOCACHE", header: "kernel.h".}
+
+
 ## *
 ##  @}
 ##
@@ -4414,6 +4882,8 @@ proc K_HEAP_DEFINE_NOCACHE*(name: untyped; bytes: untyped) {.
 ##
 proc k_aligned_alloc*(align: csize_t; size: csize_t): pointer {.
     importc: "k_aligned_alloc", header: "kernel.h".}
+
+
 ## *
 ##  @brief Allocate memory from the heap.
 ##
@@ -4425,6 +4895,8 @@ proc k_aligned_alloc*(align: csize_t; size: csize_t): pointer {.
 ##  @return Address of the allocated memory if successful; otherwise NULL.
 ##
 proc k_malloc*(size: csize_t): pointer {.importc: "k_malloc", header: "kernel.h".}
+
+
 ## *
 ##  @brief Free memory allocated from heap.
 ##
@@ -4439,6 +4911,8 @@ proc k_malloc*(size: csize_t): pointer {.importc: "k_malloc", header: "kernel.h"
 ##  @return N/A
 ##
 proc k_free*(`ptr`: pointer) {.importc: "k_free", header: "kernel.h".}
+
+
 ## *
 ##  @brief Allocate memory from heap, array style
 ##
@@ -4452,6 +4926,8 @@ proc k_free*(`ptr`: pointer) {.importc: "k_free", header: "kernel.h".}
 ##
 proc k_calloc*(nmemb: csize_t; size: csize_t): pointer {.importc: "k_calloc",
     header: "kernel.h".}
+
+
 ## * @}
 ##  polling API - PRIVATE
 when defined(CONFIG_POLL):
@@ -4512,6 +4988,8 @@ type
 
 proc K_POLL_SIGNAL_INITIALIZER*(obj: untyped) {.
     importc: "K_POLL_SIGNAL_INITIALIZER", header: "kernel.h".}
+
+
 ## *
 ##  @brief Poll Event
 ##
@@ -4523,6 +5001,8 @@ proc K_POLL_EVENT_INITIALIZER*(_event_type: untyped; _event_mode: untyped;
 proc K_POLL_EVENT_STATIC_INITIALIZER*(_event_type: untyped; _event_mode: untyped;
                                       _event_obj: untyped; event_tag: untyped) {.
     importc: "K_POLL_EVENT_STATIC_INITIALIZER", header: "kernel.h".}
+
+
 ## *
 ##  @brief Initialize one struct k_poll_event instance
 ##
@@ -4542,6 +5022,8 @@ proc K_POLL_EVENT_STATIC_INITIALIZER*(_event_type: untyped; _event_mode: untyped
 proc k_poll_event_init*(event: ptr k_poll_event; `type`: uint32_t; mode: cint;
                         obj: pointer) {.importc: "k_poll_event_init",
                                       header: "kernel.h".}
+
+
 ## *
 ##  @brief Wait for one or many of multiple poll events to occur
 ##
@@ -4586,6 +5068,8 @@ proc k_poll_event_init*(event: ptr k_poll_event; `type`: uint32_t; mode: cint;
 ##
 proc k_poll*(events: ptr k_poll_event; num_events: cint; timeout: k_timeout_t): cint {.
     syscall, importc: "k_poll", header: "kernel.h".}
+
+
 ## *
 ##  @brief Initialize a poll signal object.
 ##
@@ -4604,6 +5088,8 @@ proc k_poll_signal_init*(sig: ptr k_poll_signal) {.syscall,
 ##
 proc k_poll_signal_reset*(sig: ptr k_poll_signal) {.syscall,
     importc: "k_poll_signal_reset", header: "kernel.h".}
+
+
 ## *
 ##  @brief Fetch the signaled state and result value of a poll signal
 ##
@@ -4617,6 +5103,8 @@ proc k_poll_signal_reset*(sig: ptr k_poll_signal) {.syscall,
 proc k_poll_signal_check*(sig: ptr k_poll_signal; signaled: ptr cuint;
                           result: ptr cint) {.syscall,
     importc: "k_poll_signal_check", header: "kernel.h".}
+
+
 ## *
 ##  @brief Signal a poll signal object.
 ##
@@ -4642,11 +5130,15 @@ proc k_poll_signal_check*(sig: ptr k_poll_signal; signaled: ptr cuint;
 ##
 proc k_poll_signal_raise*(sig: ptr k_poll_signal; result: cint): cint {.syscall,
     importc: "k_poll_signal_raise", header: "kernel.h".}
+
+
 ## *
 ##  @internal
 ##
 proc z_handle_obj_poll_events*(events: ptr sys_dlist_t; state: uint32_t) {.
     importc: "z_handle_obj_poll_events", header: "kernel.h".}
+
+
 ## * @}
 ## *
 ##  @defgroup cpu_idle_apis CPU Idling APIs
@@ -4748,6 +5240,8 @@ else:
   ##
   proc z_init_static_threads*() {.importc: "z_init_static_threads",
                                 header: "kernel.h".}
+
+
 ## *
 ##  @internal
 ##
@@ -4757,6 +5251,8 @@ when defined(CONFIG_SMP):
   proc z_smp_thread_init*(arg: pointer; thread: ptr k_thread) {.
       importc: "z_smp_thread_init", header: "kernel.h".}
   proc z_smp_thread_swap*() {.importc: "z_smp_thread_swap", header: "kernel.h".}
+
+
 ## *
 ##  @internal
 ##
@@ -4772,6 +5268,8 @@ when defined(CONFIG_PRINTK):
   ##
   proc k_str_out*(c: cstring; n: csize_t) {.syscall, importc: "k_str_out",
       header: "kernel.h".}
+
+
 ## *
 ##  @brief Disable preservation of floating point context information.
 ##
@@ -4794,6 +5292,8 @@ when defined(CONFIG_PRINTK):
 ##
 proc k_float_disable*(thread: ptr k_thread): cint {.syscall,
     importc: "k_float_disable", header: "kernel.h".}
+
+
 ## *
 ##  @brief Enable preservation of floating point context information.
 ##
@@ -4845,6 +5345,8 @@ when defined(CONFIG_THREAD_RUNTIME_STATS):
   proc k_thread_runtime_stats_get*(thread: k_tid_t;
                                   stats: ptr k_thread_runtime_stats_t): cint {.
       importc: "k_thread_runtime_stats_get", header: "kernel.h".}
+
+
   ## *
   ##  @brief Get the runtime statistics of all threads
   ##
