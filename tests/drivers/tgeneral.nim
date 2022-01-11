@@ -23,13 +23,13 @@ proc test_times*() =
     echo "woke early, remain time to wait: ", res2.int
   
   # variants
-  delayMicros(100)
-  let res3: bool = delayMicros(100)
-  echo "slept full amount: ", res3
+  # delayMicros(100)
+  # let res3: bool = delayMicros(100)
+  # echo "slept full amount: ", res3
 
-  delayMicros(100)
-  let res4: bool = delayMicros(100)
-  echo "slept full amount: ", res4
+  # delayMicros(100)
+  # let res4: bool = delayMicros(100)
+  # echo "slept full amount: ", res4
 
 
 

@@ -40,8 +40,13 @@ proc delayMillis*(ts: int): bool {.discardable.} =
   if res == 0:
     return true
 
-proc delayMicros*(ts: int): bool {.discardable.} =
-  ## Sleep for micros, return false if woken up early
-  let res = k_msleep(ts.int32)
-  if res == 0:
-    return true
+# proc sleep*(us: Micros) =
+#   var remaining = us.int32
+#   while remaining != 0:
+#     remaining  = k_msleep(remaining)
+
+# proc sleep*(ms: Millis) =
+#   ## Sleep for micros
+#   var remaining = ms.int32
+#   while remaining != 0:
+#     remaining  = k_msleep(remaining)
