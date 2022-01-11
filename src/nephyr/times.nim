@@ -26,21 +26,21 @@ when defined(CONFIG_TIMER_HAS_64BIT_CYCLE_COUNTER):
 else:
   proc micros*(): Micros = Micros(k_cyc_to_us_floor64(k_cycle_get_32()))
 
-proc delay*(ms: Millis): Millis {.discardable.} =
+proc delay*(ms: Millis): Millis =
   ## Sleep for millis, return 0 if requested time elapsed, otherwise the number of millis remaining
   return k_msleep(ms.int32).Millis
 
-proc delay*(us: Micros): Micros {.discardable.} =
+proc delay*(us: Micros): Micros =
   ## Sleep for micros, return 0 if requested time elapsed, otherwise the number of micros remaining
   return k_usleep(us.int32).Micros
 
-proc delayMillis*(ts: int): bool =
+proc delayMillis*(ts: int): bool {.discardable.} =
   ## Sleep for millis, return false if woken up early
   let res = k_msleep(ts.int32)
   if res == 0:
     return true
 
-proc delayMicros*(ts: int): bool =
+proc delayMicros*(ts: int): bool {.discardable.} =
   ## Sleep for micros, return false if woken up early
   let res = k_msleep(ts.int32)
   if res == 0:
