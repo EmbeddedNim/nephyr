@@ -4,8 +4,10 @@
 ##  SPDX-License-Identifier: Apache-2.0
 ##
 
+## ============================================ ##
 ## Wrapper for Zephyr thread.h
 ## Note: Mostly we just need to let Nim know that these types exist, not how they work. 
+## ============================================ ##
 
 ## *
 ##  @typedef k_thread_entry_t
