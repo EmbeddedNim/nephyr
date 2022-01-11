@@ -9,60 +9,39 @@
 ##  @brief Public kernel APIs.
 ##
 
-when not defined(_ASMLANGUAGE):
-when defined(CONFIG_THREAD_RUNTIME_STATS_USE_TIMING_FUNCTIONS):
-  discard
 ## *
 ##  @brief Kernel APIs
 ##  @defgroup kernel_apis Kernel APIs
 ##  @{
 ##  @}
 ##
-var K_ANY* {.importc: "K_ANY", header: "kernel.h".}: int
-when CONFIG_NUM_COOP_PRIORITIES + CONFIG_NUM_PREEMPT_PRIORITIES == 0:
-  discard
-proc K_PRIO_COOP*(x: untyped) {.importc: "K_PRIO_COOP", header: "kernel.h".}
-proc K_PRIO_PREEMPT*(x: untyped) {.importc: "K_PRIO_PREEMPT", header: "kernel.h".}
-var K_HIGHEST_THREAD_PRIO* {.importc: "K_HIGHEST_THREAD_PRIO", header: "kernel.h".}: int
-##  #ifdef CONFIG_POLL
-##  #define _POLL_EVENT_OBJ_INIT(obj) \
-##  	.poll_events = SYS_DLIST_STATIC_INIT(&obj.poll_events),
-##  #define _POLL_EVENT sys_dlist_t poll_events
-##  #else
-##  #define _POLL_EVENT_OBJ_INIT(obj)
-##  #define _POLL_EVENT
-##  #endif
-discard "forward decl of k_thread"
-discard "forward decl of k_mutex"
-discard "forward decl of k_sem"
-discard "forward decl of k_msgq"
-discard "forward decl of k_mbox"
-discard "forward decl of k_pipe"
-discard "forward decl of k_queue"
-discard "forward decl of k_fifo"
-discard "forward decl of k_lifo"
-discard "forward decl of k_stack"
-discard "forward decl of k_mem_slab"
-discard "forward decl of k_mem_pool"
-discard "forward decl of k_timer"
-discard "forward decl of k_poll_event"
-discard "forward decl of k_poll_signal"
-discard "forward decl of k_mem_domain"
-discard "forward decl of k_mem_partition"
-discard "forward decl of k_futex"
+
+const
+  K_ANY* = nil
+  K_END* = nil
+
+proc K_PRIO_COOP*(x: cint): cint {.importc: "K_PRIO_COOP", header: "kernel.h".}
+proc K_PRIO_PREEMPT*(x: cint): cint {.importc: "K_PRIO_PREEMPT", header: "kernel.h".}
+
+var K_HIGHEST_THREAD_PRIO* {.importc: "$1", header: "kernel.h".}: int
+var K_LOWEST_THREAD_PRIO* {.importc: "$1", header: "kernel.h".}: int
+var K_IDLE_PRIO* {.importc: "$1", header: "kernel.h".}: int
+var K_HIGHEST_APPLICATION_THREAD_PRIO* {.importc: "$1", header: "kernel.h".}: int
+var K_LOWEST_APPLICATION_THREAD_PRIO* {.importc: "$1", header: "kernel.h".}: int
+
 type
   execution_context_types* {.size: sizeof(cint).} = enum
     K_ISR = 0, K_COOP_THREAD, K_PREEMPT_THREAD
-##  private, used by k_poll and k_work_poll
-discard "forward decl of k_work_poll"
-type
-  _poller_cb_t* = proc (event: ptr k_poll_event; state: uint32_t): cint
+
+
 ## *
 ##  @addtogroup thread_apis
 ##  @{
 ##
 type
   k_thread_user_cb_t* = proc (thread: ptr k_thread; user_data: pointer)
+
+
 ## *
 ##  @brief Iterate over all the threads in the system.
 ##
@@ -82,6 +61,9 @@ type
 ##
 proc k_thread_foreach*(user_cb: k_thread_user_cb_t; user_data: pointer) {.
     importc: "k_thread_foreach", header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Iterate over all the threads in the system without locking.
 ##
