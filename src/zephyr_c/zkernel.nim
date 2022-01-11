@@ -230,6 +230,10 @@ proc k_thread_create*(new_thread: ptr k_thread; stack: ptr k_thread_stack_t;
                       p2: pointer; p3: pointer; prio: cint; options: uint32_t;
                       delay: k_timeout_t): k_tid_t {.syscall,
     importc: "k_thread_create", header: "kernel.h".}
+
+
+
+
 ## *
 ##  @brief Drop a thread's privileges permanently to user mode
 ##
@@ -254,6 +258,9 @@ proc k_thread_create*(new_thread: ptr k_thread; stack: ptr k_thread_stack_t;
 proc k_thread_user_mode_enter*(entry: k_thread_entry_t; p1: pointer; p2: pointer;
                               p3: pointer) {.
     importc: "k_thread_user_mode_enter", header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Grant a thread access to a set of kernel objects
 ##
@@ -269,6 +276,9 @@ proc k_thread_user_mode_enter*(entry: k_thread_entry_t; p1: pointer; p2: pointer
 ##
 proc k_thread_access_grant*(thread: untyped) {.varargs,
     importc: "k_thread_access_grant", header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Assign a resource memory pool to a thread
 ##
@@ -285,6 +295,9 @@ proc k_thread_access_grant*(thread: untyped) {.varargs,
 ##
 proc k_thread_heap_assign*(thread: ptr k_thread; heap: ptr k_heap) {.inline.} =
   thread.resource_pool = heap
+
+
+
 
 when defined(CONFIG_INIT_STACKS) and defined(CONFIG_THREAD_STACK_INFO):
   ## *
@@ -309,6 +322,9 @@ when defined(CONFIG_INIT_STACKS) and defined(CONFIG_THREAD_STACK_INFO):
   ##
   proc k_thread_stack_space_get*(thread: ptr k_thread; unused_ptr: ptr csize_t): cint {.
       syscall, importc: "k_thread_stack_space_get", header: "kernel.h".}
+
+
+
 when (CONFIG_HEAP_MEM_POOL_SIZE > 0):
   ## *
   ##  @brief Assign the system heap as a thread's resource pool
@@ -324,6 +340,9 @@ when (CONFIG_HEAP_MEM_POOL_SIZE > 0):
   ##
   proc k_thread_system_pool_assign*(thread: ptr k_thread) {.
       importc: "k_thread_system_pool_assign", header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Sleep until a thread exits
 ##
@@ -345,6 +364,9 @@ when (CONFIG_HEAP_MEM_POOL_SIZE > 0):
 ##
 proc k_thread_join*(thread: ptr k_thread; timeout: k_timeout_t): cint {.syscall,
     importc: "k_thread_join", header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Put the current thread to sleep.
 ##
@@ -360,6 +382,9 @@ proc k_thread_join*(thread: ptr k_thread; timeout: k_timeout_t): cint {.syscall,
 ##
 proc k_sleep*(timeout: k_timeout_t): int32_t {.syscall, importc: "k_sleep",
     header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Put the current thread to sleep.
 ##
@@ -372,6 +397,7 @@ proc k_sleep*(timeout: k_timeout_t): int32_t {.syscall, importc: "k_sleep",
 ##
 proc k_msleep*(ms: int32_t): int32_t {.inline.} =
   return k_sleep(Z_TIMEOUT_MS(ms))
+
 
 ## *
 ##  @brief Put the current thread to sleep with microsecond resolution.
@@ -390,6 +416,9 @@ proc k_msleep*(ms: int32_t): int32_t {.inline.} =
 ##
 proc k_usleep*(us: int32_t): int32_t {.syscall, importc: "k_usleep",
                                     header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Cause the current thread to busy wait.
 ##
@@ -406,6 +435,9 @@ proc k_usleep*(us: int32_t): int32_t {.syscall, importc: "k_usleep",
 ##
 proc k_busy_wait*(usec_to_wait: uint32_t) {.syscall, importc: "k_busy_wait",
     header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Yield the current thread.
 ##
@@ -416,6 +448,9 @@ proc k_busy_wait*(usec_to_wait: uint32_t) {.syscall, importc: "k_busy_wait",
 ##  @return N/A
 ##
 proc k_yield*() {.syscall, importc: "k_yield", header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Wake up a sleeping thread.
 ##
@@ -428,6 +463,9 @@ proc k_yield*() {.syscall, importc: "k_yield", header: "kernel.h".}
 ##  @return N/A
 ##
 proc k_wakeup*(thread: k_tid_t) {.syscall, importc: "k_wakeup", header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Get thread ID of the current thread.
 ##
@@ -437,9 +475,13 @@ proc k_wakeup*(thread: k_tid_t) {.syscall, importc: "k_wakeup", header: "kernel.
 ##
 proc z_current_get*(): k_tid_t {.syscall, importc: "z_current_get",
                               header: "kernel.h".}
+
 when defined(CONFIG_THREAD_LOCAL_STORAGE):
   ##  Thread-local cache of current thread ID, set in z_thread_entry()
   var z_tls_current* {.importc: "z_tls_current", header: "kernel.h".}: k_tid_t
+
+
+
 ## *
 ##  @brief Get thread ID of the current thread.
 ##
@@ -479,6 +521,9 @@ proc k_current_get*(): k_tid_t =
 ##
 proc k_thread_abort*(thread: k_tid_t) {.syscall, importc: "k_thread_abort",
                                       header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Start an inactive thread
 ##
@@ -494,6 +539,9 @@ proc z_timeout_expires*(timeout: ptr _timeout): k_ticks_t {.
     importc: "z_timeout_expires", header: "kernel.h".}
 proc z_timeout_remaining*(timeout: ptr _timeout): k_ticks_t {.
     importc: "z_timeout_remaining", header: "kernel.h".}
+
+
+
 when defined(CONFIG_SYS_CLOCK_EXISTS):
   ## *
   ##  @brief Get time when a thread wakes up, in system ticks
@@ -545,6 +593,9 @@ proc Z_THREAD_INITIALIZER*(thread: untyped; stack: untyped; stack_size: untyped;
                           prio: untyped; options: untyped; delay: untyped;
                           abort: untyped; tname: untyped) {.
     importc: "Z_THREAD_INITIALIZER", header: "kernel.h".}
+
+
+
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
@@ -581,6 +632,9 @@ proc K_THREAD_DEFINE*(name: untyped; stack_size: untyped; entry: untyped;
                       p1: untyped; p2: untyped; p3: untyped; prio: untyped;
                       options: untyped; delay: untyped) {.
     importc: "K_THREAD_DEFINE", header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Get a thread's priority.
 ##
@@ -592,6 +646,9 @@ proc K_THREAD_DEFINE*(name: untyped; stack_size: untyped; entry: untyped;
 ##
 proc k_thread_priority_get*(thread: k_tid_t): cint {.syscall,
     importc: "k_thread_priority_get", header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Set a thread's priority.
 ##
@@ -621,6 +678,9 @@ proc k_thread_priority_get*(thread: k_tid_t): cint {.syscall,
 ##
 proc k_thread_priority_set*(thread: k_tid_t; prio: cint) {.syscall,
     importc: "k_thread_priority_set", header: "kernel.h".}
+
+
+
 when defined(CONFIG_SCHED_DEADLINE):
   ## *
   ##  @brief Set deadline expiration time for scheduler
@@ -656,6 +716,9 @@ when defined(CONFIG_SCHED_DEADLINE):
   ##
   proc k_thread_deadline_set*(thread: k_tid_t; deadline: cint) {.syscall,
       importc: "k_thread_deadline_set", header: "kernel.h".}
+
+
+
 when defined(CONFIG_SCHED_CPU_MASK):
   ## *
   ##  @brief Sets all CPU enable masks to zero
@@ -713,6 +776,9 @@ when defined(CONFIG_SCHED_CPU_MASK):
   ##
   proc k_thread_cpu_mask_disable*(thread: k_tid_t; cpu: cint): cint {.
       importc: "k_thread_cpu_mask_disable", header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Suspend a thread.
 ##
@@ -732,6 +798,9 @@ when defined(CONFIG_SCHED_CPU_MASK):
 ##
 proc k_thread_suspend*(thread: k_tid_t) {.syscall, importc: "k_thread_suspend",
     header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Resume a suspended thread.
 ##
@@ -746,6 +815,9 @@ proc k_thread_suspend*(thread: k_tid_t) {.syscall, importc: "k_thread_suspend",
 ##
 proc k_thread_resume*(thread: k_tid_t) {.syscall, importc: "k_thread_resume",
                                       header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Set time-slicing period and scope.
 ##
@@ -776,6 +848,9 @@ proc k_thread_resume*(thread: k_tid_t) {.syscall, importc: "k_thread_resume",
 ##
 proc k_sched_time_slice_set*(slice: int32_t; prio: cint) {.
     importc: "k_sched_time_slice_set", header: "kernel.h".}
+
+
+
 ## * @}
 ## *
 ##  @addtogroup isr_apis
@@ -793,6 +868,9 @@ proc k_sched_time_slice_set*(slice: int32_t; prio: cint) {.
 ##  @return true if invoked by an ISR.
 ##
 proc k_is_in_isr*(): bool {.importc: "k_is_in_isr", header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Determine if code is running in a preemptible thread.
 ##
@@ -811,6 +889,9 @@ proc k_is_in_isr*(): bool {.importc: "k_is_in_isr", header: "kernel.h".}
 ##
 proc k_is_preempt_thread*(): cint {.syscall, importc: "k_is_preempt_thread",
                                   header: "kernel.h".}
+
+
+
 ## *
 ##  @brief Test whether startup is in the before-main-task phase.
 ##
@@ -826,6 +907,7 @@ proc k_is_pre_kernel*(): bool {.inline.} =
   var z_sys_post_kernel: bool
   ##  in init.c
   return not z_sys_post_kernel
+
 
 ## *
 ##  @}
