@@ -1,6 +1,8 @@
 
 import mcu_utils/basictypes
-import zephyr_c/kernel
+
+import ../zephyr_c/zconfs
+import ../zephyr_c/kernel
 
 from std/monotimes import MonoTime
 

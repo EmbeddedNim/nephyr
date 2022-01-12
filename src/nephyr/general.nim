@@ -2,7 +2,6 @@
 import sequtils
 import strutils
 
-import utils, logs
 import mcu_utils/basictypes
 
 export basictypes
@@ -11,9 +10,10 @@ export logs
 export sequtils
 export strutils
 
+import utils, logs
 import ../zephyr_c/zkernel
 
 export kernel
+export utils
+export logs
 
-
-proc sysReboot*(coldReboot: bool = false) = sys_reboot(if coldReboot: 1 else: 0)

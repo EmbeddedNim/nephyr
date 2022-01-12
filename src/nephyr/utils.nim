@@ -2,6 +2,8 @@
 type 
   Bytes*[N: static[int]] = array[N, uint8]
 
+proc sysReboot*(coldReboot: bool = false) = sys_reboot(if coldReboot: 1 else: 0)
+
 proc doCheck*(ret: int): int {.discardable.} =
   if ret != 0:
     raise newException(OSError, "error id: " & $(ret))
