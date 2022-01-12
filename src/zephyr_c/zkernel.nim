@@ -1146,9 +1146,7 @@ proc K_NO_WAIT*(): k_timeout_t {.importc: "K_NO_WAIT", header: "kernel.h".}
 ##
 ##  @return Timeout delay value.
 ##
-proc K_NSEC*(t: untyped) {.importc: "K_NSEC", header: "kernel.h".}
-
-
+proc K_NSEC*(t: int): k_timeout_t {.importc: "K_NSEC", header: "kernel.h".}
 
 
 ## *
@@ -1163,9 +1161,7 @@ proc K_NSEC*(t: untyped) {.importc: "K_NSEC", header: "kernel.h".}
 ##
 ##  @return Timeout delay value.
 ##
-proc K_USEC*(t: untyped) {.importc: "K_USEC", header: "kernel.h".}
-
-
+proc K_USEC*(t: int): k_timeout_t {.importc: "K_USEC", header: "kernel.h".}
 
 
 ## *
@@ -1178,9 +1174,7 @@ proc K_USEC*(t: untyped) {.importc: "K_USEC", header: "kernel.h".}
 ##
 ##  @return Timeout delay value.
 ##
-proc K_CYC*(t: untyped) {.importc: "K_CYC", header: "kernel.h".}
-
-
+proc K_CYC*(t: int): k_timeout_t {.importc: "K_CYC", header: "kernel.h".}
 
 
 ## *
@@ -1193,9 +1187,7 @@ proc K_CYC*(t: untyped) {.importc: "K_CYC", header: "kernel.h".}
 ##
 ##  @return Timeout delay value.
 ##
-proc K_TICKS*(t: untyped) {.importc: "K_TICKS", header: "kernel.h".}
-
-
+proc K_TICKS*(t: int): k_timeout_t {.importc: "K_TICKS", header: "kernel.h".}
 
 
 ## *
@@ -1208,9 +1200,7 @@ proc K_TICKS*(t: untyped) {.importc: "K_TICKS", header: "kernel.h".}
 ##
 ##  @return Timeout delay value.
 ##
-proc K_MSEC*(ms: untyped) {.importc: "K_MSEC", header: "kernel.h".}
-
-
+proc K_MSEC*(ms: int): k_timeout_t  {.importc: "K_MSEC", header: "kernel.h".}
 
 
 ## *
@@ -1223,9 +1213,7 @@ proc K_MSEC*(ms: untyped) {.importc: "K_MSEC", header: "kernel.h".}
 ##
 ##  @return Timeout delay value.
 ##
-proc K_SECONDS*(s: untyped) {.importc: "K_SECONDS", header: "kernel.h".}
-
-
+proc K_SECONDS*(s: int): k_timeout_t {.importc: "K_SECONDS", header: "kernel.h".}
 
 
 ## *
@@ -1238,9 +1226,7 @@ proc K_SECONDS*(s: untyped) {.importc: "K_SECONDS", header: "kernel.h".}
 ##
 ##  @return Timeout delay value.
 ##
-proc K_MINUTES*(m: untyped) {.importc: "K_MINUTES", header: "kernel.h".}
-
-
+proc K_MINUTES*(m: int): k_timeout_t {.importc: "K_MINUTES", header: "kernel.h".}
 
 
 ## *
@@ -1253,9 +1239,7 @@ proc K_MINUTES*(m: untyped) {.importc: "K_MINUTES", header: "kernel.h".}
 ##
 ##  @return Timeout delay value.
 ##
-proc K_HOURS*(h: untyped) {.importc: "K_HOURS", header: "kernel.h".}
-
-
+proc K_HOURS*(h: int): k_timeout_t {.importc: "K_HOURS", header: "kernel.h".}
 
 
 ## *
@@ -1267,6 +1251,8 @@ proc K_HOURS*(h: untyped) {.importc: "K_HOURS", header: "kernel.h".}
 ##  @return Timeout delay value.
 ##
 var K_FOREVER* {.importc: "K_FOREVER", header: "kernel.h".}: int
+
+
 when defined(CONFIG_TIMEOUT_64BIT):
   ## *
   ##  @brief Generates an absolute/uptime timeout value from system ticks
@@ -1279,10 +1265,8 @@ when defined(CONFIG_TIMEOUT_64BIT):
   ##  @param t Tick uptime value
   ##  @return Timeout delay value
   ##
-  proc K_TIMEOUT_ABS_TICKS*(t: untyped) {.importc: "K_TIMEOUT_ABS_TICKS",
+  proc K_TIMEOUT_ABS_TICKS*(t: intyped): k_timeout_t {.importc: "K_TIMEOUT_ABS_TICKS",
       header: "kernel.h".}
-
-
 
 
   ## *
@@ -1296,7 +1280,7 @@ when defined(CONFIG_TIMEOUT_64BIT):
   ##  @param t Millisecond uptime value
   ##  @return Timeout delay value
   ##
-  proc K_TIMEOUT_ABS_MS*(t: untyped) {.importc: "K_TIMEOUT_ABS_MS",
+  proc K_TIMEOUT_ABS_MS*(t: int) {.importc: "K_TIMEOUT_ABS_MS",
                                     header: "kernel.h".}
 
 

@@ -11,7 +11,7 @@ export logs
 export sequtils
 export strutils
 
-import zephyr_c/kernel
+import ../zephyr_c/zkernel
 
 export kernel
 
