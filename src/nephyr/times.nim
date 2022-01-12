@@ -2,7 +2,7 @@
 import mcu_utils/basictypes
 
 import ../zephyr_c/zconfs
-import ../zephyr_c/kernel
+import ../zephyr_c/zkernel
 
 from std/monotimes import MonoTime
 

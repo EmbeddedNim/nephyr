@@ -1,4 +1,5 @@
 import ../wrapper_utils
+import ../zconfs
 import ../zdevice
 import zgpio
 
@@ -384,7 +385,7 @@ type
   spi_driver_api* {.importc: "spi_driver_api", header: hdr, bycopy.} = object
     transceive* {.importc: "transceive".}: spi_api_io
     when CONFIG_SPI_ASYNC:
-      transceive_async* {.header: hdr.}: spi_api_io_async
+      transceive_async* {.importc: "transceive_async".}: spi_api_io_async
     release* {.importc: "release".}: spi_api_release
 
 
@@ -483,10 +484,8 @@ when CONFIG_SPI_ASYNC:
   ##
   proc spi_transceive_async*(dev: ptr device; config: ptr spi_config;
                             tx_bufs: ptr spi_buf_set; rx_bufs: ptr spi_buf_set;
-                            async: ptr k_poll_signal): cint {.inline,
-      importc: "spi_transceive_async".} =
-    let api: ptr spi_driver_api
-    return api.transceive_async(dev, config, tx_bufs, rx_bufs, async)
+                            async: ptr k_poll_signal): cint {.
+                              importc: "spi_transceive_async", header: hdr.}
 
   ## *
   ##  @brief Read the specified amount of data from the SPI driver.
@@ -512,8 +511,7 @@ when CONFIG_SPI_ASYNC:
   ##
   proc spi_read_async*(dev: ptr device; config: ptr spi_config;
                       rx_bufs: ptr spi_buf_set; async: ptr k_poll_signal): cint {.
-      inline, importc: "spi_read_async".} =
-    return spi_transceive_async(dev, config, nil, rx_bufs, async)
+      importc: "spi_read_async", header: hdr.}
 
   ## *
   ##  @brief Write the specified amount of data from the SPI driver.
@@ -539,10 +537,7 @@ when CONFIG_SPI_ASYNC:
   ##
   proc spi_write_async*(dev: ptr device; config: ptr spi_config;
                        tx_bufs: ptr spi_buf_set; async: ptr k_poll_signal): cint {.
-      inline, importc: "spi_write_async".} =
-    return spi_transceive_async(dev, config, tx_bufs, nil, async)
-
-
+      importc: "spi_write_async", header: hdr.}
 
 
 ## *

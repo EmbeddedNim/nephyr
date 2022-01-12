@@ -26,6 +26,8 @@
 ##  is always a 64 bit count of ticks.
 ##
 
+import zconfs
+
 when CONFIG_TIMEOUT_64BIT:
   type
     k_ticks_t* = int64

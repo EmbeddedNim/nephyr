@@ -9,6 +9,8 @@ proc sys_reboot*(kind: cint) {.importc: "sys_reboot", header: "<sys/reboot.h>".}
 
 proc printk*(frmt: cstring) {.importc: "$1", varargs, header: "<sys/printk.h>".}
 
+template zsyscall*(fn: untyped) = fn
+
 # __syscall k_tid_t k_thread_create(struct k_thread *new_thread,
 # 				  k_thread_stack_t *stack,
 # 				  size_t stack_size,
@@ -23,11 +25,14 @@ type
 
   k_thread_proc* = proc (p1, p2, p3: pointer) {.cdecl.}
 
-type
   z_wait_q_t* {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
     waitq: pointer
 
+  # these are all opaque kernel types
+  sys_slist_t * {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
+  sys_sflist_t * {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
   sys_dlist_t * {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
+
   sys_heap * {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
 
   k_spinlock * {.importc: "$1", header: "<spinlock.h>", bycopy, incompleteStruct.} = object

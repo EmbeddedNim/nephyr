@@ -27,6 +27,9 @@
 ##
 ##  @return N/A
 ##
+import zconfs
+import zkernel_fixes
+
 when CONFIG_THREAD_MONITOR:
   type
     z_thread_entry* {.importc: "__thread_entry", header: "thread.h", incompleteStruct, bycopy.} = object
@@ -41,7 +44,7 @@ type
   q_thread* {.importc: "no_name", header: "thread.h", incompleteStruct, bycopy, union.} = object
 
 
-  z_thread_base* {.importc: "_thread_base", header: "thread.h", bycopy.} = object
+  z_thread_base* {.importc: "_thread_base", header: "thread.h", incompleteStruct, bycopy.} = object
 
     # # qnode_dlist* {.importc: "qnode_dlist".}: sys_dnode_t # note part of anonymous C union
     # # qnode_rb* {.importc: "qnode_rb".}: rbnode # note part of anonymous C union
@@ -61,23 +64,22 @@ type
     thread_state* {.importc: "thread_state".}: uint8 
 
     when CONFIG_SCHED_DEADLINE:
-      prio_deadline* {.importc: "prio_deadline", header: "thread.h".}: cint
+      prio_deadline* {.importc: "prio_deadline".}: cint
 
     order_key* {.importc: "order_key".}: uint32
 
     when CONFIG_SMP:
-      is_idle* {.importc: "is_idle", header: "thread.h".}: uint8 ##  True for the per-CPU idle threads
-      cpu* {.importc: "cpu", header: "thread.h".}: uint8 ##  CPU index on which thread was last run
-      global_lock_count* {.importc: "global_lock_count", header: "thread.h".}: uint8 ##  Recursive count of irq_lock() calls
+      is_idle* {.importc: "is_idle".}: uint8 ##  True for the per-CPU idle threads
+      cpu* {.importc: "cpu".}: uint8 ##  CPU index on which thread was last run
+      global_lock_count* {.importc: "global_lock_count".}: uint8 ##  Recursive count of irq_lock() calls
 
     when CONFIG_SCHED_CPU_MASK:
-      cpu_mask* {.importc: "cpu_mask", header: "thread.h".}: uint8 ##  "May run on" bits for each CPU
+      cpu_mask* {.importc: "cpu_mask".}: uint8 ##  "May run on" bits for each CPU
 
     swap_data* {.importc: "swap_data".}: pointer ##  data returned by APIs
 
-    # when CONFIG_SYS_CLOCK_EXISTS:
-    #   ##  this thread's entry in a timeout queue
-    #   timeout* {.importc: "timeout", header: "thread.h".}: _timeout
+    when CONFIG_SYS_CLOCK_EXISTS:
+      timeout* {.importc: "timeout".}: k_priv_timeout #   ##  this thread's entry in a timeout queue
 
 
 # when CONFIG_THREAD_USERSPACE_LOCAL_DATA:
@@ -93,8 +95,6 @@ type
 #                              header: "thread.h", bycopy.} = object
 #       execution_cycles* {.importc: "execution_cycles", header: "thread.h".}: uint64
 
-#   type
-#     k_thread_runtime_stats_t* = k_thread_runtime_stats
 
 #   type
 #     _thread_runtime_stats* {.importc: "_thread_runtime_stats", header: "thread.h",
@@ -106,6 +106,8 @@ type
 #       stats* {.importc: "stats".}: k_thread_runtime_stats_t
 
 type
+  k_thread_runtime_stats_t* {.importc: "k_thread_runtime_stats_t", header: "thread.h", bycopy.} = object
+
   z_poller* {.importc: "z_poller", header: "thread.h", incompleteStruct, bycopy.} = object
     is_polling* {.importc: "is_polling".}: bool
     mode* {.importc: "mode".}: uint8
@@ -138,16 +140,15 @@ type
 
     when CONFIG_THREAD_CUSTOM_DATA:
       ## * crude thread-local storage
-      custom_data* {.importc: "custom_data", header: "thread.h".}: pointer
+      custom_data* {.importc: "custom_data".}: pointer
 
     when CONFIG_THREAD_USERSPACE_LOCAL_DATA:
-      userspace_local_data* {.importc: "userspace_local_data",
-                                header: "thread.h".}: pointer
+      userspace_local_data* {.importc: "userspace_local_data".}: pointer
 
     when CONFIG_ERRNO and not CONFIG_ERRNO_IN_TLS:
       when not CONFIG_USERSPACE:
         ## * per-thread errno variable
-        errno_var* {.importc: "errno_var", header: "thread.h".}: cint
+        errno_var* {.importc: "errno_var".}: cint
 
     # when CONFIG_THREAD_STACK_INFO:
     #   ## * Stack Info
@@ -174,11 +175,11 @@ type
 
     when CONFIG_THREAD_LOCAL_STORAGE:
       ##  Pointer to arch-specific TLS area
-      tls* {.importc: "tls", header: "thread.h".}: pointer
+      tls* {.importc: "tls".}: pointer
 
     when CONFIG_THREAD_RUNTIME_STATS:
       ## * Runtime statistics
-      rt_stats* {.importc: "rt_stats", header: "thread.h".}: pointer
+      rt_stats* {.importc: "rt_stats".}: pointer
 
     # when CONFIG_DEMAND_PAGING_THREAD_STATS:
     #   ## * Paging statistics

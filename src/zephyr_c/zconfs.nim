@@ -1,4 +1,4 @@
-import os, tables, streams, parsecfg
+import tables, streams, parsecfg
 import macros
 
 const
@@ -39,10 +39,8 @@ const CONFIG_NAMES = [
   "ADC_ASYNC",
   "ADC_CONFIGURABLE_INPUTS",
   "DEMAND_PAGING_THREAD_STATS",
-  "ERRNO",
   "ERRNO", 
   "ERRNO_IN_TLS",
-  "FPU_SHARING",
   "FPU_SHARING", 
   "INIT_STACKS", 
   "MEM_SLAB_TRACE_MAX_UTILIZATION",

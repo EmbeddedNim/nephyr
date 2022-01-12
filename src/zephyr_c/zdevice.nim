@@ -31,6 +31,7 @@
 ##
 
 import wrapper_utils
+import zconfs
 
 type
   device_handle_t* = int16
@@ -64,12 +65,14 @@ type
 
   init_func_cb* = proc (dev: ptr device): cint {.cdecl.}
 
+  pm_device* {.importc: "struct pm_device", header: "device.h", incompleteStruct, bycopy.} = object ## *
+
   pm_device_cb* = proc (dev: ptr device, status: int, state: uint32, arg: pointer): void {.cdecl.}
 
   pm_control_cb* = proc (port: ptr device; ctrl_command: uint32; context: ptr uint32;
                         cb: pm_device_cb; arg: pointer): cint  {.cdecl.}
 
-  device_state* {.importc: "struct device_state", header: "device.h", bycopy.} = object ## *
+  device_state* {.importc: "struct device_state", header: "device.h", incompleteStruct, bycopy.} = object ## *
       ##  @brief Runtime device dynamic structure (in RAM) per driver instance
       ##
       ##  Fields in this are expected to be default-initialized to zero.  The
@@ -92,7 +95,7 @@ type
         ##
     when CONFIG_PM_DEVICE:
       ##  Power management data
-      pm* {.header: "device.h".}: pm_device
+      pm* {.importc: "pm".}: pm_device
 
   device* {.importc: "struct device", header: "device.h", bycopy.} = object ##
       ## *
@@ -116,7 +119,7 @@ type
       pm_control*: proc (dev: ptr device; command: uint32; state: ptr uint32;
                           cb: pm_device_cb; arg: pointer): cint
       ## * Pointer to device instance power management data
-      pm* {.header: "device.h".}: ptr pm_device
+      pm* {.importc: "pm".}: ptr pm_device
 
 
 import strutils
@@ -736,7 +739,7 @@ proc Z_DEVICE_EXTRA_HANDLES*() {.varargs, importc: "Z_DEVICE_EXTRA_HANDLES",
 ##
 
 when CONFIG_PM_DEVICE:
-  proc Z_DEVICE_DEFINE_PM_SLOT*(dev_name: untyped) {.
+  proc Z_DEVICE_DEFINE_PM_SLOT*(dev_name: cminvtoken) {.
       importc: "Z_DEVICE_DEFINE_PM_SLOT", header: "device.h".}
 
 

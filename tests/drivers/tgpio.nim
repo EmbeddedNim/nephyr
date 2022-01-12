@@ -33,7 +33,7 @@ proc test_gpio*() =
     discard gpio_pin_set(dev, pin2, led_is_on.cint)
     led_is_on = not led_is_on
     os.sleep(SLEEP_TIME_MS)
-    printk("test!\n")
+    echo("test!\n")
 
 proc test_pins*() =
   assert GPIO_INPUT == Pins.IN

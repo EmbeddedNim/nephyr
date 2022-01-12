@@ -16,8 +16,10 @@
 ##  @}
 ##
 
+import zconfs
 import zkernel_fixes
 import zsys_clock
+import zatomic
 import zthread
 
 const
@@ -241,7 +243,7 @@ when CONFIG_X86:
 proc k_thread_create*(new_thread: ptr k_thread; stack: ptr k_thread_stack_t;
                       stack_size: csize_t; entry: k_thread_entry_t; p1: pointer;
                       p2: pointer; p3: pointer; prio: cint; options: uint32;
-                      delay: k_timeout_t): k_tid_t {.syscall,
+                      delay: k_timeout_t): k_tid_t {.zsyscall,
     importc: "k_thread_create", header: "kernel.h".}
 
 
@@ -338,7 +340,7 @@ when CONFIG_INIT_STACKS and CONFIG_THREAD_STACK_INFO:
   ##  @return -EFAULT Bad memory address for unused_ptr (user mode only)
   ##
   proc k_thread_stack_space_get*(thread: ptr k_thread; unused_ptr: ptr csize_t): cint {.
-      syscall, importc: "k_thread_stack_space_get", header: "kernel.h".}
+      zsyscall, importc: "k_thread_stack_space_get", header: "kernel.h".}
 
 
 
@@ -380,7 +382,7 @@ proc k_thread_system_pool_assign*(thread: ptr k_thread) {.
 ##  @retval -EDEADLK target thread is joining on the caller, or target thread
 ##                   is the caller
 ##
-proc k_thread_join*(thread: ptr k_thread; timeout: k_timeout_t): cint {.syscall,
+proc k_thread_join*(thread: ptr k_thread; timeout: k_timeout_t): cint {.zsyscall,
     importc: "k_thread_join", header: "kernel.h".}
 
 
@@ -400,7 +402,7 @@ proc k_thread_join*(thread: ptr k_thread; timeout: k_timeout_t): cint {.syscall,
 ##  @return Zero if the requested time has elapsed or the number of milliseconds
 ##  left to sleep, if thread was woken up by \ref k_wakeup call.
 ##
-proc k_sleep*(timeout: k_timeout_t): int32 {.syscall, importc: "k_sleep",
+proc k_sleep*(timeout: k_timeout_t): int32 {.zsyscall, importc: "k_sleep",
     header: "kernel.h".}
 
 
@@ -417,7 +419,7 @@ proc k_sleep*(timeout: k_timeout_t): int32 {.syscall, importc: "k_sleep",
 ##  @return Zero if the requested time has elapsed or the number of milliseconds
 ##  left to sleep, if thread was woken up by \ref k_wakeup call.
 ##
-proc k_msleep*(ms: int32): int32 {.syscall, importc: "$1", header: "kernel.h".}
+proc k_msleep*(ms: int32): int32 {.zsyscall, importc: "$1", header: "kernel.h".}
 
 
 ## *
@@ -435,7 +437,7 @@ proc k_msleep*(ms: int32): int32 {.syscall, importc: "$1", header: "kernel.h".}
 ##  @return Zero if the requested time has elapsed or the number of microseconds
 ##  left to sleep, if thread was woken up by \ref k_wakeup call.
 ##
-proc k_usleep*(ms: int32): int32 {.syscall, importc: "$1", header: "kernel.h".}
+proc k_usleep*(ms: int32): int32 {.zsyscall, importc: "$1", header: "kernel.h".}
 
 
 
@@ -455,7 +457,7 @@ proc k_usleep*(ms: int32): int32 {.syscall, importc: "$1", header: "kernel.h".}
 ##
 ##  @return N/A
 ##
-proc k_busy_wait*(usec_to_wait: uint32) {.syscall, importc: "k_busy_wait",
+proc k_busy_wait*(usec_to_wait: uint32) {.zsyscall, importc: "k_busy_wait",
     header: "kernel.h".}
 
 
@@ -471,7 +473,7 @@ proc k_busy_wait*(usec_to_wait: uint32) {.syscall, importc: "k_busy_wait",
 ##
 ##  @return N/A
 ##
-proc k_yield*() {.syscall, importc: "k_yield", header: "kernel.h".}
+proc k_yield*() {.zsyscall, importc: "k_yield", header: "kernel.h".}
 
 
 
@@ -488,7 +490,7 @@ proc k_yield*() {.syscall, importc: "k_yield", header: "kernel.h".}
 ##
 ##  @return N/A
 ##
-proc k_wakeup*(thread: k_tid_t) {.syscall, importc: "k_wakeup", header: "kernel.h".}
+proc k_wakeup*(thread: k_tid_t) {.zsyscall, importc: "k_wakeup", header: "kernel.h".}
 
 
 
@@ -501,7 +503,7 @@ proc k_wakeup*(thread: k_tid_t) {.syscall, importc: "k_wakeup", header: "kernel.
 ##
 ##  @return ID of current thread.
 ##
-proc z_current_get*(): k_tid_t {.syscall, importc: "z_current_get",
+proc z_current_get*(): k_tid_t {.zsyscall, importc: "z_current_get",
                               header: "kernel.h".}
 
 when CONFIG_THREAD_LOCAL_STORAGE:
@@ -547,7 +549,7 @@ proc k_current_get*(): k_tid_t =
 ##
 ##  @return N/A
 ##
-proc k_thread_abort*(thread: k_tid_t) {.syscall, importc: "k_thread_abort",
+proc k_thread_abort*(thread: k_tid_t) {.zsyscall, importc: "k_thread_abort",
                                       header: "kernel.h".}
 
 
@@ -563,7 +565,7 @@ proc k_thread_abort*(thread: k_tid_t) {.syscall, importc: "k_thread_abort",
 ##
 ##  @param thread thread to start
 ##
-proc k_thread_start*(thread: k_tid_t) {.syscall, importc: "k_thread_start",
+proc k_thread_start*(thread: k_tid_t) {.zsyscall, importc: "k_thread_start",
                                       header: "kernel.h".}
 
 proc z_timeout_expires*(timeout: ptr k_priv_timeout): k_ticks_t {.
@@ -582,10 +584,8 @@ when CONFIG_SYS_CLOCK_EXISTS:
   ##  executes, in units of system ticks.  If the thread is not waiting,
   ##  it returns current system time.
   ##
-  proc k_thread_timeout_expires_ticks*(t: ptr k_thread): k_ticks_t {.syscall,
+  proc k_thread_timeout_expires_ticks*(t: ptr k_thread): k_ticks_t {.zsyscall,
       importc: "k_thread_timeout_expires_ticks", header: "kernel.h".}
-  proc z_impl_k_thread_timeout_expires_ticks*(t: ptr k_thread): k_ticks_t {.inline.} =
-    return z_timeout_expires(addr(t.base.timeout))
 
   ## *
   ##  @brief Get time remaining before a thread wakes up, in system ticks
@@ -594,11 +594,8 @@ when CONFIG_SYS_CLOCK_EXISTS:
   ##  next executes, in units of system ticks.  If the thread is not
   ##  waiting, it returns zero.
   ##
-  proc k_thread_timeout_remaining_ticks*(t: ptr k_thread): k_ticks_t {.syscall,
+  proc k_thread_timeout_remaining_ticks*(t: ptr k_thread): k_ticks_t {.zsyscall,
       importc: "k_thread_timeout_remaining_ticks", header: "kernel.h".}
-  proc z_impl_k_thread_timeout_remaining_ticks*(t: ptr k_thread): k_ticks_t {.
-      inline.} =
-    return z_timeout_remaining(addr(t.base.timeout))
 
 ## *
 ##  @cond INTERNAL_HIDDEN
@@ -699,7 +696,7 @@ proc Z_THREAD_INITIALIZER*(thread: ptr k_thread;
 ##
 ##  @return Priority of @a thread.
 ##
-proc k_thread_priority_get*(thread: k_tid_t): cint {.syscall,
+proc k_thread_priority_get*(thread: k_tid_t): cint {.zsyscall,
     importc: "k_thread_priority_get", header: "kernel.h".}
 
 
@@ -733,7 +730,7 @@ proc k_thread_priority_get*(thread: k_tid_t): cint {.syscall,
 ##
 ##  @return N/A
 ##
-proc k_thread_priority_set*(thread: k_tid_t; prio: cint) {.syscall,
+proc k_thread_priority_set*(thread: k_tid_t; prio: cint) {.zsyscall,
     importc: "k_thread_priority_set", header: "kernel.h".}
 
 
@@ -771,7 +768,7 @@ when CONFIG_SCHED_DEADLINE:
   ##  @param deadline A time delta, in cycle units
   ##
   ##
-  proc k_thread_deadline_set*(thread: k_tid_t; deadline: cint) {.syscall,
+  proc k_thread_deadline_set*(thread: k_tid_t; deadline: cint) {.zsyscall,
       importc: "k_thread_deadline_set", header: "kernel.h".}
 
 
@@ -861,7 +858,7 @@ when CONFIG_SCHED_CPU_MASK:
 ##
 ##  @return N/A
 ##
-proc k_thread_suspend*(thread: k_tid_t) {.syscall, importc: "k_thread_suspend",
+proc k_thread_suspend*(thread: k_tid_t) {.zsyscall, importc: "k_thread_suspend",
     header: "kernel.h".}
 
 
@@ -880,7 +877,7 @@ proc k_thread_suspend*(thread: k_tid_t) {.syscall, importc: "k_thread_suspend",
 ##
 ##  @return N/A
 ##
-proc k_thread_resume*(thread: k_tid_t) {.syscall, importc: "k_thread_resume",
+proc k_thread_resume*(thread: k_tid_t) {.zsyscall, importc: "k_thread_resume",
                                       header: "kernel.h".}
 
 
@@ -960,7 +957,7 @@ proc k_is_in_isr*(): bool {.importc: "k_is_in_isr", header: "kernel.h".}
 ##  @return 0 if invoked by an ISR or by a cooperative thread.
 ##  @return Non-zero if invoked by a preemptible thread.
 ##
-proc k_is_preempt_thread*(): cint {.syscall, importc: "k_is_preempt_thread",
+proc k_is_preempt_thread*(): cint {.zsyscall, importc: "k_is_preempt_thread",
                                   header: "kernel.h".}
 
 
@@ -1038,7 +1035,7 @@ proc k_sched_unlock*() {.importc: "k_sched_unlock", header: "kernel.h".}
 ##  @return N/A
 ##
 ##
-proc k_thread_custom_data_set*(value: pointer) {.syscall,
+proc k_thread_custom_data_set*(value: pointer) {.zsyscall,
     importc: "k_thread_custom_data_set", header: "kernel.h".}
 
 
@@ -1049,7 +1046,7 @@ proc k_thread_custom_data_set*(value: pointer) {.syscall,
 ##
 ##  @return Current custom data value.
 ##
-proc k_thread_custom_data_get*(): pointer {.syscall,
+proc k_thread_custom_data_get*(): pointer {.zsyscall,
     importc: "k_thread_custom_data_get", header: "kernel.h".}
 
 
@@ -1066,7 +1063,7 @@ proc k_thread_custom_data_get*(): pointer {.syscall,
 ##  @retval -ENOSYS Thread name configuration option not enabled
 ##  @retval -EINVAL Thread name too long
 ##
-proc k_thread_name_set*(thread: k_tid_t; str: cstring): cint {.syscall,
+proc k_thread_name_set*(thread: k_tid_t; str: cstring): cint {.zsyscall,
     importc: "k_thread_name_set", header: "kernel.h".}
 
 
@@ -1098,7 +1095,7 @@ proc k_thread_name_get*(thread: k_tid_t): cstring {.importc: "k_thread_name_get"
 ##  @retval 0 Success
 ##
 proc k_thread_name_copy*(thread: k_tid_t; buf: cstring; size: csize_t): cint {.
-    syscall, importc: "k_thread_name_copy", header: "kernel.h".}
+    zsyscall, importc: "k_thread_name_copy", header: "kernel.h".}
 
 
 
@@ -1265,7 +1262,7 @@ when CONFIG_TIMEOUT_64BIT:
   ##  @param t Tick uptime value
   ##  @return Timeout delay value
   ##
-  proc K_TIMEOUT_ABS_TICKS*(t: intyped): k_timeout_t {.importc: "K_TIMEOUT_ABS_TICKS",
+  proc K_TIMEOUT_ABS_TICKS*(t: int64): k_timeout_t {.importc: "K_TIMEOUT_ABS_TICKS",
       header: "kernel.h".}
 
 
@@ -1280,7 +1277,7 @@ when CONFIG_TIMEOUT_64BIT:
   ##  @param t Millisecond uptime value
   ##  @return Timeout delay value
   ##
-  proc K_TIMEOUT_ABS_MS*(t: int) {.importc: "K_TIMEOUT_ABS_MS",
+  proc K_TIMEOUT_ABS_MS*(t: uint64) {.importc: "K_TIMEOUT_ABS_MS",
                                     header: "kernel.h".}
 
 
@@ -1298,7 +1295,7 @@ when CONFIG_TIMEOUT_64BIT:
   ##  @param t Microsecond uptime value
   ##  @return Timeout delay value
   ##
-  proc K_TIMEOUT_ABS_US*(t: untyped) {.importc: "K_TIMEOUT_ABS_US",
+  proc K_TIMEOUT_ABS_US*(t: uint64) {.importc: "K_TIMEOUT_ABS_US",
                                     header: "kernel.h".}
 
 
@@ -1316,7 +1313,7 @@ when CONFIG_TIMEOUT_64BIT:
   ##  @param t Nanosecond uptime value
   ##  @return Timeout delay value
   ##
-  proc K_TIMEOUT_ABS_NS*(t: untyped) {.importc: "K_TIMEOUT_ABS_NS",
+  proc K_TIMEOUT_ABS_NS*(t: uint64) {.importc: "K_TIMEOUT_ABS_NS",
                                     header: "kernel.h".}
 
 
@@ -1334,7 +1331,7 @@ when CONFIG_TIMEOUT_64BIT:
   ##  @param t Cycle uptime value
   ##  @return Timeout delay value
   ##
-  proc K_TIMEOUT_ABS_CYC*(t: untyped) {.importc: "K_TIMEOUT_ABS_CYC",
+  proc K_TIMEOUT_ABS_CYC*(t: uint64) {.importc: "K_TIMEOUT_ABS_CYC",
                                       header: "kernel.h".}
 
 
@@ -1349,24 +1346,24 @@ when CONFIG_TIMEOUT_64BIT:
 ##  @cond INTERNAL_HIDDEN
 ##
 type
+  k_timer_cb_t* = proc (timer: ptr k_timer) {.cdecl.}
+
   k_timer* {.importc: "k_timer", header: "kernel.h", bycopy.} = object
-    timeout* {.importc: "timeout".}: _timeout ##
+    timeout* {.importc: "timeout".}: k_priv_timeout ##
                                           ##  _timeout structure must be first here if we want to use
                                           ##  dynamic timer allocation. timeout.node is used in the double-linked
                                           ##  list of free timers
                                           ##
     ##  wait queue for the (single) thread waiting on this timer
-    wait_q* {.importc: "wait_q".}: _wait_q_t ##  runs in ISR context
-    expiry_fn* {.importc: "expiry_fn".}: proc (timer: ptr k_timer) ##  runs in the context of the thread that calls k_timer_stop()
-    stop_fn* {.importc: "stop_fn".}: proc (timer: ptr k_timer) ##  timer period
+    wait_q* {.importc: "wait_q".}: z_wait_q_t ##  runs in ISR context
+    expiry_fn* {.importc: "expiry_fn".}: k_timer_cb_t ##  runs in the context of the thread that calls k_timer_stop()
+    stop_fn* {.importc: "stop_fn".}: k_timer_cb_t ##  timer period
     period* {.importc: "period".}: k_timeout_t ##  timer status
     status* {.importc: "status".}: uint32 ##  user-specific data, also used to support legacy features
     user_data* {.importc: "user_data".}: pointer
 
-proc Z_TIMER_INITIALIZER*(obj: untyped; expiry: untyped; stop: untyped) {.
+proc Z_TIMER_INITIALIZER*(obj: k_timer; expiry: k_timer_cb_t; stop: k_timer_cb_t) {.
     importc: "Z_TIMER_INITIALIZER", header: "kernel.h".}
-
-
 
 
 ## *
@@ -1409,21 +1406,20 @@ type
 ##
 type
   k_timer_stop_t* = proc (timer: ptr k_timer)
-## *
-##  @brief Statically define and initialize a timer.
-##
-##  The timer can be accessed outside the module where it is defined using:
-##
-##  @code extern struct k_timer <name>; @endcode
-##
-##  @param name Name of the timer variable.
-##  @param expiry_fn Function to invoke each time the timer expires.
-##  @param stop_fn   Function to invoke if the timer is stopped while running.
-##
-proc K_TIMER_DEFINE*(name: untyped; expiry_fn: untyped; stop_fn: untyped) {.
-    importc: "K_TIMER_DEFINE", header: "kernel.h".}
 
-
+# ## *
+# ##  @brief Statically define and initialize a timer.
+# ##
+# ##  The timer can be accessed outside the module where it is defined using:
+# ##
+# ##  @code extern struct k_timer <name>; @endcode
+# ##
+# ##  @param name Name of the timer variable.
+# ##  @param expiry_fn Function to invoke each time the timer expires.
+# ##  @param stop_fn   Function to invoke if the timer is stopped while running.
+# ##
+# proc K_TIMER_DEFINE*(name: untyped; expiry_fn: untyped; stop_fn: untyped) {.
+#     importc: "K_TIMER_DEFINE", header: "kernel.h".}
 
 
 ## *
@@ -1461,7 +1457,7 @@ proc k_timer_init*(timer: ptr k_timer; expiry_fn: k_timer_expiry_t;
 ##  @return N/A
 ##
 proc k_timer_start*(timer: ptr k_timer; duration: k_timeout_t; period: k_timeout_t) {.
-    syscall, importc: "k_timer_start", header: "kernel.h".}
+    zsyscall, importc: "k_timer_start", header: "kernel.h".}
 
 
 
@@ -1484,7 +1480,7 @@ proc k_timer_start*(timer: ptr k_timer; duration: k_timeout_t; period: k_timeout
 ##
 ##  @return N/A
 ##
-proc k_timer_stop*(timer: ptr k_timer) {.syscall, importc: "k_timer_stop",
+proc k_timer_stop*(timer: ptr k_timer) {.zsyscall, importc: "k_timer_stop",
                                       header: "kernel.h".}
 
 
@@ -1502,7 +1498,7 @@ proc k_timer_stop*(timer: ptr k_timer) {.syscall, importc: "k_timer_stop",
 ##
 ##  @return Timer status.
 ##
-proc k_timer_status_get*(timer: ptr k_timer): uint32 {.syscall,
+proc k_timer_status_get*(timer: ptr k_timer): uint32 {.zsyscall,
     importc: "k_timer_status_get", header: "kernel.h".}
 
 
@@ -1525,7 +1521,7 @@ proc k_timer_status_get*(timer: ptr k_timer): uint32 {.syscall,
 ##
 ##  @return Timer status.
 ##
-proc k_timer_status_sync*(timer: ptr k_timer): uint32 {.syscall,
+proc k_timer_status_sync*(timer: ptr k_timer): uint32 {.zsyscall,
     importc: "k_timer_status_sync", header: "kernel.h".}
 when CONFIG_SYS_CLOCK_EXISTS:
   ## *
@@ -1538,7 +1534,7 @@ when CONFIG_SYS_CLOCK_EXISTS:
   ##  @param timer The timer object
   ##  @return Uptime of expiration, in ticks
   ##
-  proc k_timer_expires_ticks*(timer: ptr k_timer): k_ticks_t {.syscall,
+  proc k_timer_expires_ticks*(timer: ptr k_timer): k_ticks_t {.zsyscall,
       importc: "k_timer_expires_ticks", header: "kernel.h".}
   proc z_impl_k_timer_expires_ticks*(timer: ptr k_timer): k_ticks_t {.inline.} =
     return z_timeout_expires(addr(timer.timeout))
@@ -1550,7 +1546,7 @@ when CONFIG_SYS_CLOCK_EXISTS:
   ##  next expires, in units of system ticks.  If the timer is not
   ##  running, it returns zero.
   ##
-  proc k_timer_remaining_ticks*(timer: ptr k_timer): k_ticks_t {.syscall,
+  proc k_timer_remaining_ticks*(timer: ptr k_timer): k_ticks_t {.zsyscall,
       importc: "k_timer_remaining_ticks", header: "kernel.h".}
   proc z_impl_k_timer_remaining_ticks*(timer: ptr k_timer): k_ticks_t {.inline.} =
     return z_timeout_remaining(addr(timer.timeout))
@@ -1565,8 +1561,8 @@ when CONFIG_SYS_CLOCK_EXISTS:
   ##
   ##  @return Remaining time (in milliseconds).
   ##
-  proc k_timer_remaining_get*(timer: ptr k_timer): uint32 {.inline.} =
-    return k_ticks_to_ms_floor32(k_timer_remaining_ticks(timer))
+  proc k_timer_remaining_get*(timer: ptr k_timer): uint32 {.
+      importc: "k_timer_remaining_ticks", header: "kernel.h".}
 
 ## *
 ##  @brief Associate user-specific data with a timer.
@@ -1582,7 +1578,7 @@ when CONFIG_SYS_CLOCK_EXISTS:
 ##
 ##  @return N/A
 ##
-proc k_timer_user_data_set*(timer: ptr k_timer; user_data: pointer) {.syscall,
+proc k_timer_user_data_set*(timer: ptr k_timer; user_data: pointer) {.zsyscall,
     importc: "k_timer_user_data_set", header: "kernel.h".}
 
 
@@ -1601,7 +1597,7 @@ proc z_impl_k_timer_user_data_set*(timer: ptr k_timer; user_data: pointer) {.inl
 ##
 ##  @return The user data.
 ##
-proc k_timer_user_data_get*(timer: ptr k_timer): pointer {.syscall,
+proc k_timer_user_data_get*(timer: ptr k_timer): pointer {.zsyscall,
     importc: "k_timer_user_data_get", header: "kernel.h".}
 proc z_impl_k_timer_user_data_get*(timer: ptr k_timer): pointer {.inline.} =
   return timer.user_data
@@ -1621,7 +1617,7 @@ proc z_impl_k_timer_user_data_get*(timer: ptr k_timer): pointer {.inline.} =
 ##
 ##  @return Current uptime in ticks.
 ##
-proc k_uptime_ticks*(): int64 {.syscall, importc: "k_uptime_ticks",
+proc k_uptime_ticks*(): int64 {.zsyscall, importc: "k_uptime_ticks",
                                 header: "kernel.h".}
 
 
@@ -1640,8 +1636,8 @@ proc k_uptime_ticks*(): int64 {.syscall, importc: "k_uptime_ticks",
 ##
 ##  @return Current uptime in milliseconds.
 ##
-proc k_uptime_get*(): int64 {.inline.} =
-  return k_ticks_to_ms_floor64(k_uptime_ticks())
+proc k_uptime_get*(): int64 {.
+    importc: "k_uptime_get", header: "kernel.h".}
 
 ## *
 ##  @brief Get system uptime (32-bit version).
@@ -1662,8 +1658,8 @@ proc k_uptime_get*(): int64 {.inline.} =
 ##
 ##  @return The low 32 bits of the current uptime, in milliseconds.
 ##
-proc k_uptime_get_32*(): uint32 {.inline.} =
-  return cast[uint32](k_uptime_get())
+proc k_uptime_get_32*(): uint32 {.
+    importc: "k_uptime_get_32", header: "kernel.h".}
 
 ## *
 ##  @brief Get elapsed time.
@@ -1693,8 +1689,8 @@ proc k_uptime_delta*(reftime: ptr int64): int64 {.inline.} =
 ##
 ##  @return Current hardware clock up-counter (in cycles).
 ##
-proc k_cycle_get_32*(): uint32 {.inline.} =
-  return arch_k_cycle_get_32()
+proc k_cycle_get_32*(): uint32 {.
+    importc: "k_cycle_get_32", header: "kernel.h".}
 
 ## *
 ##  @}
@@ -1703,17 +1699,17 @@ proc k_cycle_get_32*(): uint32 {.inline.} =
 ##  @cond INTERNAL_HIDDEN
 ##
 type
-  k_queue* {.importc: "k_queue", header: "kernel.h", bycopy.} = object
+  k_queue* {.importc: "k_queue", header: "kernel.h", incompleteStruct, bycopy.} = object
     data_q* {.importc: "data_q".}: sys_sflist_t
     lock* {.importc: "lock".}: k_spinlock
-    wait_q* {.importc: "wait_q".}: _wait_q_t
-    poll_events* {.importc: "poll_events".}: sys_dlist_t ##  _POLL_EVENT;
+    wait_q* {.importc: "wait_q".}: z_wait_q_t
+    # poll_events* {.importc: "poll_events".}: sys_dlist_t ##  _POLL_EVENT;
 
-proc Z_QUEUE_INITIALIZER*(obj: untyped) {.importc: "Z_QUEUE_INITIALIZER",
+proc Z_QUEUE_INITIALIZER*(obj: k_queue) {.importc: "Z_QUEUE_INITIALIZER",
     header: "kernel.h".}
-proc z_queue_node_peek*(node: ptr sys_sfnode_t; needs_free: bool): pointer {.
-    importc: "z_queue_node_peek", header: "kernel.h".}
 
+# proc z_queue_node_peek*(node: ptr sys_sfnode_t; needs_free: bool): pointer {.
+    # importc: "z_queue_node_peek", header: "kernel.h".}
 
 
 
@@ -1734,7 +1730,7 @@ proc z_queue_node_peek*(node: ptr sys_sfnode_t; needs_free: bool): pointer {.
 ##
 ##  @return N/A
 ##
-proc k_queue_init*(queue: ptr k_queue) {.syscall, importc: "k_queue_init",
+proc k_queue_init*(queue: ptr k_queue) {.zsyscall, importc: "k_queue_init",
                                       header: "kernel.h".}
 
 
@@ -1755,7 +1751,7 @@ proc k_queue_init*(queue: ptr k_queue) {.syscall, importc: "k_queue_init",
 ##
 ##  @return N/A
 ##
-proc k_queue_cancel_wait*(queue: ptr k_queue) {.syscall,
+proc k_queue_cancel_wait*(queue: ptr k_queue) {.zsyscall,
     importc: "k_queue_cancel_wait", header: "kernel.h".}
 
 
@@ -1797,7 +1793,7 @@ proc k_queue_append*(queue: ptr k_queue; data: pointer) {.importc: "k_queue_appe
 ##  @retval 0 on success
 ##  @retval -ENOMEM if there isn't sufficient RAM in the caller's resource pool
 ##
-proc k_queue_alloc_append*(queue: ptr k_queue; data: pointer): int32 {.syscall,
+proc k_queue_alloc_append*(queue: ptr k_queue; data: pointer): int32 {.zsyscall,
     importc: "k_queue_alloc_append", header: "kernel.h".}
 
 
@@ -1839,7 +1835,7 @@ proc k_queue_prepend*(queue: ptr k_queue; data: pointer) {.
 ##  @retval 0 on success
 ##  @retval -ENOMEM if there isn't sufficient RAM in the caller's resource pool
 ##
-proc k_queue_alloc_prepend*(queue: ptr k_queue; data: pointer): int32 {.syscall,
+proc k_queue_alloc_prepend*(queue: ptr k_queue; data: pointer): int32 {.zsyscall,
     importc: "k_queue_alloc_prepend", header: "kernel.h".}
 
 
@@ -1929,7 +1925,7 @@ proc k_queue_merge_slist*(queue: ptr k_queue; list: ptr sys_slist_t): cint {.
 ##  @return Address of the data item if successful; NULL if returned
 ##  without waiting, or waiting period timed out.
 ##
-proc k_queue_get*(queue: ptr k_queue; timeout: k_timeout_t): pointer {.syscall,
+proc k_queue_get*(queue: ptr k_queue; timeout: k_timeout_t): pointer {.zsyscall,
     importc: "k_queue_get", header: "kernel.h".}
 
 
@@ -1990,10 +1986,9 @@ proc k_queue_unique_append*(queue: ptr k_queue; data: pointer): bool {.
 ##  @return Non-zero if the queue is empty.
 ##  @return 0 if data is available.
 ##
-proc k_queue_is_empty*(queue: ptr k_queue): cint {.syscall,
+proc k_queue_is_empty*(queue: ptr k_queue): cint {.zsyscall,
     importc: "k_queue_is_empty", header: "kernel.h".}
-proc z_impl_k_queue_is_empty*(queue: ptr k_queue): cint {.inline.} =
-  return cast[cint](sys_sflist_is_empty(addr(queue.data_q)))
+
 
 ## *
 ##  @brief Peek element at the head of queue.
@@ -2004,7 +1999,7 @@ proc z_impl_k_queue_is_empty*(queue: ptr k_queue): cint {.inline.} =
 ##
 ##  @return Head element, or NULL if queue is empty.
 ##
-proc k_queue_peek_head*(queue: ptr k_queue): pointer {.syscall,
+proc k_queue_peek_head*(queue: ptr k_queue): pointer {.zsyscall,
     importc: "k_queue_peek_head", header: "kernel.h".}
 
 
@@ -2019,7 +2014,7 @@ proc k_queue_peek_head*(queue: ptr k_queue): pointer {.syscall,
 ##
 ##  @return Tail element, or NULL if queue is empty.
 ##
-proc k_queue_peek_tail*(queue: ptr k_queue): pointer {.syscall,
+proc k_queue_peek_tail*(queue: ptr k_queue): pointer {.zsyscall,
     importc: "k_queue_peek_tail", header: "kernel.h".}
 
 
@@ -2034,7 +2029,7 @@ proc k_queue_peek_tail*(queue: ptr k_queue): pointer {.syscall,
 ##
 ##  @param name Name of the queue.
 ##
-proc K_QUEUE_DEFINE*(name: untyped) {.importc: "K_QUEUE_DEFINE", header: "kernel.h".}
+proc K_QUEUE_DEFINE*(name: cminvtoken) {.importc: "K_QUEUE_DEFINE", header: "kernel.h".}
 
 
 
@@ -2063,10 +2058,10 @@ when CONFIG_USERSPACE:
   ##
   type
     z_futex_data* {.importc: "z_futex_data", header: "kernel.h", bycopy.} = object
-      wait_q* {.importc: "wait_q".}: _wait_q_t
+      wait_q* {.importc: "wait_q".}: z_wait_q_t
       lock* {.importc: "lock".}: k_spinlock
 
-  proc Z_FUTEX_DATA_INITIALIZER*(obj: untyped) {.
+  proc Z_FUTEX_DATA_INITIALIZER*(obj: z_futex_data) {.
       importc: "Z_FUTEX_DATA_INITIALIZER", header: "kernel.h".}
 
 
@@ -2097,7 +2092,7 @@ when CONFIG_USERSPACE:
   ## 	     to block again.
   ##
   proc k_futex_wait*(futex: ptr k_futex; expected: cint; timeout: k_timeout_t): cint {.
-      syscall, importc: "k_futex_wait", header: "kernel.h".}
+      zsyscall, importc: "k_futex_wait", header: "kernel.h".}
 
 
 
@@ -2116,7 +2111,7 @@ when CONFIG_USERSPACE:
   ##  @retval -EINVAL Futex parameter address not recognized by the kernel.
   ##  @retval Number of threads that were woken up.
   ##
-  proc k_futex_wake*(futex: ptr k_futex; wake_all: bool): cint {.syscall,
+  proc k_futex_wake*(futex: ptr k_futex; wake_all: bool): cint {.zsyscall,
       importc: "k_futex_wake", header: "kernel.h".}
 
 
@@ -2125,12 +2120,12 @@ when CONFIG_USERSPACE:
   ## * @}
 type
   k_fifo* {.importc: "k_fifo", header: "kernel.h", bycopy.} = object
-    _queue* {.importc: "_queue".}: k_queue
+    z_queue* {.importc: "_queue".}: k_queue
 
 ## *
 ##  @cond INTERNAL_HIDDEN
 ##
-proc Z_FIFO_INITIALIZER*(obj: untyped) {.importc: "Z_FIFO_INITIALIZER",
+proc Z_FIFO_INITIALIZER*(obj: k_fifo) {.importc: "Z_FIFO_INITIALIZER",
                                       header: "kernel.h".}
 
 
@@ -2151,7 +2146,7 @@ proc Z_FIFO_INITIALIZER*(obj: untyped) {.importc: "Z_FIFO_INITIALIZER",
 ##
 ##  @return N/A
 ##
-proc k_fifo_init*(fifo: untyped) {.importc: "k_fifo_init", header: "kernel.h".}
+proc k_fifo_init*(fifo: k_fifo) {.importc: "k_fifo_init", header: "kernel.h".}
 
 
 ## *
@@ -2167,7 +2162,7 @@ proc k_fifo_init*(fifo: untyped) {.importc: "k_fifo_init", header: "kernel.h".}
 ##
 ##  @return N/A
 ##
-proc k_fifo_cancel_wait*(fifo: untyped) {.importc: "k_fifo_cancel_wait",
+proc k_fifo_cancel_wait*(fifo: k_fifo) {.importc: "k_fifo_cancel_wait",
     header: "kernel.h".}
 
 
@@ -2185,7 +2180,7 @@ proc k_fifo_cancel_wait*(fifo: untyped) {.importc: "k_fifo_cancel_wait",
 ##
 ##  @return N/A
 ##
-proc k_fifo_put*(fifo: untyped; data: untyped) {.importc: "k_fifo_put",
+proc k_fifo_put*(fifo: k_fifo; data: pointer) {.importc: "k_fifo_put",
     header: "kernel.h".}
 
 
@@ -2205,7 +2200,7 @@ proc k_fifo_put*(fifo: untyped; data: untyped) {.importc: "k_fifo_put",
 ##  @retval 0 on success
 ##  @retval -ENOMEM if there isn't sufficient RAM in the caller's resource pool
 ##
-proc k_fifo_alloc_put*(fifo: untyped; data: untyped) {.importc: "k_fifo_alloc_put",
+proc k_fifo_alloc_put*(fifo: k_fifo; data: pointer) {.importc: "k_fifo_alloc_put",
     header: "kernel.h".}
 
 
@@ -2225,7 +2220,7 @@ proc k_fifo_alloc_put*(fifo: untyped; data: untyped) {.importc: "k_fifo_alloc_pu
 ##
 ##  @return N/A
 ##
-proc k_fifo_put_list*(fifo: untyped; head: untyped; tail: untyped) {.
+proc k_fifo_put_list*(fifo: k_fifo; head: ptr sys_slist_t; tail: ptr sys_slist_t) {.
     importc: "k_fifo_put_list", header: "kernel.h".}
 
 
@@ -2244,7 +2239,7 @@ proc k_fifo_put_list*(fifo: untyped; head: untyped; tail: untyped) {.
 ##
 ##  @return N/A
 ##
-proc k_fifo_put_slist*(fifo: untyped; list: untyped) {.importc: "k_fifo_put_slist",
+proc k_fifo_put_slist*(fifo: k_fifo; list: ptr sys_slist_t) {.importc: "k_fifo_put_slist",
     header: "kernel.h".}
 
 
@@ -2265,7 +2260,7 @@ proc k_fifo_put_slist*(fifo: untyped; list: untyped) {.importc: "k_fifo_put_slis
 ##  @return Address of the data item if successful; NULL if returned
 ##  without waiting, or waiting period timed out.
 ##
-proc k_fifo_get*(fifo: untyped; timeout: untyped) {.importc: "k_fifo_get",
+proc k_fifo_get*(fifo: k_fifo; timeout: k_timeout_t) {.importc: "k_fifo_get",
     header: "kernel.h".}
 
 
@@ -2282,7 +2277,7 @@ proc k_fifo_get*(fifo: untyped; timeout: untyped) {.importc: "k_fifo_get",
 ##  @return Non-zero if the FIFO queue is empty.
 ##  @return 0 if data is available.
 ##
-proc k_fifo_is_empty*(fifo: untyped) {.importc: "k_fifo_is_empty",
+proc k_fifo_is_empty*(fifo: k_fifo) {.importc: "k_fifo_is_empty",
                                     header: "kernel.h".}
 
 
@@ -2299,7 +2294,7 @@ proc k_fifo_is_empty*(fifo: untyped) {.importc: "k_fifo_is_empty",
 ##
 ##  @return Head element, or NULL if the FIFO queue is empty.
 ##
-proc k_fifo_peek_head*(fifo: untyped) {.importc: "k_fifo_peek_head",
+proc k_fifo_peek_head*(fifo: k_fifo) {.importc: "k_fifo_peek_head",
                                       header: "kernel.h".}
 
 
@@ -2314,7 +2309,7 @@ proc k_fifo_peek_head*(fifo: untyped) {.importc: "k_fifo_peek_head",
 ##
 ##  @return Tail element, or NULL if a FIFO queue is empty.
 ##
-proc k_fifo_peek_tail*(fifo: untyped) {.importc: "k_fifo_peek_tail",
+proc k_fifo_peek_tail*(fifo: k_fifo) {.importc: "k_fifo_peek_tail",
                                       header: "kernel.h".}
 
 
@@ -2327,24 +2322,15 @@ proc k_fifo_peek_tail*(fifo: untyped) {.importc: "k_fifo_peek_tail",
 ##
 ##  @param name Name of the FIFO queue.
 ##
-proc K_FIFO_DEFINE*(name: untyped) {.importc: "K_FIFO_DEFINE", header: "kernel.h".}
+proc K_FIFO_DEFINE*(name: k_fifo) {.importc: "K_FIFO_DEFINE", header: "kernel.h".}
 
 
 ## * @}
 type
   k_lifo* {.importc: "k_lifo", header: "kernel.h", bycopy.} = object
-    _queue* {.importc: "_queue".}: k_queue
-
-## *
-##  @cond INTERNAL_HIDDEN
-##
-proc Z_LIFO_INITIALIZER*(obj: untyped) {.importc: "Z_LIFO_INITIALIZER",
-                                      header: "kernel.h".}
+    z_queue* {.importc: "_queue".}: k_queue
 
 
-## *
-##  INTERNAL_HIDDEN @endcond
-##
 ## *
 ##  @defgroup lifo_apis LIFO APIs
 ##  @ingroup kernel_apis
@@ -2359,7 +2345,7 @@ proc Z_LIFO_INITIALIZER*(obj: untyped) {.importc: "Z_LIFO_INITIALIZER",
 ##
 ##  @return N/A
 ##
-proc k_lifo_init*(lifo: untyped) {.importc: "k_lifo_init", header: "kernel.h".}
+proc k_lifo_init*(lifo: k_lifo) {.importc: "k_lifo_init", header: "kernel.h".}
 
 
 ## *
@@ -2376,7 +2362,7 @@ proc k_lifo_init*(lifo: untyped) {.importc: "k_lifo_init", header: "kernel.h".}
 ##
 ##  @return N/A
 ##
-proc k_lifo_put*(lifo: untyped; data: untyped) {.importc: "k_lifo_put",
+proc k_lifo_put*(lifo: k_lifo; data: pointer) {.importc: "k_lifo_put",
     header: "kernel.h".}
 
 
@@ -2396,7 +2382,7 @@ proc k_lifo_put*(lifo: untyped; data: untyped) {.importc: "k_lifo_put",
 ##  @retval 0 on success
 ##  @retval -ENOMEM if there isn't sufficient RAM in the caller's resource pool
 ##
-proc k_lifo_alloc_put*(lifo: untyped; data: untyped) {.importc: "k_lifo_alloc_put",
+proc k_lifo_alloc_put*(lifo: k_lifo; data: pointer) {.importc: "k_lifo_alloc_put",
     header: "kernel.h".}
 
 
@@ -2417,7 +2403,7 @@ proc k_lifo_alloc_put*(lifo: untyped; data: untyped) {.importc: "k_lifo_alloc_pu
 ##  @return Address of the data item if successful; NULL if returned
 ##  without waiting, or waiting period timed out.
 ##
-proc k_lifo_get*(lifo: untyped; timeout: untyped) {.importc: "k_lifo_get",
+proc k_lifo_get*(lifo: k_lifo; timeout: k_timeout_t) {.importc: "k_lifo_get",
     header: "kernel.h".}
 
 
@@ -2430,28 +2416,29 @@ proc k_lifo_get*(lifo: untyped; timeout: untyped) {.importc: "k_lifo_get",
 ##
 ##  @param name Name of the fifo.
 ##
-proc K_LIFO_DEFINE*(name: untyped) {.importc: "K_LIFO_DEFINE", header: "kernel.h".}
+proc K_LIFO_DEFINE*(name: cminvtoken) {.importc: "K_LIFO_DEFINE", header: "kernel.h".}
 
 
 ## * @}
 ## *
 ##  @cond INTERNAL_HIDDEN
 ##
-var K_STACK_FLAG_ALLOC* {.importc: "K_STACK_FLAG_ALLOC", header: "kernel.h".}: int
+# var K_STACK_FLAG_ALLOC* {.importc: "K_STACK_FLAG_ALLOC", header: "kernel.h".}: int
+
 type
-  stack_data_t* = uintptr_t
-type
+  stack_data_t* = pointer
+
   k_stack* {.importc: "k_stack", header: "kernel.h", bycopy.} = object
-    wait_q* {.importc: "wait_q".}: _wait_q_t
+    wait_q* {.importc: "wait_q".}: z_wait_q_t
     lock* {.importc: "lock".}: k_spinlock
     base* {.importc: "base".}: ptr stack_data_t
     next* {.importc: "next".}: ptr stack_data_t
     top* {.importc: "top".}: ptr stack_data_t
     flags* {.importc: "flags".}: uint8
 
-proc Z_STACK_INITIALIZER*(obj: untyped; stack_buffer: untyped;
-                          stack_num_entries: untyped) {.
-    importc: "Z_STACK_INITIALIZER", header: "kernel.h".}
+# proc Z_STACK_INITIALIZER*(obj: untyped; stack_buffer: untyped;
+                        #   stack_num_entries: untyped) {.
+    # importc: "Z_STACK_INITIALIZER", header: "kernel.h".}
 
 
 ## *
@@ -2492,7 +2479,7 @@ proc k_stack_init*(stack: ptr k_stack; buffer: ptr stack_data_t;
 ##  @return -ENOMEM if memory couldn't be allocated
 ##
 proc k_stack_alloc_init*(stack: ptr k_stack; num_entries: uint32): int32 {.
-    syscall, importc: "k_stack_alloc_init", header: "kernel.h".}
+    zsyscall, importc: "k_stack_alloc_init", header: "kernel.h".}
 
 
 ## *
@@ -2523,7 +2510,7 @@ proc k_stack_cleanup*(stack: ptr k_stack): cint {.importc: "k_stack_cleanup",
 ##  @retval 0 on success
 ##  @retval -ENOMEM if stack is full
 ##
-proc k_stack_push*(stack: ptr k_stack; data: stack_data_t): cint {.syscall,
+proc k_stack_push*(stack: ptr k_stack; data: stack_data_t): cint {.zsyscall,
     importc: "k_stack_push", header: "kernel.h".}
 
 
@@ -2548,7 +2535,7 @@ proc k_stack_push*(stack: ptr k_stack; data: stack_data_t): cint {.syscall,
 ##  @retval -EAGAIN Waiting period timed out.
 ##
 proc k_stack_pop*(stack: ptr k_stack; data: ptr stack_data_t; timeout: k_timeout_t): cint {.
-    syscall, importc: "k_stack_pop", header: "kernel.h".}
+    zsyscall, importc: "k_stack_pop", header: "kernel.h".}
 
 
 ## *
@@ -2561,7 +2548,7 @@ proc k_stack_pop*(stack: ptr k_stack; data: ptr stack_data_t; timeout: k_timeout
 ##  @param name Name of the stack.
 ##  @param stack_num_entries Maximum number of values that can be stacked.
 ##
-proc K_STACK_DEFINE*(name: untyped; stack_num_entries: untyped) {.
+proc K_STACK_DEFINE*(name: cminvtoken; stack_num_entries: static[int]) {.
     importc: "K_STACK_DEFINE", header: "kernel.h".}
 
 
@@ -2569,11 +2556,8 @@ proc K_STACK_DEFINE*(name: untyped; stack_num_entries: untyped) {.
 ## *
 ##  @cond INTERNAL_HIDDEN
 ##
-discard "forward decl of k_work"
-discard "forward decl of k_work_q"
-discard "forward decl of k_work_queue_config"
-discard "forward decl of k_delayed_work"
-var k_sys_work_q* {.importc: "k_sys_work_q", header: "kernel.h".}: k_work_q
+# var k_sys_work_q* {.importc: "k_sys_work_q", header: "kernel.h".}: k_work_q
+
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
@@ -2588,7 +2572,7 @@ var k_sys_work_q* {.importc: "k_sys_work_q", header: "kernel.h".}: k_work_q
 ##
 type
   k_mutex* {.importc: "k_mutex", header: "kernel.h", bycopy.} = object
-    wait_q* {.importc: "wait_q".}: _wait_q_t ## * Mutex wait queue
+    wait_q* {.importc: "wait_q".}: z_wait_q_t ## * Mutex wait queue
     ## * Mutex owner
     owner* {.importc: "owner".}: ptr k_thread ## * Current lock count
     lock_count* {.importc: "lock_count".}: uint32 ## * Original thread priority
@@ -2597,8 +2581,8 @@ type
 ## *
 ##  @cond INTERNAL_HIDDEN
 ##
-proc Z_MUTEX_INITIALIZER*(obj: untyped) {.importc: "Z_MUTEX_INITIALIZER",
-    header: "kernel.h".}
+# proc Z_MUTEX_INITIALIZER*(obj: untyped) {.importc: "Z_MUTEX_INITIALIZER",
+    # header: "kernel.h".}
 
 
 ## *
@@ -2613,7 +2597,7 @@ proc Z_MUTEX_INITIALIZER*(obj: untyped) {.importc: "Z_MUTEX_INITIALIZER",
 ##
 ##  @param name Name of the mutex.
 ##
-proc K_MUTEX_DEFINE*(name: untyped) {.importc: "K_MUTEX_DEFINE", header: "kernel.h".}
+proc K_MUTEX_DEFINE*(name: cminvtoken) {.importc: "K_MUTEX_DEFINE", header: "kernel.h".}
 
 
 ## *
@@ -2628,7 +2612,7 @@ proc K_MUTEX_DEFINE*(name: untyped) {.importc: "K_MUTEX_DEFINE", header: "kernel
 ##  @retval 0 Mutex object created
 ##
 ##
-proc k_mutex_init*(mutex: ptr k_mutex): cint {.syscall, importc: "k_mutex_init",
+proc k_mutex_init*(mutex: ptr k_mutex): cint {.zsyscall, importc: "k_mutex_init",
     header: "kernel.h".}
 
 
@@ -2653,7 +2637,7 @@ proc k_mutex_init*(mutex: ptr k_mutex): cint {.syscall, importc: "k_mutex_init",
 ##  @retval -EBUSY Returned without waiting.
 ##  @retval -EAGAIN Waiting period timed out.
 ##
-proc k_mutex_lock*(mutex: ptr k_mutex; timeout: k_timeout_t): cint {.syscall,
+proc k_mutex_lock*(mutex: ptr k_mutex; timeout: k_timeout_t): cint {.zsyscall,
     importc: "k_mutex_lock", header: "kernel.h".}
 
 
@@ -2677,20 +2661,21 @@ proc k_mutex_lock*(mutex: ptr k_mutex; timeout: k_timeout_t): cint {.syscall,
 ##  @retval -EINVAL The mutex is not locked
 ##
 ##
-proc k_mutex_unlock*(mutex: ptr k_mutex): cint {.syscall, importc: "k_mutex_unlock",
+proc k_mutex_unlock*(mutex: ptr k_mutex): cint {.zsyscall, importc: "k_mutex_unlock",
     header: "kernel.h".}
 
 
 ## *
 ##  @}
 ##
+
+
 type
   k_condvar* {.importc: "k_condvar", header: "kernel.h", bycopy.} = object
-    wait_q* {.importc: "wait_q".}: _wait_q_t
+    wait_q* {.importc: "wait_q".}: z_wait_q_t
 
-proc Z_CONDVAR_INITIALIZER*(obj: untyped) {.importc: "Z_CONDVAR_INITIALIZER",
+proc Z_CONDVAR_INITIALIZER*(obj: k_condvar) {.importc: "Z_CONDVAR_INITIALIZER",
     header: "kernel.h".}
-
 
 ## *
 ##  @defgroup condvar_apis Condition Variables APIs
@@ -2703,7 +2688,7 @@ proc Z_CONDVAR_INITIALIZER*(obj: untyped) {.importc: "Z_CONDVAR_INITIALIZER",
 ##  @param condvar pointer to a @p k_condvar structure
 ##  @retval 0 Condition variable created successfully
 ##
-proc k_condvar_init*(condvar: ptr k_condvar): cint {.syscall,
+proc k_condvar_init*(condvar: ptr k_condvar): cint {.zsyscall,
     importc: "k_condvar_init", header: "kernel.h".}
 
 
@@ -2713,7 +2698,7 @@ proc k_condvar_init*(condvar: ptr k_condvar): cint {.syscall,
 ##  @param condvar pointer to a @p k_condvar structure
 ##  @retval 0 On success
 ##
-proc k_condvar_signal*(condvar: ptr k_condvar): cint {.syscall,
+proc k_condvar_signal*(condvar: ptr k_condvar): cint {.zsyscall,
     importc: "k_condvar_signal", header: "kernel.h".}
 
 
@@ -2724,7 +2709,7 @@ proc k_condvar_signal*(condvar: ptr k_condvar): cint {.syscall,
 ##  @param condvar pointer to a @p k_condvar structure
 ##  @return An integer with number of woken threads on success
 ##
-proc k_condvar_broadcast*(condvar: ptr k_condvar): cint {.syscall,
+proc k_condvar_broadcast*(condvar: ptr k_condvar): cint {.zsyscall,
     importc: "k_condvar_broadcast", header: "kernel.h".}
 
 
@@ -2746,7 +2731,7 @@ proc k_condvar_broadcast*(condvar: ptr k_condvar): cint {.syscall,
 ##  @retval -EAGAIN Waiting period timed out.
 ##
 proc k_condvar_wait*(condvar: ptr k_condvar; mutex: ptr k_mutex; timeout: k_timeout_t): cint {.
-    syscall, importc: "k_condvar_wait", header: "kernel.h".}
+    zsyscall, importc: "k_condvar_wait", header: "kernel.h".}
 
 
 ## *
@@ -2759,7 +2744,7 @@ proc k_condvar_wait*(condvar: ptr k_condvar; mutex: ptr k_mutex; timeout: k_time
 ##
 ##  @param name Name of the condition variable.
 ##
-proc K_CONDVAR_DEFINE*(name: untyped) {.importc: "K_CONDVAR_DEFINE",
+proc K_CONDVAR_DEFINE*(name: cminvtoken) {.importc: "K_CONDVAR_DEFINE",
                                       header: "kernel.h".}
 
 
@@ -2770,7 +2755,7 @@ proc K_CONDVAR_DEFINE*(name: untyped) {.importc: "K_CONDVAR_DEFINE",
 ##  @cond INTERNAL_HIDDEN
 ##
 
-proc Z_SEM_INITIALIZER*(obj: untyped; initial_count: untyped; count_limit: untyped) {.
+proc Z_SEM_INITIALIZER*(obj: k_sem; initial_count: static[int]; count_limit: static[int]) {.
     importc: "Z_SEM_INITIALIZER", header: "kernel.h".}
 
 
@@ -2778,6 +2763,7 @@ proc Z_SEM_INITIALIZER*(obj: untyped; initial_count: untyped; count_limit: untyp
 ##  INTERNAL_HIDDEN @endcond
 ##
 ## *
+
 ##  @defgroup semaphore_apis Semaphore APIs
 ##  @ingroup kernel_apis
 ##  @{
@@ -2806,7 +2792,7 @@ var K_SEM_MAX_LIMIT* {.importc: "K_SEM_MAX_LIMIT", header: "kernel.h".}: int
 ##  @retval -EINVAL Invalid values
 ##
 ##
-proc k_sem_init*(sem: ptr k_sem; initial_count: cuint; limit: cuint): cint {.syscall,
+proc k_sem_init*(sem: ptr k_sem; initial_count: cuint; limit: cuint): cint {.zsyscall,
     importc: "k_sem_init", header: "kernel.h".}
 
 
@@ -2828,7 +2814,7 @@ proc k_sem_init*(sem: ptr k_sem; initial_count: cuint; limit: cuint): cint {.sys
 ##  @retval -EAGAIN Waiting period timed out,
 ## 			or the semaphore was reset during the waiting period.
 ##
-proc k_sem_take*(sem: ptr k_sem; timeout: k_timeout_t): cint {.syscall,
+proc k_sem_take*(sem: ptr k_sem; timeout: k_timeout_t): cint {.zsyscall,
     importc: "k_sem_take", header: "kernel.h".}
 
 
@@ -2844,7 +2830,7 @@ proc k_sem_take*(sem: ptr k_sem; timeout: k_timeout_t): cint {.syscall,
 ##
 ##  @return N/A
 ##
-proc k_sem_give*(sem: ptr k_sem) {.syscall, importc: "k_sem_give", header: "kernel.h".}
+proc k_sem_give*(sem: ptr k_sem) {.zsyscall, importc: "k_sem_give", header: "kernel.h".}
 
 
 ## *
@@ -2858,7 +2844,7 @@ proc k_sem_give*(sem: ptr k_sem) {.syscall, importc: "k_sem_give", header: "kern
 ##
 ##  @return N/A
 ##
-proc k_sem_reset*(sem: ptr k_sem) {.syscall, importc: "k_sem_reset",
+proc k_sem_reset*(sem: ptr k_sem) {.zsyscall, importc: "k_sem_reset",
                                 header: "kernel.h".}
 
 
@@ -2871,7 +2857,7 @@ proc k_sem_reset*(sem: ptr k_sem) {.syscall, importc: "k_sem_reset",
 ##
 ##  @return Current semaphore count.
 ##
-proc k_sem_count_get*(sem: ptr k_sem): cuint {.syscall, importc: "k_sem_count_get",
+proc k_sem_count_get*(sem: ptr k_sem): cuint {.zsyscall, importc: "k_sem_count_get",
     header: "kernel.h".}
 
 
@@ -2892,917 +2878,22 @@ proc z_impl_k_sem_count_get*(sem: ptr k_sem): cuint {.inline.} =
 ##  @param initial_count Initial semaphore count.
 ##  @param count_limit Maximum permitted semaphore count.
 ##
-proc K_SEM_DEFINE*(name: untyped; initial_count: untyped; count_limit: untyped) {.
+proc K_SEM_DEFINE*(name: cminvtoken; initial_count: static[int]; count_limit: static[int]) {.
     importc: "K_SEM_DEFINE", header: "kernel.h".}
 
 
 ## * @}
-## *
-##  @cond INTERNAL_HIDDEN
-##
-discard "forward decl of k_work_delayable"
-discard "forward decl of k_work_sync"
-type
-  k_work_handler_t* = proc (work: ptr k_work)
-## * @brief Initialize a (non-delayable) work structure.
-##
-##  This must be invoked before submitting a work structure for the first time.
-##  It need not be invoked again on the same work structure.  It can be
-##  re-invoked to change the associated handler, but this must be done when the
-##  work item is idle.
-##
-##  @funcprops \isr_ok
-##
-##  @param work the work structure to be initialized.
-##
-##  @param handler the handler to be invoked by the work item.
-##
-proc k_work_init*(work: ptr k_work; handler: k_work_handler_t) {.
-    importc: "k_work_init", header: "kernel.h".}
-
-
-## * @brief Busy state flags from the work item.
-##
-##  A zero return value indicates the work item appears to be idle.
-##
-##  @note This is a live snapshot of state, which may change before the result
-##  is checked.  Use locks where appropriate.
-##
-##  @funcprops \isr_ok
-##
-##  @param work pointer to the work item.
-##
-##  @return a mask of flags K_WORK_DELAYED, K_WORK_QUEUED,
-##  K_WORK_RUNNING, and K_WORK_CANCELING.
-##
-proc k_work_busy_get*(work: ptr k_work): cint {.importc: "k_work_busy_get",
-    header: "kernel.h".}
-
-
-## * @brief Test whether a work item is currently pending.
-##
-##  Wrapper to determine whether a work item is in a non-idle dstate.
-##
-##  @note This is a live snapshot of state, which may change before the result
-##  is checked.  Use locks where appropriate.
-##
-##  @funcprops \isr_ok
-##
-##  @param work pointer to the work item.
-##
-##  @return true if and only if k_work_busy_get() returns a non-zero value.
-##
-proc k_work_is_pending*(work: ptr k_work): bool {.inline,
-    importc: "k_work_is_pending", header: "kernel.h".}
-
-
-## * @brief Submit a work item to a queue.
-##
-##  @param queue pointer to the work queue on which the item should run.  If
-##  NULL the queue from the most recent submission will be used.
-##
-##  @funcprops \isr_ok
-##
-##  @param work pointer to the work item.
-##
-##  @retval 0 if work was already submitted to a queue
-##  @retval 1 if work was not submitted and has been queued to @p queue
-##  @retval 2 if work was running and has been queued to the queue that was
-##  running it
-##  @retval -EBUSY
-##  * if work submission was rejected because the work item is cancelling; or
-##  * @p queue is draining; or
-##  * @p queue is plugged.
-##  @retval -EINVAL if @p queue is null and the work item has never been run.
-##  @retval -ENODEV if @p queue has not been started.
-##
-proc k_work_submit_to_queue*(queue: ptr k_work_q; work: ptr k_work): cint {.
-    importc: "k_work_submit_to_queue", header: "kernel.h".}
-
-
-## * @brief Submit a work item to the system queue.
-##
-##  @funcprops \isr_ok
-##
-##  @param work pointer to the work item.
-##
-##  @return as with k_work_submit_to_queue().
-##
-proc k_work_submit*(work: ptr k_work): cint {.importc: "k_work_submit",
-    header: "kernel.h".}
-
-
-## * @brief Wait for last-submitted instance to complete.
-##
-##  Resubmissions may occur while waiting, including chained submissions (from
-##  within the handler).
-##
-##  @note Be careful of caller and work queue thread relative priority.  If
-##  this function sleeps it will not return until the work queue thread
-##  completes the tasks that allow this thread to resume.
-##
-##  @note Behavior is undefined if this function is invoked on @p work from a
-##  work queue running @p work.
-##
-##  @param work pointer to the work item.
-##
-##  @param sync pointer to an opaque item containing state related to the
-##  pending cancellation.  The object must persist until the call returns, and
-##  be accessible from both the caller thread and the work queue thread.  The
-##  object must not be used for any other flush or cancel operation until this
-##  one completes.  On architectures with CONFIG_KERNEL_COHERENCE the object
-##  must be allocated in coherent memory.
-##
-##  @retval true if call had to wait for completion
-##  @retval false if work was already idle
-##
-proc k_work_flush*(work: ptr k_work; sync: ptr k_work_sync): bool {.
-    importc: "k_work_flush", header: "kernel.h".}
-
-
-## * @brief Cancel a work item.
-##
-##  This attempts to prevent a pending (non-delayable) work item from being
-##  processed by removing it from the work queue.  If the item is being
-##  processed, the work item will continue to be processed, but resubmissions
-##  are rejected until cancellation completes.
-##
-##  If this returns zero cancellation is complete, otherwise something
-##  (probably a work queue thread) is still referencing the item.
-##
-##  See also k_work_cancel_sync().
-##
-##  @funcprops \isr_ok
-##
-##  @param work pointer to the work item.
-##
-##  @return the k_work_busy_get() status indicating the state of the item after all
-##  cancellation steps performed by this call are completed.
-##
-proc k_work_cancel*(work: ptr k_work): cint {.importc: "k_work_cancel",
-    header: "kernel.h".}
-
-
-## * @brief Cancel a work item and wait for it to complete.
-##
-##  Same as k_work_cancel() but does not return until cancellation is complete.
-##  This can be invoked by a thread after k_work_cancel() to synchronize with a
-##  previous cancellation.
-##
-##  On return the work structure will be idle unless something submits it after
-##  the cancellation was complete.
-##
-##  @note Be careful of caller and work queue thread relative priority.  If
-##  this function sleeps it will not return until the work queue thread
-##  completes the tasks that allow this thread to resume.
-##
-##  @note Behavior is undefined if this function is invoked on @p work from a
-##  work queue running @p work.
-##
-##  @param work pointer to the work item.
-##
-##  @param sync pointer to an opaque item containing state related to the
-##  pending cancellation.  The object must persist until the call returns, and
-##  be accessible from both the caller thread and the work queue thread.  The
-##  object must not be used for any other flush or cancel operation until this
-##  one completes.  On architectures with CONFIG_KERNEL_COHERENCE the object
-##  must be allocated in coherent memory.
-##
-##  @retval true if work was pending (call had to wait for cancellation of a
-##  running handler to complete, or scheduled or submitted operations were
-##  cancelled);
-##  @retval false otherwise
-##
-proc k_work_cancel_sync*(work: ptr k_work; sync: ptr k_work_sync): bool {.
-    importc: "k_work_cancel_sync", header: "kernel.h".}
-
-
-## * @brief Initialize a work queue structure.
-##
-##  This must be invoked before starting a work queue structure for the first time.
-##  It need not be invoked again on the same work queue structure.
-##
-##  @funcprops \isr_ok
-##
-##  @param queue the queue structure to be initialized.
-##
-proc k_work_queue_init*(queue: ptr k_work_q) {.importc: "k_work_queue_init",
-    header: "kernel.h".}
-
-
-## * @brief Initialize a work queue.
-##
-##  This configures the work queue thread and starts it running.  The function
-##  should not be re-invoked on a queue.
-##
-##  @param queue pointer to the queue structure. It must be initialized
-##         in zeroed/bss memory or with @ref k_work_queue_init before
-##         use.
-##
-##  @param stack pointer to the work thread stack area.
-##
-##  @param stack_size size of the the work thread stack area, in bytes.
-##
-##  @param prio initial thread priority
-##
-##  @param cfg optional additional configuration parameters.  Pass @c
-##  NULL if not required, to use the defaults documented in
-##  k_work_queue_config.
-##
-proc k_work_queue_start*(queue: ptr k_work_q; stack: ptr k_thread_stack_t;
-                        stack_size: csize_t; prio: cint;
-                        cfg: ptr k_work_queue_config) {.
-    importc: "k_work_queue_start", header: "kernel.h".}
-
-
-## * @brief Access the thread that animates a work queue.
-##
-##  This is necessary to grant a work queue thread access to things the work
-##  items it will process are expected to use.
-##
-##  @param queue pointer to the queue structure.
-##
-##  @return the thread associated with the work queue.
-##
-proc k_work_queue_thread_get*(queue: ptr k_work_q): k_tid_t {.inline,
-    importc: "k_work_queue_thread_get", header: "kernel.h".}
-
-
-## * @brief Wait until the work queue has drained, optionally plugging it.
-##
-##  This blocks submission to the work queue except when coming from queue
-##  thread, and blocks the caller until no more work items are available in the
-##  queue.
-##
-##  If @p plug is true then submission will continue to be blocked after the
-##  drain operation completes until k_work_queue_unplug() is invoked.
-##
-##  Note that work items that are delayed are not yet associated with their
-##  work queue.  They must be cancelled externally if a goal is to ensure the
-##  work queue remains empty.  The @p plug feature can be used to prevent
-##  delayed items from being submitted after the drain completes.
-##
-##  @param queue pointer to the queue structure.
-##
-##  @param plug if true the work queue will continue to block new submissions
-##  after all items have drained.
-##
-##  @retval 1 if call had to wait for the drain to complete
-##  @retval 0 if call did not have to wait
-##  @retval negative if wait was interrupted or failed
-##
-proc k_work_queue_drain*(queue: ptr k_work_q; plug: bool): cint {.
-    importc: "k_work_queue_drain", header: "kernel.h".}
-
-
-## * @brief Release a work queue to accept new submissions.
-##
-##  This releases the block on new submissions placed when k_work_queue_drain()
-##  is invoked with the @p plug option enabled.  If this is invoked before the
-##  drain completes new items may be submitted as soon as the drain completes.
-##
-##  @funcprops \isr_ok
-##
-##  @param queue pointer to the queue structure.
-##
-##  @retval 0 if successfully unplugged
-##  @retval -EALREADY if the work queue was not plugged.
-##
-proc k_work_queue_unplug*(queue: ptr k_work_q): cint {.
-    importc: "k_work_queue_unplug", header: "kernel.h".}
-
-
-## * @brief Initialize a delayable work structure.
-##
-##  This must be invoked before scheduling a delayable work structure for the
-##  first time.  It need not be invoked again on the same work structure.  It
-##  can be re-invoked to change the associated handler, but this must be done
-##  when the work item is idle.
-##
-##  @funcprops \isr_ok
-##
-##  @param dwork the delayable work structure to be initialized.
-##
-##  @param handler the handler to be invoked by the work item.
-##
-proc k_work_init_delayable*(dwork: ptr k_work_delayable; handler: k_work_handler_t) {.
-    importc: "k_work_init_delayable", header: "kernel.h".}
-
-
-## *
-##  @brief Get the parent delayable work structure from a work pointer.
-##
-##  This function is necessary when a @c k_work_handler_t function is passed to
-##  k_work_schedule_for_queue() and the handler needs to access data from the
-##  container of the containing `k_work_delayable`.
-##
-##  @param work Address passed to the work handler
-##
-##  @return Address of the containing @c k_work_delayable structure.
-##
-proc k_work_delayable_from_work*(work: ptr k_work): ptr k_work_delayable {.inline,
-    importc: "k_work_delayable_from_work", header: "kernel.h".}
-
-
-## * @brief Busy state flags from the delayable work item.
-##
-##  @funcprops \isr_ok
-##
-##  @note This is a live snapshot of state, which may change before the result
-##  can be inspected.  Use locks where appropriate.
-##
-##  @param dwork pointer to the delayable work item.
-##
-##  @return a mask of flags K_WORK_DELAYED, K_WORK_QUEUED, K_WORK_RUNNING, and
-##  K_WORK_CANCELING.  A zero return value indicates the work item appears to
-##  be idle.
-##
-proc k_work_delayable_busy_get*(dwork: ptr k_work_delayable): cint {.
-    importc: "k_work_delayable_busy_get", header: "kernel.h".}
-
-
-## * @brief Test whether a delayed work item is currently pending.
-##
-##  Wrapper to determine whether a delayed work item is in a non-idle state.
-##
-##  @note This is a live snapshot of state, which may change before the result
-##  can be inspected.  Use locks where appropriate.
-##
-##  @funcprops \isr_ok
-##
-##  @param dwork pointer to the delayable work item.
-##
-##  @return true if and only if k_work_delayable_busy_get() returns a non-zero
-##  value.
-##
-proc k_work_delayable_is_pending*(dwork: ptr k_work_delayable): bool {.inline,
-    importc: "k_work_delayable_is_pending", header: "kernel.h".}
-
-
-## * @brief Get the absolute tick count at which a scheduled delayable work
-##  will be submitted.
-##
-##  @note This is a live snapshot of state, which may change before the result
-##  can be inspected.  Use locks where appropriate.
-##
-##  @funcprops \isr_ok
-##
-##  @param dwork pointer to the delayable work item.
-##
-##  @return the tick count when the timer that will schedule the work item will
-##  expire, or the current tick count if the work is not scheduled.
-##
-proc k_work_delayable_expires_get*(dwork: ptr k_work_delayable): k_ticks_t {.
-    inline, importc: "k_work_delayable_expires_get", header: "kernel.h".}
-
-
-## * @brief Get the number of ticks until a scheduled delayable work will be
-##  submitted.
-##
-##  @note This is a live snapshot of state, which may change before the result
-##  can be inspected.  Use locks where appropriate.
-##
-##  @funcprops \isr_ok
-##
-##  @param dwork pointer to the delayable work item.
-##
-##  @return the number of ticks until the timer that will schedule the work
-##  item will expire, or zero if the item is not scheduled.
-##
-proc k_work_delayable_remaining_get*(dwork: ptr k_work_delayable): k_ticks_t {.
-    inline, importc: "k_work_delayable_remaining_get", header: "kernel.h".}
-
-
-## * @brief Submit an idle work item to a queue after a delay.
-##
-##  Unlike k_work_reschedule_for_queue() this is a no-op if the work item is
-##  already scheduled or submitted, even if @p delay is @c K_NO_WAIT.
-##
-##  @funcprops \isr_ok
-##
-##  @param queue the queue on which the work item should be submitted after the
-##  delay.
-##
-##  @param dwork pointer to the delayable work item.
-##
-##  @param delay the time to wait before submitting the work item.  If @c
-##  K_NO_WAIT and the work is not pending this is equivalent to
-##  k_work_submit_to_queue().
-##
-##  @retval 0 if work was already scheduled or submitted.
-##  @retval 1 if work has been scheduled.
-##  @retval -EBUSY if @p delay is @c K_NO_WAIT and
-##          k_work_submit_to_queue() fails with this code.
-##  @retval -EINVAL if @p delay is @c K_NO_WAIT and
-##          k_work_submit_to_queue() fails with this code.
-##  @retval -ENODEV if @p delay is @c K_NO_WAIT and
-##          k_work_submit_to_queue() fails with this code.
-##
-proc k_work_schedule_for_queue*(queue: ptr k_work_q; dwork: ptr k_work_delayable;
-                                delay: k_timeout_t): cint {.
-    importc: "k_work_schedule_for_queue", header: "kernel.h".}
-
-
-## * @brief Submit an idle work item to the system work queue after a
-##  delay.
-##
-##  This is a thin wrapper around k_work_schedule_for_queue(), with all the API
-##  characteristcs of that function.
-##
-##  @param dwork pointer to the delayable work item.
-##
-##  @param delay the time to wait before submitting the work item.  If @c
-##  K_NO_WAIT this is equivalent to k_work_submit_to_queue().
-##
-##  @return as with k_work_schedule_for_queue().
-##
-proc k_work_schedule*(dwork: ptr k_work_delayable; delay: k_timeout_t): cint {.
-    importc: "k_work_schedule", header: "kernel.h".}
-
-
-## * @brief Reschedule a work item to a queue after a delay.
-##
-##  Unlike k_work_schedule_for_queue() this function can change the deadline of
-##  a scheduled work item, and will schedule a work item that isn't idle
-##  (e.g. is submitted or running).  This function does not affect ("unsubmit")
-##  a work item that has been submitted to a queue.
-##
-##  @funcprops \isr_ok
-##
-##  @param queue the queue on which the work item should be submitted after the
-##  delay.
-##
-##  @param dwork pointer to the delayable work item.
-##
-##  @param delay the time to wait before submitting the work item.  If @c
-##  K_NO_WAIT this is equivalent to k_work_submit_to_queue() after canceling
-##  any previous scheduled submission.
-##
-##  @note If delay is @c K_NO_WAIT ("no delay") the return values are as with
-##  k_work_submit_to_queue().
-##
-##  @retval 0 if delay is @c K_NO_WAIT and work was already on a queue
-##  @retval 1 if
-##  * delay is @c K_NO_WAIT and work was not submitted but has now been queued
-##    to @p queue; or
-##  * delay not @c K_NO_WAIT and work has been scheduled
-##  @retval 2 if delay is @c K_NO_WAIT and work was running and has been queued
-##  to the queue that was running it
-##  @retval -EBUSY if @p delay is @c K_NO_WAIT and
-##          k_work_submit_to_queue() fails with this code.
-##  @retval -EINVAL if @p delay is @c K_NO_WAIT and
-##          k_work_submit_to_queue() fails with this code.
-##  @retval -ENODEV if @p delay is @c K_NO_WAIT and
-##          k_work_submit_to_queue() fails with this code.
-##
-proc k_work_reschedule_for_queue*(queue: ptr k_work_q;
-                                  dwork: ptr k_work_delayable; delay: k_timeout_t): cint {.
-    importc: "k_work_reschedule_for_queue", header: "kernel.h".}
-
-
-## * @brief Reschedule a work item to the system work queue after a
-##  delay.
-##
-##  This is a thin wrapper around k_work_reschedule_for_queue(), with all the
-##  API characteristcs of that function.
-##
-##  @param dwork pointer to the delayable work item.
-##
-##  @param delay the time to wait before submitting the work item.
-##
-##  @return as with k_work_reschedule_for_queue().
-##
-proc k_work_reschedule*(dwork: ptr k_work_delayable; delay: k_timeout_t): cint {.
-    importc: "k_work_reschedule", header: "kernel.h".}
-
-
-## * @brief Flush delayable work.
-##
-##  If the work is scheduled, it is immediately submitted.  Then the caller
-##  blocks until the work completes, as with k_work_flush().
-##
-##  @note Be careful of caller and work queue thread relative priority.  If
-##  this function sleeps it will not return until the work queue thread
-##  completes the tasks that allow this thread to resume.
-##
-##  @note Behavior is undefined if this function is invoked on @p dwork from a
-##  work queue running @p dwork.
-##
-##  @param dwork pointer to the delayable work item.
-##
-##  @param sync pointer to an opaque item containing state related to the
-##  pending cancellation.  The object must persist until the call returns, and
-##  be accessible from both the caller thread and the work queue thread.  The
-##  object must not be used for any other flush or cancel operation until this
-##  one completes.  On architectures with CONFIG_KERNEL_COHERENCE the object
-##  must be allocated in coherent memory.
-##
-##  @retval true if call had to wait for completion
-##  @retval false if work was already idle
-##
-proc k_work_flush_delayable*(dwork: ptr k_work_delayable; sync: ptr k_work_sync): bool {.
-    importc: "k_work_flush_delayable", header: "kernel.h".}
-
-
-## * @brief Cancel delayable work.
-##
-##  Similar to k_work_cancel() but for delayable work.  If the work is
-##  scheduled or submitted it is canceled.  This function does not wait for the
-##  cancellation to complete.
-##
-##  @note The work may still be running when this returns.  Use
-##  k_work_flush_delayable() or k_work_cancel_delayable_sync() to ensure it is
-##  not running.
-##
-##  @note Canceling delayable work does not prevent rescheduling it.  It does
-##  prevent submitting it until the cancellation completes.
-##
-##  @funcprops \isr_ok
-##
-##  @param dwork pointer to the delayable work item.
-##
-##  @return the k_work_delayable_busy_get() status indicating the state of the
-##  item after all cancellation steps performed by this call are completed.
-##
-proc k_work_cancel_delayable*(dwork: ptr k_work_delayable): cint {.
-    importc: "k_work_cancel_delayable", header: "kernel.h".}
-
-
-## * @brief Cancel delayable work and wait.
-##
-##  Like k_work_cancel_delayable() but waits until the work becomes idle.
-##
-##  @note Canceling delayable work does not prevent rescheduling it.  It does
-##  prevent submitting it until the cancellation completes.
-##
-##  @note Be careful of caller and work queue thread relative priority.  If
-##  this function sleeps it will not return until the work queue thread
-##  completes the tasks that allow this thread to resume.
-##
-##  @note Behavior is undefined if this function is invoked on @p dwork from a
-##  work queue running @p dwork.
-##
-##  @param dwork pointer to the delayable work item.
-##
-##  @param sync pointer to an opaque item containing state related to the
-##  pending cancellation.  The object must persist until the call returns, and
-##  be accessible from both the caller thread and the work queue thread.  The
-##  object must not be used for any other flush or cancel operation until this
-##  one completes.  On architectures with CONFIG_KERNEL_COHERENCE the object
-##  must be allocated in coherent memory.
-##
-##  @retval true if work was not idle (call had to wait for cancellation of a
-##  running handler to complete, or scheduled or submitted operations were
-##  cancelled);
-##  @retval false otherwise
-##
-proc k_work_cancel_delayable_sync*(dwork: ptr k_work_delayable;
-                                  sync: ptr k_work_sync): bool {.
-    importc: "k_work_cancel_delayable_sync", header: "kernel.h".}
-const ## *
-      ##  @cond INTERNAL_HIDDEN
-      ##
-      ##  The atomic API is used for all work and queue flags fields to
-      ##  enforce sequential consistency in SMP environments.
-      ##
-      ##  Bits that represent the work item states.  At least nine of the
-      ##  combinations are distinct valid stable states.
-      ##
-  K_WORK_RUNNING_BIT* = 0
-  K_WORK_CANCELING_BIT* = 1
-  K_WORK_QUEUED_BIT* = 2
-  K_WORK_DELAYED_BIT* = 3
-  K_WORK_MASK* = BIT(K_WORK_DELAYED_BIT) or BIT(K_WORK_QUEUED_BIT) or
-      BIT(K_WORK_RUNNING_BIT) or BIT(K_WORK_CANCELING_BIT) ##  Static work flags
-  K_WORK_DELAYABLE_BIT* = 8
-  K_WORK_DELAYABLE* = BIT(K_WORK_DELAYABLE_BIT) ##  Dynamic work queue flags
-  K_WORK_QUEUE_STARTED_BIT* = 0
-  K_WORK_QUEUE_STARTED* = BIT(K_WORK_QUEUE_STARTED_BIT)
-  K_WORK_QUEUE_BUSY_BIT* = 1
-  K_WORK_QUEUE_BUSY* = BIT(K_WORK_QUEUE_BUSY_BIT)
-  K_WORK_QUEUE_DRAIN_BIT* = 2
-  K_WORK_QUEUE_DRAIN* = BIT(K_WORK_QUEUE_DRAIN_BIT)
-  K_WORK_QUEUE_PLUGGED_BIT* = 3
-  K_WORK_QUEUE_PLUGGED* = BIT(K_WORK_QUEUE_PLUGGED_BIT) ##  Static work queue flags
-  K_WORK_QUEUE_NO_YIELD_BIT* = 8
-  K_WORK_QUEUE_NO_YIELD* = BIT(K_WORK_QUEUE_NO_YIELD_BIT) ## *
-                                                        ##  INTERNAL_HIDDEN @endcond
-                                                        ##
-                                                        ##  Transient work flags
-                                                        ## * @brief Flag indicating a work item that is running under a work
-                                                        ##  queue thread.
-                                                        ##
-                                                        ##  Accessed via k_work_busy_get().  May co-occur with other flags.
-                                                        ##
-  K_WORK_RUNNING* = BIT(K_WORK_RUNNING_BIT) ## * @brief Flag indicating a work item that is being canceled.
-                                          ##
-                                          ##  Accessed via k_work_busy_get().  May co-occur with other flags.
-                                          ##
-  K_WORK_CANCELING* = BIT(K_WORK_CANCELING_BIT) ## * @brief Flag indicating a work item that has been submitted to a
-                                              ##  queue but has not started running.
-                                              ##
-                                              ##  Accessed via k_work_busy_get().  May co-occur with other flags.
-                                              ##
-  K_WORK_QUEUED* = BIT(K_WORK_QUEUED_BIT) ## * @brief Flag indicating a delayed work item that is scheduled for
-                                        ##  submission to a queue.
-                                        ##
-                                        ##  Accessed via k_work_busy_get().  May co-occur with other flags.
-                                        ##
-  K_WORK_DELAYED* = BIT(K_WORK_DELAYED_BIT)
-## * @brief A structure used to submit work.
-type
-  k_work* {.importc: "k_work", header: "kernel.h", bycopy.} = object
-    node* {.importc: "node".}: sys_snode_t ##  All fields are protected by the work module spinlock.  No fields
-                                        ##  are to be accessed except through kernel API.
-                                        ##
-                                        ##  Node to link into k_work_q pending list.
-    ##  The function to be invoked by the work queue thread.
-    handler* {.importc: "handler".}: k_work_handler_t ##  The queue on which the work item was last submitted.
-    queue* {.importc: "queue".}: ptr k_work_q ##  State of the work item.
-                                          ##
-                                          ##  The item can be DELAYED, QUEUED, and RUNNING simultaneously.
-                                          ##
-                                          ##  It can be RUNNING and CANCELING simultaneously.
-                                          ##
-    flags* {.importc: "flags".}: uint32
-
-proc Z_WORK_INITIALIZER*(work_handler: untyped) {.importc: "Z_WORK_INITIALIZER",
-    header: "kernel.h".}
-
-
-## * @brief A structure used to submit work after a delay.
-type
-  k_work_delayable* {.importc: "k_work_delayable", header: "kernel.h", bycopy.} = object
-    work* {.importc: "work".}: k_work ##  The work item.
-    ##  Timeout used to submit work after a delay.
-    timeout* {.importc: "timeout".}: _timeout ##  The queue to which the work should be submitted.
-    queue* {.importc: "queue".}: ptr k_work_q
-
-proc Z_WORK_DELAYABLE_INITIALIZER*(work_handler: untyped) {.
-    importc: "Z_WORK_DELAYABLE_INITIALIZER", header: "kernel.h".}
-
-
-## *
-##  @brief Initialize a statically-defined delayable work item.
-##
-##  This macro can be used to initialize a statically-defined delayable
-##  work item, prior to its first use. For example,
-##
-##  @code static K_WORK_DELAYABLE_DEFINE(<dwork>, <work_handler>); @endcode
-##
-##  Note that if the runtime dependencies support initialization with
-##  k_work_init_delayable() using that will eliminate the initialized
-##  object in ROM that is produced by this macro and copied in at
-##  system startup.
-##
-##  @param work Symbol name for delayable work item object
-##  @param work_handler Function to invoke each time work item is processed.
-##
-proc K_WORK_DELAYABLE_DEFINE*(work: untyped; work_handler: untyped) {.
-    importc: "K_WORK_DELAYABLE_DEFINE", header: "kernel.h".}
-
 
 ## *
 ##  @cond INTERNAL_HIDDEN
 ##
-##  Record used to wait for work to flush.
-##
-##  The work item is inserted into the queue that will process (or is
-##  processing) the item, and will be processed as soon as the item
-##  completes.  When the flusher is processed the semaphore will be
-##  signaled, releasing the thread waiting for the flush.
-##
-type
-  z_work_flusher* {.importc: "z_work_flusher", header: "kernel.h", bycopy.} = object
-    work* {.importc: "work".}: k_work
-    sem* {.importc: "sem".}: k_sem
 
-##  Record used to wait for work to complete a cancellation.
-##
-##  The work item is inserted into a global queue of pending cancels.
-##  When a cancelling work item goes idle any matching waiters are
-##  removed from pending_cancels and are woken.
-##
-type
-  z_work_canceller* {.importc: "z_work_canceller", header: "kernel.h", bycopy.} = object
-    node* {.importc: "node".}: sys_snode_t
-    work* {.importc: "work".}: ptr k_work
-    sem* {.importc: "sem".}: k_sem
+## * @}
 
+
+
+## * @}
 ## *
-##  INTERNAL_HIDDEN @endcond
-##
-## * @brief A structure holding internal state for a pending synchronous
-##  operation on a work item or queue.
-##
-##  Instances of this type are provided by the caller for invocation of
-##  k_work_flush(), k_work_cancel_sync() and sibling flush and cancel APIs.  A
-##  referenced object must persist until the call returns, and be accessible
-##  from both the caller thread and the work queue thread.
-##
-##  @note If CONFIG_KERNEL_COHERENCE is enabled the object must be allocated in
-##  coherent memory; see arch_mem_coherent().  The stack on these architectures
-##  is generally not coherent.  be stack-allocated.  Violations are detected by
-##  runtime assertion.
-##
-type
-  INNER_C_UNION_kernel_0* {.importc: "no_name", header: "kernel.h", bycopy, union.} = object
-    flusher* {.importc: "flusher".}: z_work_flusher
-    canceller* {.importc: "canceller".}: z_work_canceller
-
-type
-  k_work_sync* {.importc: "k_work_sync", header: "kernel.h", bycopy.} = object
-    ano_kernel_1* {.importc: "ano_kernel_1".}: INNER_C_UNION_kernel_0
-
-## * @brief A structure holding optional configuration items for a work
-##  queue.
-##
-##  This structure, and values it references, are not retained by
-##  k_work_queue_start().
-##
-type
-  k_work_queue_config* {.importc: "k_work_queue_config", header: "kernel.h", bycopy.} = object
-    name* {.importc: "name".}: cstring ## * The name to be given to the work queue thread.
-                                    ##
-                                    ##  If left null the thread will not have a name.
-                                    ##
-    ## * Control whether the work queue thread should yield between
-    ##  items.
-    ##
-    ##  Yielding between items helps guarantee the work queue
-    ##  thread does not starve other threads, including cooperative
-    ##  ones released by a work item.  This is the default behavior.
-    ##
-    ##  Set this to @c true to prevent the work queue thread from
-    ##  yielding between items.  This may be appropriate when a
-    ##  sequence of items should complete without yielding
-    ##  control.
-    ##
-    no_yield* {.importc: "no_yield".}: bool
-
-## * @brief A structure used to hold work until it can be processed.
-type
-  k_work_q* {.importc: "k_work_q", header: "kernel.h", bycopy.} = object
-    thread* {.importc: "thread".}: k_thread ##  The thread that animates the work.
-    ##  All the following fields must be accessed only while the
-    ##  work module spinlock is held.
-    ##
-    ##  List of k_work items to be worked.
-    pending* {.importc: "pending".}: sys_slist_t ##  Wait queue for idle work thread.
-    notifyq* {.importc: "notifyq".}: _wait_q_t ##  Wait queue for threads waiting for the queue to drain.
-    drainq* {.importc: "drainq".}: _wait_q_t ##  Flags describing queue state.
-    flags* {.importc: "flags".}: uint32
-
-##  Provide the implementation for inline functions declared above
-proc k_work_is_pending*(work: ptr k_work): bool {.inline.} =
-  return k_work_busy_get(work) != 0
-
-proc k_work_delayable_from_work*(work: ptr k_work): ptr k_work_delayable {.inline.} =
-  return CONTAINER_OF(work, struct, k_work_delayable, work)
-
-proc k_work_delayable_is_pending*(dwork: ptr k_work_delayable): bool {.inline.} =
-  return k_work_delayable_busy_get(dwork) != 0
-
-proc k_work_delayable_expires_get*(dwork: ptr k_work_delayable): k_ticks_t {.inline.} =
-  return z_timeout_expires(addr(dwork.timeout))
-
-proc k_work_delayable_remaining_get*(dwork: ptr k_work_delayable): k_ticks_t {.
-    inline.} =
-  return z_timeout_remaining(addr(dwork.timeout))
-
-proc k_work_queue_thread_get*(queue: ptr k_work_q): k_tid_t {.inline.} =
-  return addr(queue.thread)
-
-discard "forward decl of k_work_user"
-type
-  k_work_user_handler_t* = proc (work: ptr k_work_user)
-## *
-##  @cond INTERNAL_HIDDEN
-##
-type
-  k_work_user_q* {.importc: "k_work_user_q", header: "kernel.h", bycopy.} = object
-    queue* {.importc: "queue".}: k_queue
-    thread* {.importc: "thread".}: k_thread
-
-const
-  K_WORK_USER_STATE_PENDING* = 0 ##  Work item pending state
-type
-  k_work_user* {.importc: "k_work_user", header: "kernel.h", bycopy.} = object
-    _reserved* {.importc: "_reserved".}: pointer ##  Used by k_queue implementation.
-    handler* {.importc: "handler".}: k_work_user_handler_t
-    flags* {.importc: "flags".}: atomic_t
-
-## *
-##  INTERNAL_HIDDEN @endcond
-##
-proc Z_WORK_USER_INITIALIZER*(work_handler: untyped) {.
-    importc: "Z_WORK_USER_INITIALIZER", header: "kernel.h".}
-
-
-## *
-##  @brief Initialize a statically-defined user work item.
-##
-##  This macro can be used to initialize a statically-defined user work
-##  item, prior to its first use. For example,
-##
-##  @code static K_WORK_USER_DEFINE(<work>, <work_handler>); @endcode
-##
-##  @param work Symbol name for work item object
-##  @param work_handler Function to invoke each time work item is processed.
-##
-proc K_WORK_USER_DEFINE*(work: untyped; work_handler: untyped) {.
-    importc: "K_WORK_USER_DEFINE", header: "kernel.h".}
-
-
-## *
-##  @brief Initialize a userspace work item.
-##
-##  This routine initializes a user workqueue work item, prior to its
-##  first use.
-##
-##  @param work Address of work item.
-##  @param handler Function to invoke each time work item is processed.
-##
-##  @return N/A
-##
-proc k_work_user_init*(work: ptr k_work_user; handler: k_work_user_handler_t) {.
-    inline.} =
-  work[] = cast[k_work_user](Z_WORK_USER_INITIALIZER(handler))
-
-## *
-##  @brief Check if a userspace work item is pending.
-##
-##  This routine indicates if user work item @a work is pending in a workqueue's
-##  queue.
-##
-##  @note Checking if the work is pending gives no guarantee that the
-##        work will still be pending when this information is used. It is up to
-##        the caller to make sure that this information is used in a safe manner.
-##
-##  @funcprops \isr_ok
-##
-##  @param work Address of work item.
-##
-##  @return true if work item is pending, or false if it is not pending.
-##
-proc k_work_user_is_pending*(work: ptr k_work_user): bool {.inline.} =
-  return atomic_test_bit(addr(work.flags), K_WORK_USER_STATE_PENDING)
-
-## *
-##  @brief Submit a work item to a user mode workqueue
-##
-##  Submits a work item to a workqueue that runs in user mode. A temporary
-##  memory allocation is made from the caller's resource pool which is freed
-##  once the worker thread consumes the k_work item. The workqueue
-##  thread must have memory access to the k_work item being submitted. The caller
-##  must have permission granted on the work_q parameter's queue object.
-##
-##  @funcprops \isr_ok
-##
-##  @param work_q Address of workqueue.
-##  @param work Address of work item.
-##
-##  @retval -EBUSY if the work item was already in some workqueue
-##  @retval -ENOMEM if no memory for thread resource pool allocation
-##  @retval 0 Success
-##
-proc k_work_user_submit_to_queue*(work_q: ptr k_work_user_q; work: ptr k_work_user): cint {.
-    inline.} =
-  var ret: cint
-  if not atomic_test_and_set_bit(addr(work.flags), K_WORK_USER_STATE_PENDING):
-    ret = k_queue_alloc_append(addr(work_q.queue), work)
-    ##  Couldn't insert into the queue. Clear the pending bit
-    ##  so the work item can be submitted again
-    ##
-    if ret != 0:
-      atomic_clear_bit(addr(work.flags), K_WORK_USER_STATE_PENDING)
-  return ret
-
-## *
-##  @brief Start a workqueue in user mode
-##
-##  This works identically to k_work_queue_start() except it is callable from
-##  user mode, and the worker thread created will run in user mode.  The caller
-##  must have permissions granted on both the work_q parameter's thread and
-##  queue objects, and the same restrictions on priority apply as
-##  k_thread_create().
-##
-##  @param work_q Address of workqueue.
-##  @param stack Pointer to work queue thread's stack space, as defined by
-## 		K_THREAD_STACK_DEFINE()
-##  @param stack_size Size of the work queue thread's stack (in bytes), which
-## 		should either be the same constant passed to
-## 		K_THREAD_STACK_DEFINE() or the value of K_THREAD_STACK_SIZEOF().
-##  @param prio Priority of the work queue's thread.
-##  @param name optional thread name.  If not null a copy is made into the
-## 		thread's name buffer.
-##
-##  @return N/A
-##
-proc k_work_user_queue_start*(work_q: ptr k_work_user_q;
-                              stack: ptr k_thread_stack_t; stack_size: csize_t;
-                              prio: cint; name: cstring) {.
-    importc: "k_work_user_queue_start", header: "kernel.h".}
 
 
 ## * @}
@@ -3810,749 +2901,8 @@ proc k_work_user_queue_start*(work_q: ptr k_work_user_q;
 ##  @cond INTERNAL_HIDDEN
 ##
 type
-  k_work_poll* {.importc: "k_work_poll", header: "kernel.h", bycopy.} = object
-    work* {.importc: "work".}: k_work
-    workq* {.importc: "workq".}: ptr k_work_q
-    poller* {.importc: "poller".}: z_poller
-    events* {.importc: "events".}: ptr k_poll_event
-    num_events* {.importc: "num_events".}: cint
-    real_handler* {.importc: "real_handler".}: k_work_handler_t
-    timeout* {.importc: "timeout".}: _timeout
-    poll_result* {.importc: "poll_result".}: cint
-
-## *
-##  INTERNAL_HIDDEN @endcond
-##
-## *
-##  @addtogroup workqueue_apis
-##  @{
-##
-## *
-##  @brief Initialize a statically-defined work item.
-##
-##  This macro can be used to initialize a statically-defined workqueue work
-##  item, prior to its first use. For example,
-##
-##  @code static K_WORK_DEFINE(<work>, <work_handler>); @endcode
-##
-##  @param work Symbol name for work item object
-##  @param work_handler Function to invoke each time work item is processed.
-##
-proc K_WORK_DEFINE*(work: untyped; work_handler: untyped) {.
-    importc: "K_WORK_DEFINE", header: "kernel.h".}
-
-
-## *
-##  @brief Initialize a statically-defined delayed work item.
-##
-##  This macro can be used to initialize a statically-defined workqueue
-##  delayed work item, prior to its first use. For example,
-##
-##  @code static K_DELAYED_WORK_DEFINE(<work>, <work_handler>); @endcode
-##
-##  @param work Symbol name for delayed work item object
-##  @param work_handler Function to invoke each time work item is processed.
-##
-## *
-##  @brief Initialize a triggered work item.
-##
-##  This routine initializes a workqueue triggered work item, prior to
-##  its first use.
-##
-##  @param work Address of triggered work item.
-##  @param handler Function to invoke each time work item is processed.
-##
-##  @return N/A
-##
-proc k_work_poll_init*(work: ptr k_work_poll; handler: k_work_handler_t) {.
-    importc: "k_work_poll_init", header: "kernel.h".}
-
-
-## *
-##  @brief Submit a triggered work item.
-##
-##  This routine schedules work item @a work to be processed by workqueue
-##  @a work_q when one of the given @a events is signaled. The routine
-##  initiates internal poller for the work item and then returns to the caller.
-##  Only when one of the watched events happen the work item is actually
-##  submitted to the workqueue and becomes pending.
-##
-##  Submitting a previously submitted triggered work item that is still
-##  waiting for the event cancels the existing submission and reschedules it
-##  the using the new event list. Note that this behavior is inherently subject
-##  to race conditions with the pre-existing triggered work item and work queue,
-##  so care must be taken to synchronize such resubmissions externally.
-##
-##  @funcprops \isr_ok
-##
-##  @warning
-##  Provided array of events as well as a triggered work item must be placed
-##  in persistent memory (valid until work handler execution or work
-##  cancellation) and cannot be modified after submission.
-##
-##  @param work_q Address of workqueue.
-##  @param work Address of delayed work item.
-##  @param events An array of events which trigger the work.
-##  @param num_events The number of events in the array.
-##  @param timeout Timeout after which the work will be scheduled
-## 		  for execution even if not triggered.
-##
-##
-##  @retval 0 Work item started watching for events.
-##  @retval -EINVAL Work item is being processed or has completed its work.
-##  @retval -EADDRINUSE Work item is pending on a different workqueue.
-##
-proc k_work_poll_submit_to_queue*(work_q: ptr k_work_q; work: ptr k_work_poll;
-                                  events: ptr k_poll_event; num_events: cint;
-                                  timeout: k_timeout_t): cint {.
-    importc: "k_work_poll_submit_to_queue", header: "kernel.h".}
-
-
-## *
-##  @brief Submit a triggered work item to the system workqueue.
-##
-##  This routine schedules work item @a work to be processed by system
-##  workqueue when one of the given @a events is signaled. The routine
-##  initiates internal poller for the work item and then returns to the caller.
-##  Only when one of the watched events happen the work item is actually
-##  submitted to the workqueue and becomes pending.
-##
-##  Submitting a previously submitted triggered work item that is still
-##  waiting for the event cancels the existing submission and reschedules it
-##  the using the new event list. Note that this behavior is inherently subject
-##  to race conditions with the pre-existing triggered work item and work queue,
-##  so care must be taken to synchronize such resubmissions externally.
-##
-##  @funcprops \isr_ok
-##
-##  @warning
-##  Provided array of events as well as a triggered work item must not be
-##  modified until the item has been processed by the workqueue.
-##
-##  @param work Address of delayed work item.
-##  @param events An array of events which trigger the work.
-##  @param num_events The number of events in the array.
-##  @param timeout Timeout after which the work will be scheduled
-## 		  for execution even if not triggered.
-##
-##  @retval 0 Work item started watching for events.
-##  @retval -EINVAL Work item is being processed or has completed its work.
-##  @retval -EADDRINUSE Work item is pending on a different workqueue.
-##
-proc k_work_poll_submit*(work: ptr k_work_poll; events: ptr k_poll_event;
-                        num_events: cint; timeout: k_timeout_t): cint {.
-    importc: "k_work_poll_submit", header: "kernel.h".}
-
-
-## *
-##  @brief Cancel a triggered work item.
-##
-##  This routine cancels the submission of triggered work item @a work.
-##  A triggered work item can only be canceled if no event triggered work
-##  submission.
-##
-##  @funcprops \isr_ok
-##
-##  @param work Address of delayed work item.
-##
-##  @retval 0 Work item canceled.
-##  @retval -EINVAL Work item is being processed or has completed its work.
-##
-proc k_work_poll_cancel*(work: ptr k_work_poll): cint {.
-    importc: "k_work_poll_cancel", header: "kernel.h".}
-
-
-## * @}
-## *
-##  @defgroup msgq_apis Message Queue APIs
-##  @ingroup kernel_apis
-##  @{
-##
-## *
-##  @brief Message Queue Structure
-##
-type
-  k_msgq* {.importc: "k_msgq", header: "kernel.h", bycopy.} = object
-    wait_q* {.importc: "wait_q".}: _wait_q_t ## * Message queue wait queue
-    ## * Lock
-    lock* {.importc: "lock".}: k_spinlock ## * Message size
-    msg_size* {.importc: "msg_size".}: csize_t ## * Maximal number of messages
-    max_msgs* {.importc: "max_msgs".}: uint32 ## * Start of message buffer
-    buffer_start* {.importc: "buffer_start".}: cstring ## * End of message buffer
-    buffer_end* {.importc: "buffer_end".}: cstring ## * Read pointer
-    read_ptr* {.importc: "read_ptr".}: cstring ## * Write pointer
-    write_ptr* {.importc: "write_ptr".}: cstring ## * Number of used messages
-    used_msgs* {.importc: "used_msgs".}: uint32
-    poll_events* {.importc: "poll_events".}: sys_dlist_t ##  _POLL_EVENT;
-                                                      ## * Message queue
-    flags* {.importc: "flags".}: uint8
-
-## *
-##  @cond INTERNAL_HIDDEN
-##
-proc Z_MSGQ_INITIALIZER*(obj: untyped; q_buffer: untyped; q_msg_size: untyped;
-                        q_max_msgs: untyped) {.importc: "Z_MSGQ_INITIALIZER",
-    header: "kernel.h".}
-
-
-## *
-##  INTERNAL_HIDDEN @endcond
-##
-var K_MSGQ_FLAG_ALLOC* {.importc: "K_MSGQ_FLAG_ALLOC", header: "kernel.h".}: int
-## *
-##  @brief Message Queue Attributes
-##
-type
-  k_msgq_attrs* {.importc: "k_msgq_attrs", header: "kernel.h", bycopy.} = object
-    msg_size* {.importc: "msg_size".}: csize_t ## * Message Size
-    ## * Maximal number of messages
-    max_msgs* {.importc: "max_msgs".}: uint32 ## * Used messages
-    used_msgs* {.importc: "used_msgs".}: uint32
-
-## *
-##  @brief Statically define and initialize a message queue.
-##
-##  The message queue's ring buffer contains space for @a q_max_msgs messages,
-##  each of which is @a q_msg_size bytes long. The buffer is aligned to a
-##  @a q_align -byte boundary, which must be a power of 2. To ensure that each
-##  message is similarly aligned to this boundary, @a q_msg_size must also be
-##  a multiple of @a q_align.
-##
-##  The message queue can be accessed outside the module where it is defined
-##  using:
-##
-##  @code extern struct k_msgq <name>; @endcode
-##
-##  @param q_name Name of the message queue.
-##  @param q_msg_size Message size (in bytes).
-##  @param q_max_msgs Maximum number of messages that can be queued.
-##  @param q_align Alignment of the message queue's ring buffer.
-##
-##
-proc K_MSGQ_DEFINE*(q_name: untyped; q_msg_size: untyped; q_max_msgs: untyped;
-                    q_align: untyped) {.importc: "K_MSGQ_DEFINE",
-                                      header: "kernel.h".}
-
-
-## *
-##  @brief Initialize a message queue.
-##
-##  This routine initializes a message queue object, prior to its first use.
-##
-##  The message queue's ring buffer must contain space for @a max_msgs messages,
-##  each of which is @a msg_size bytes long. The buffer must be aligned to an
-##  N-byte boundary, where N is a power of 2 (i.e. 1, 2, 4, ...). To ensure
-##  that each message is similarly aligned to this boundary, @a q_msg_size
-##  must also be a multiple of N.
-##
-##  @param msgq Address of the message queue.
-##  @param buffer Pointer to ring buffer that holds queued messages.
-##  @param msg_size Message size (in bytes).
-##  @param max_msgs Maximum number of messages that can be queued.
-##
-##  @return N/A
-##
-proc k_msgq_init*(msgq: ptr k_msgq; buffer: cstring; msg_size: csize_t;
-                  max_msgs: uint32) {.importc: "k_msgq_init", header: "kernel.h".}
-
-
-## *
-##  @brief Initialize a message queue.
-##
-##  This routine initializes a message queue object, prior to its first use,
-##  allocating its internal ring buffer from the calling thread's resource
-##  pool.
-##
-##  Memory allocated for the ring buffer can be released by calling
-##  k_msgq_cleanup(), or if userspace is enabled and the msgq object loses
-##  all of its references.
-##
-##  @param msgq Address of the message queue.
-##  @param msg_size Message size (in bytes).
-##  @param max_msgs Maximum number of messages that can be queued.
-##
-##  @return 0 on success, -ENOMEM if there was insufficient memory in the
-## 	thread's resource pool, or -EINVAL if the size parameters cause
-## 	an integer overflow.
-##
-proc k_msgq_alloc_init*(msgq: ptr k_msgq; msg_size: csize_t; max_msgs: uint32): cint {.
-    syscall, importc: "k_msgq_alloc_init", header: "kernel.h".}
-
-
-## *
-##  @brief Release allocated buffer for a queue
-##
-##  Releases memory allocated for the ring buffer.
-##
-##  @param msgq message queue to cleanup
-##
-##  @retval 0 on success
-##  @retval -EBUSY Queue not empty
-##
-proc k_msgq_cleanup*(msgq: ptr k_msgq): cint {.importc: "k_msgq_cleanup",
-    header: "kernel.h".}
-
-
-## *
-##  @brief Send a message to a message queue.
-##
-##  This routine sends a message to message queue @a q.
-##
-##  @note The message content is copied from @a data into @a msgq and the @a data
-##  pointer is not retained, so the message content will not be modified
-##  by this function.
-##
-##  @funcprops \isr_ok
-##
-##  @param msgq Address of the message queue.
-##  @param data Pointer to the message.
-##  @param timeout Non-negative waiting period to add the message,
-##                 or one of the special values K_NO_WAIT and
-##                 K_FOREVER.
-##
-##  @retval 0 Message sent.
-##  @retval -ENOMSG Returned without waiting or queue purged.
-##  @retval -EAGAIN Waiting period timed out.
-##
-proc k_msgq_put*(msgq: ptr k_msgq; data: pointer; timeout: k_timeout_t): cint {.
-    syscall, importc: "k_msgq_put", header: "kernel.h".}
-
-
-## *
-##  @brief Receive a message from a message queue.
-##
-##  This routine receives a message from message queue @a q in a "first in,
-##  first out" manner.
-##
-##  @note @a timeout must be set to K_NO_WAIT if called from ISR.
-##
-##  @funcprops \isr_ok
-##
-##  @param msgq Address of the message queue.
-##  @param data Address of area to hold the received message.
-##  @param timeout Waiting period to receive the message,
-##                 or one of the special values K_NO_WAIT and
-##                 K_FOREVER.
-##
-##  @retval 0 Message received.
-##  @retval -ENOMSG Returned without waiting.
-##  @retval -EAGAIN Waiting period timed out.
-##
-proc k_msgq_get*(msgq: ptr k_msgq; data: pointer; timeout: k_timeout_t): cint {.
-    syscall, importc: "k_msgq_get", header: "kernel.h".}
-
-
-## *
-##  @brief Peek/read a message from a message queue.
-##
-##  This routine reads a message from message queue @a q in a "first in,
-##  first out" manner and leaves the message in the queue.
-##
-##  @funcprops \isr_ok
-##
-##  @param msgq Address of the message queue.
-##  @param data Address of area to hold the message read from the queue.
-##
-##  @retval 0 Message read.
-##  @retval -ENOMSG Returned when the queue has no message.
-##
-proc k_msgq_peek*(msgq: ptr k_msgq; data: pointer): cint {.syscall,
-    importc: "k_msgq_peek", header: "kernel.h".}
-
-
-## *
-##  @brief Purge a message queue.
-##
-##  This routine discards all unreceived messages in a message queue's ring
-##  buffer. Any threads that are blocked waiting to send a message to the
-##  message queue are unblocked and see an -ENOMSG error code.
-##
-##  @param msgq Address of the message queue.
-##
-##  @return N/A
-##
-proc k_msgq_purge*(msgq: ptr k_msgq) {.syscall, importc: "k_msgq_purge",
-                                    header: "kernel.h".}
-
-
-## *
-##  @brief Get the amount of free space in a message queue.
-##
-##  This routine returns the number of unused entries in a message queue's
-##  ring buffer.
-##
-##  @param msgq Address of the message queue.
-##
-##  @return Number of unused ring buffer entries.
-##
-proc k_msgq_num_free_get*(msgq: ptr k_msgq): uint32 {.syscall,
-    importc: "k_msgq_num_free_get", header: "kernel.h".}
-
-
-## *
-##  @brief Get basic attributes of a message queue.
-##
-##  This routine fetches basic attributes of message queue into attr argument.
-##
-##  @param msgq Address of the message queue.
-##  @param attrs pointer to message queue attribute structure.
-##
-##  @return N/A
-##
-proc k_msgq_get_attrs*(msgq: ptr k_msgq; attrs: ptr k_msgq_attrs) {.syscall,
-    importc: "k_msgq_get_attrs", header: "kernel.h".}
-proc z_impl_k_msgq_num_free_get*(msgq: ptr k_msgq): uint32 {.inline.} =
-  return msgq.max_msgs - msgq.used_msgs
-
-## *
-##  @brief Get the number of messages in a message queue.
-##
-##  This routine returns the number of messages in a message queue's ring buffer.
-##
-##  @param msgq Address of the message queue.
-##
-##  @return Number of messages.
-##
-proc k_msgq_num_used_get*(msgq: ptr k_msgq): uint32 {.syscall,
-    importc: "k_msgq_num_used_get", header: "kernel.h".}
-proc z_impl_k_msgq_num_used_get*(msgq: ptr k_msgq): uint32 {.inline.} =
-  return msgq.used_msgs
-
-## * @}
-## *
-##  @defgroup mailbox_apis Mailbox APIs
-##  @ingroup kernel_apis
-##  @{
-##
-## *
-##  @brief Mailbox Message Structure
-##
-##
-type
-  k_mbox_msg* {.importc: "k_mbox_msg", header: "kernel.h", bycopy.} = object
-    _mailbox* {.importc: "_mailbox".}: uint32 ## * internal use only - needed for legacy API support
-    ## * size of message (in bytes)
-    size* {.importc: "size".}: csize_t ## * application-defined information value
-    info* {.importc: "info".}: uint32 ## * sender's message data buffer
-    tx_data* {.importc: "tx_data".}: pointer ## * internal use only - needed for legacy API support
-    _rx_data* {.importc: "_rx_data".}: pointer ## * message data block descriptor
-    tx_block* {.importc: "tx_block".}: k_mem_block ## * source thread id
-    rx_source_thread* {.importc: "rx_source_thread".}: k_tid_t ## * target thread id
-    tx_target_thread* {.importc: "tx_target_thread".}: k_tid_t ## * internal use only - thread waiting on send (may be a dummy)
-    _syncing_thread* {.importc: "_syncing_thread".}: k_tid_t
-    when (CONFIG_NUM_MBOX_ASYNC_MSGS > 0):
-      ## * internal use only - semaphore used during asynchronous send
-      var _async_sem* {.importc: "_async_sem", header: "kernel.h".}: ptr k_sem
-
-## *
-##  @brief Mailbox Structure
-##
-##
-type
-  k_mbox* {.importc: "k_mbox", header: "kernel.h", bycopy.} = object
-    tx_msg_queue* {.importc: "tx_msg_queue".}: _wait_q_t ## * Transmit messages queue
-    ## * Receive message queue
-    rx_msg_queue* {.importc: "rx_msg_queue".}: _wait_q_t
-    lock* {.importc: "lock".}: k_spinlock
-
-## *
-##  @cond INTERNAL_HIDDEN
-##
-proc Z_MBOX_INITIALIZER*(obj: untyped) {.importc: "Z_MBOX_INITIALIZER",
-                                      header: "kernel.h".}
-
-
-## *
-##  INTERNAL_HIDDEN @endcond
-##
-## *
-##  @brief Statically define and initialize a mailbox.
-##
-##  The mailbox is to be accessed outside the module where it is defined using:
-##
-##  @code extern struct k_mbox <name>; @endcode
-##
-##  @param name Name of the mailbox.
-##
-proc K_MBOX_DEFINE*(name: untyped) {.importc: "K_MBOX_DEFINE", header: "kernel.h".}
-
-
-## *
-##  @brief Initialize a mailbox.
-##
-##  This routine initializes a mailbox object, prior to its first use.
-##
-##  @param mbox Address of the mailbox.
-##
-##  @return N/A
-##
-proc k_mbox_init*(mbox: ptr k_mbox) {.importc: "k_mbox_init", header: "kernel.h".}
-
-
-## *
-##  @brief Send a mailbox message in a synchronous manner.
-##
-##  This routine sends a message to @a mbox and waits for a receiver to both
-##  receive and process it. The message data may be in a buffer, in a memory
-##  pool block, or non-existent (i.e. an empty message).
-##
-##  @param mbox Address of the mailbox.
-##  @param tx_msg Address of the transmit message descriptor.
-##  @param timeout Waiting period for the message to be received,
-##                 or one of the special values K_NO_WAIT
-##                 and K_FOREVER. Once the message has been received,
-##                 this routine waits as long as necessary for the message
-##                 to be completely processed.
-##
-##  @retval 0 Message sent.
-##  @retval -ENOMSG Returned without waiting.
-##  @retval -EAGAIN Waiting period timed out.
-##
-proc k_mbox_put*(mbox: ptr k_mbox; tx_msg: ptr k_mbox_msg; timeout: k_timeout_t): cint {.
-    importc: "k_mbox_put", header: "kernel.h".}
-
-
-## *
-##  @brief Send a mailbox message in an asynchronous manner.
-##
-##  This routine sends a message to @a mbox without waiting for a receiver
-##  to process it. The message data may be in a buffer, in a memory pool block,
-##  or non-existent (i.e. an empty message). Optionally, the semaphore @a sem
-##  will be given when the message has been both received and completely
-##  processed by the receiver.
-##
-##  @param mbox Address of the mailbox.
-##  @param tx_msg Address of the transmit message descriptor.
-##  @param sem Address of a semaphore, or NULL if none is needed.
-##
-##  @return N/A
-##
-proc k_mbox_async_put*(mbox: ptr k_mbox; tx_msg: ptr k_mbox_msg; sem: ptr k_sem) {.
-    importc: "k_mbox_async_put", header: "kernel.h".}
-
-
-## *
-##  @brief Receive a mailbox message.
-##
-##  This routine receives a message from @a mbox, then optionally retrieves
-##  its data and disposes of the message.
-##
-##  @param mbox Address of the mailbox.
-##  @param rx_msg Address of the receive message descriptor.
-##  @param buffer Address of the buffer to receive data, or NULL to defer data
-##                retrieval and message disposal until later.
-##  @param timeout Waiting period for a message to be received,
-##                 or one of the special values K_NO_WAIT and K_FOREVER.
-##
-##  @retval 0 Message received.
-##  @retval -ENOMSG Returned without waiting.
-##  @retval -EAGAIN Waiting period timed out.
-##
-proc k_mbox_get*(mbox: ptr k_mbox; rx_msg: ptr k_mbox_msg; buffer: pointer;
-                timeout: k_timeout_t): cint {.importc: "k_mbox_get",
-    header: "kernel.h".}
-
-
-## *
-##  @brief Retrieve mailbox message data into a buffer.
-##
-##  This routine completes the processing of a received message by retrieving
-##  its data into a buffer, then disposing of the message.
-##
-##  Alternatively, this routine can be used to dispose of a received message
-##  without retrieving its data.
-##
-##  @param rx_msg Address of the receive message descriptor.
-##  @param buffer Address of the buffer to receive data, or NULL to discard
-##                the data.
-##
-##  @return N/A
-##
-proc k_mbox_data_get*(rx_msg: ptr k_mbox_msg; buffer: pointer) {.
-    importc: "k_mbox_data_get", header: "kernel.h".}
-
-
-## * @}
-## *
-##  @defgroup pipe_apis Pipe APIs
-##  @ingroup kernel_apis
-##  @{
-##
-## * Pipe Structure
-type
-  INNER_C_STRUCT_kernel_2* {.importc: "no_name", header: "kernel.h", bycopy.} = object
-    readers* {.importc: "readers".}: _wait_q_t ## *< Reader wait queue
-    writers* {.importc: "writers".}: _wait_q_t ## *< Writer wait queue
-
-type
-  k_pipe* {.importc: "k_pipe", header: "kernel.h", bycopy.} = object
-    buffer* {.importc: "buffer".}: ptr cuchar ## *< Pipe buffer: may be NULL
-    size* {.importc: "size".}: csize_t ## *< Buffer size
-    bytes_used* {.importc: "bytes_used".}: csize_t ## *< # bytes used in buffer
-    read_index* {.importc: "read_index".}: csize_t ## *< Where in buffer to read from
-    write_index* {.importc: "write_index".}: csize_t ## *< Where in buffer to write
-    lock* {.importc: "lock".}: k_spinlock ## *< Synchronization lock
-    wait_q* {.importc: "wait_q".}: INNER_C_STRUCT_kernel_2 ## * Wait queue
-    flags* {.importc: "flags".}: uint8 ## *< Flags
-
-## *
-##  @cond INTERNAL_HIDDEN
-##
-var K_PIPE_FLAG_ALLOC* {.importc: "K_PIPE_FLAG_ALLOC", header: "kernel.h".}: int
-proc Z_PIPE_INITIALIZER*(obj: untyped; pipe_buffer: untyped;
-                        pipe_buffer_size: untyped) {.
-    importc: "Z_PIPE_INITIALIZER", header: "kernel.h".}
-
-
-## *
-##  INTERNAL_HIDDEN @endcond
-##
-## *
-##  @brief Statically define and initialize a pipe.
-##
-##  The pipe can be accessed outside the module where it is defined using:
-##
-##  @code extern struct k_pipe <name>; @endcode
-##
-##  @param name Name of the pipe.
-##  @param pipe_buffer_size Size of the pipe's ring buffer (in bytes),
-##                          or zero if no ring buffer is used.
-##  @param pipe_align Alignment of the pipe's ring buffer (power of 2).
-##
-##
-proc K_PIPE_DEFINE*(name: untyped; pipe_buffer_size: untyped; pipe_align: untyped) {.
-    importc: "K_PIPE_DEFINE", header: "kernel.h".}
-
-
-## *
-##  @brief Initialize a pipe.
-##
-##  This routine initializes a pipe object, prior to its first use.
-##
-##  @param pipe Address of the pipe.
-##  @param buffer Address of the pipe's ring buffer, or NULL if no ring buffer
-##                is used.
-##  @param size Size of the pipe's ring buffer (in bytes), or zero if no ring
-##              buffer is used.
-##
-##  @return N/A
-##
-proc k_pipe_init*(pipe: ptr k_pipe; buffer: ptr cuchar; size: csize_t) {.
-    importc: "k_pipe_init", header: "kernel.h".}
-
-
-## *
-##  @brief Release a pipe's allocated buffer
-##
-##  If a pipe object was given a dynamically allocated buffer via
-##  k_pipe_alloc_init(), this will free it. This function does nothing
-##  if the buffer wasn't dynamically allocated.
-##
-##  @param pipe Address of the pipe.
-##  @retval 0 on success
-##  @retval -EAGAIN nothing to cleanup
-##
-proc k_pipe_cleanup*(pipe: ptr k_pipe): cint {.importc: "k_pipe_cleanup",
-    header: "kernel.h".}
-
-
-## *
-##  @brief Initialize a pipe and allocate a buffer for it
-##
-##  Storage for the buffer region will be allocated from the calling thread's
-##  resource pool. This memory will be released if k_pipe_cleanup() is called,
-##  or userspace is enabled and the pipe object loses all references to it.
-##
-##  This function should only be called on uninitialized pipe objects.
-##
-##  @param pipe Address of the pipe.
-##  @param size Size of the pipe's ring buffer (in bytes), or zero if no ring
-##              buffer is used.
-##  @retval 0 on success
-##  @retval -ENOMEM if memory couldn't be allocated
-##
-proc k_pipe_alloc_init*(pipe: ptr k_pipe; size: csize_t): cint {.syscall,
-    importc: "k_pipe_alloc_init", header: "kernel.h".}
-
-
-## *
-##  @brief Write data to a pipe.
-##
-##  This routine writes up to @a bytes_to_write bytes of data to @a pipe.
-##
-##  @param pipe Address of the pipe.
-##  @param data Address of data to write.
-##  @param bytes_to_write Size of data (in bytes).
-##  @param bytes_written Address of area to hold the number of bytes written.
-##  @param min_xfer Minimum number of bytes to write.
-##  @param timeout Waiting period to wait for the data to be written,
-##                 or one of the special values K_NO_WAIT and K_FOREVER.
-##
-##  @retval 0 At least @a min_xfer bytes of data were written.
-##  @retval -EIO Returned without waiting; zero data bytes were written.
-##  @retval -EAGAIN Waiting period timed out; between zero and @a min_xfer
-##                  minus one data bytes were written.
-##
-proc k_pipe_put*(pipe: ptr k_pipe; data: pointer; bytes_to_write: csize_t;
-                bytes_written: ptr csize_t; min_xfer: csize_t; timeout: k_timeout_t): cint {.
-    syscall, importc: "k_pipe_put", header: "kernel.h".}
-
-
-## *
-##  @brief Read data from a pipe.
-##
-##  This routine reads up to @a bytes_to_read bytes of data from @a pipe.
-##
-##  @param pipe Address of the pipe.
-##  @param data Address to place the data read from pipe.
-##  @param bytes_to_read Maximum number of data bytes to read.
-##  @param bytes_read Address of area to hold the number of bytes read.
-##  @param min_xfer Minimum number of data bytes to read.
-##  @param timeout Waiting period to wait for the data to be read,
-##                 or one of the special values K_NO_WAIT and K_FOREVER.
-##
-##  @retval 0 At least @a min_xfer bytes of data were read.
-##  @retval -EINVAL invalid parameters supplied
-##  @retval -EIO Returned without waiting; zero data bytes were read.
-##  @retval -EAGAIN Waiting period timed out; between zero and @a min_xfer
-##                  minus one data bytes were read.
-##
-proc k_pipe_get*(pipe: ptr k_pipe; data: pointer; bytes_to_read: csize_t;
-                bytes_read: ptr csize_t; min_xfer: csize_t; timeout: k_timeout_t): cint {.
-    syscall, importc: "k_pipe_get", header: "kernel.h".}
-
-
-## *
-##  @brief Query the number of bytes that may be read from @a pipe.
-##
-##  @param pipe Address of the pipe.
-##
-##  @retval a number n such that 0 <= n <= @ref k_pipe.size; the
-##          result is zero for unbuffered pipes.
-##
-proc k_pipe_read_avail*(pipe: ptr k_pipe): csize_t {.syscall,
-    importc: "k_pipe_read_avail", header: "kernel.h".}
-
-
-## *
-##  @brief Query the number of bytes that may be written to @a pipe
-##
-##  @param pipe Address of the pipe.
-##
-##  @retval a number n such that 0 <= n <= @ref k_pipe.size; the
-##          result is zero for unbuffered pipes.
-##
-proc k_pipe_write_avail*(pipe: ptr k_pipe): csize_t {.syscall,
-    importc: "k_pipe_write_avail", header: "kernel.h".}
-
-
-## * @}
-## *
-##  @cond INTERNAL_HIDDEN
-##
-type
-  k_mem_slab* {.importc: "k_mem_slab", header: "kernel.h", bycopy.} = object
-    wait_q* {.importc: "wait_q".}: _wait_q_t
+  k_mem_slab* {.importc: "k_mem_slab", header: "kernel.h", incompleteStruct, bycopy.} = object
+    wait_q* {.importc: "wait_q".}: z_wait_q_t
     lock* {.importc: "lock".}: k_spinlock
     num_blocks* {.importc: "num_blocks".}: uint32
     block_size* {.importc: "block_size".}: csize_t
@@ -4560,11 +2910,11 @@ type
     free_list* {.importc: "free_list".}: cstring
     num_used* {.importc: "num_used".}: uint32
     when CONFIG_MEM_SLAB_TRACE_MAX_UTILIZATION:
-      var max_used* {.importc: "max_used", header: "kernel.h".}: uint32
+      max_used* {.importc: "max_used".}: uint32
 
-proc Z_MEM_SLAB_INITIALIZER*(obj: untyped; slab_buffer: untyped;
-                            slab_block_size: untyped; slab_num_blocks: untyped) {.
-    importc: "Z_MEM_SLAB_INITIALIZER", header: "kernel.h".}
+# proc Z_MEM_SLAB_INITIALIZER*(obj: untyped; slab_buffer: untyped;
+                            # slab_block_size: untyped; slab_num_blocks: untyped) {.
+    # importc: "Z_MEM_SLAB_INITIALIZER", header: "kernel.h".}
 
 
 ## *
@@ -4594,9 +2944,9 @@ proc Z_MEM_SLAB_INITIALIZER*(obj: untyped; slab_buffer: untyped;
 ##  @param slab_num_blocks Number memory blocks.
 ##  @param slab_align Alignment of the memory slab's buffer (power of 2).
 ##
-proc K_MEM_SLAB_DEFINE*(name: untyped; slab_block_size: untyped;
-                        slab_num_blocks: untyped; slab_align: untyped) {.
-    importc: "K_MEM_SLAB_DEFINE", header: "kernel.h".}
+# proc K_MEM_SLAB_DEFINE*(name: cminvtoken; slab_block_size: untyped;
+                        # slab_num_blocks: untyped; slab_align: untyped) {.
+    # importc: "K_MEM_SLAB_DEFINE", header: "kernel.h".}
 
 
 ## *
@@ -4812,8 +3162,8 @@ var Z_HEAP_MIN_SIZE* {.importc: "Z_HEAP_MIN_SIZE", header: "kernel.h".}: int
 ##  @param bytes Size of memory region, in bytes
 ##  @param in_section __attribute__((section(name))
 ##
-proc Z_HEAP_DEFINE_IN_SECT*(name: untyped; bytes: untyped; in_section: untyped) {.
-    importc: "Z_HEAP_DEFINE_IN_SECT", header: "kernel.h".}
+# proc Z_HEAP_DEFINE_IN_SECT*(name: cminvtoken; bytes: static[int]; in_section: cminvtoken) {.
+    # importc: "Z_HEAP_DEFINE_IN_SECT", header: "kernel.h".}
 
 
 ## *
@@ -4830,7 +3180,7 @@ proc Z_HEAP_DEFINE_IN_SECT*(name: untyped; bytes: untyped; in_section: untyped) 
 ##  @param name Symbol name for the struct k_heap object
 ##  @param bytes Size of memory region, in bytes
 ##
-proc K_HEAP_DEFINE*(name: untyped; bytes: untyped) {.importc: "K_HEAP_DEFINE",
+proc K_HEAP_DEFINE*(name: cminvtoken; bytes: static[int]) {.importc: "K_HEAP_DEFINE",
     header: "kernel.h".}
 
 
@@ -4848,7 +3198,7 @@ proc K_HEAP_DEFINE*(name: untyped; bytes: untyped) {.importc: "K_HEAP_DEFINE",
 ##  @param name Symbol name for the struct k_heap object
 ##  @param bytes Size of memory region, in bytes
 ##
-proc K_HEAP_DEFINE_NOCACHE*(name: untyped; bytes: untyped) {.
+proc K_HEAP_DEFINE_NOCACHE*(name: cminvtoken; bytes: static[int]) {.
     importc: "K_HEAP_DEFINE_NOCACHE", header: "kernel.h".}
 
 
@@ -4926,209 +3276,6 @@ proc k_calloc*(nmemb: csize_t; size: csize_t): pointer {.importc: "k_calloc",
     header: "kernel.h".}
 
 
-## * @}
-##  polling API - PRIVATE
-when CONFIG_POLL:
-  proc _INIT_OBJ_POLL_EVENT*(obj: untyped) {.importc: "_INIT_OBJ_POLL_EVENT",
-      header: "kernel.h".}
-else:
-  proc _INIT_OBJ_POLL_EVENT*(obj: untyped) {.importc: "_INIT_OBJ_POLL_EVENT",
-      header: "kernel.h".}
-##  private - types bit positions
-type
-  _poll_types_bits* {.size: sizeof(cint).} = enum ##  can be used to ignore an event
-    _POLL_TYPE_IGNORE,      ##  to be signaled by k_poll_signal_raise()
-    _POLL_TYPE_SIGNAL,      ##  semaphore availability
-    _POLL_TYPE_SEM_AVAILABLE, ##  queue/FIFO/LIFO data availability
-    _POLL_TYPE_DATA_AVAILABLE, ##  msgq data availability
-    _POLL_TYPE_MSGQ_DATA_AVAILABLE, _POLL_NUM_TYPES
-proc Z_POLL_TYPE_BIT*(`type`: untyped) {.importc: "Z_POLL_TYPE_BIT",
-                                      header: "kernel.h".}
-##  private - states bit positions
-type
-  _poll_states_bits* {.size: sizeof(cint).} = enum ##  default state when creating event
-    _POLL_STATE_NOT_READY,  ##  signaled by k_poll_signal_raise()
-    _POLL_STATE_SIGNALED,   ##  semaphore is available
-    _POLL_STATE_SEM_AVAILABLE, ##  data is available to read on queue/FIFO/LIFO
-    _POLL_STATE_DATA_AVAILABLE, ##  queue/FIFO/LIFO wait was cancelled
-    _POLL_STATE_CANCELLED,  ##  data is available to read on a message queue
-    _POLL_STATE_MSGQ_DATA_AVAILABLE, _POLL_NUM_STATES
-proc Z_POLL_STATE_BIT*(state: untyped) {.importc: "Z_POLL_STATE_BIT",
-                                      header: "kernel.h".}
-var _POLL_EVENT_NUM_UNUSED_BITS* {.importc: "_POLL_EVENT_NUM_UNUSED_BITS",
-                                  header: "kernel.h".}: int
-##  end of polling API - PRIVATE
-## *
-##  @defgroup poll_apis Async polling APIs
-##  @ingroup kernel_apis
-##  @{
-##
-##  Public polling API
-##  public - values for k_poll_event.type bitfield
-var K_POLL_TYPE_IGNORE* {.importc: "K_POLL_TYPE_IGNORE", header: "kernel.h".}: int
-##  public - polling modes
-type
-  k_poll_modes* {.size: sizeof(cint).} = enum ##  polling thread does not take ownership of objects when available
-    K_POLL_MODE_NOTIFY_ONLY = 0, K_POLL_NUM_MODES
-##  public - values for k_poll_event.state bitfield
-var K_POLL_STATE_NOT_READY* {.importc: "K_POLL_STATE_NOT_READY",
-                            header: "kernel.h".}: int
-##  public - poll signal object
-type
-  k_poll_signal* {.importc: "k_poll_signal", header: "kernel.h", bycopy.} = object
-    poll_events* {.importc: "poll_events".}: sys_dlist_t ## * PRIVATE - DO NOT TOUCH
-    ## *
-    ##  1 if the event has been signaled, 0 otherwise. Stays set to 1 until
-    ##  user resets it to 0.
-    ##
-    signaled* {.importc: "signaled".}: cuint ## * custom result value passed to k_poll_signal_raise() if needed
-    result* {.importc: "result".}: cint
-
-proc K_POLL_SIGNAL_INITIALIZER*(obj: untyped) {.
-    importc: "K_POLL_SIGNAL_INITIALIZER", header: "kernel.h".}
-
-
-## *
-##  @brief Poll Event
-##
-##
-discard "forward decl of k_poll_event"
-proc K_POLL_EVENT_INITIALIZER*(_event_type: untyped; _event_mode: untyped;
-                              _event_obj: untyped) {.
-    importc: "K_POLL_EVENT_INITIALIZER", header: "kernel.h".}
-proc K_POLL_EVENT_STATIC_INITIALIZER*(_event_type: untyped; _event_mode: untyped;
-                                      _event_obj: untyped; event_tag: untyped) {.
-    importc: "K_POLL_EVENT_STATIC_INITIALIZER", header: "kernel.h".}
-
-
-## *
-##  @brief Initialize one struct k_poll_event instance
-##
-##  After this routine is called on a poll event, the event it ready to be
-##  placed in an event array to be passed to k_poll().
-##
-##  @param event The event to initialize.
-##  @param type A bitfield of the types of event, from the K_POLL_TYPE_xxx
-##              values. Only values that apply to the same object being polled
-##              can be used together. Choosing K_POLL_TYPE_IGNORE disables the
-##              event.
-##  @param mode Future. Use K_POLL_MODE_NOTIFY_ONLY.
-##  @param obj Kernel object or poll signal.
-##
-##  @return N/A
-##
-proc k_poll_event_init*(event: ptr k_poll_event; `type`: uint32; mode: cint;
-                        obj: pointer) {.importc: "k_poll_event_init",
-                                      header: "kernel.h".}
-
-
-## *
-##  @brief Wait for one or many of multiple poll events to occur
-##
-##  This routine allows a thread to wait concurrently for one or many of
-##  multiple poll events to have occurred. Such events can be a kernel object
-##  being available, like a semaphore, or a poll signal event.
-##
-##  When an event notifies that a kernel object is available, the kernel object
-##  is not "given" to the thread calling k_poll(): it merely signals the fact
-##  that the object was available when the k_poll() call was in effect. Also,
-##  all threads trying to acquire an object the regular way, i.e. by pending on
-##  the object, have precedence over the thread polling on the object. This
-##  means that the polling thread will never get the poll event on an object
-##  until the object becomes available and its pend queue is empty. For this
-##  reason, the k_poll() call is more effective when the objects being polled
-##  only have one thread, the polling thread, trying to acquire them.
-##
-##  When k_poll() returns 0, the caller should loop on all the events that were
-##  passed to k_poll() and check the state field for the values that were
-##  expected and take the associated actions.
-##
-##  Before being reused for another call to k_poll(), the user has to reset the
-##  state field to K_POLL_STATE_NOT_READY.
-##
-##  When called from user mode, a temporary memory allocation is required from
-##  the caller's resource pool.
-##
-##  @param events An array of events to be polled for.
-##  @param num_events The number of events in the array.
-##  @param timeout Waiting period for an event to be ready,
-##                 or one of the special values K_NO_WAIT and K_FOREVER.
-##
-##  @retval 0 One or more events are ready.
-##  @retval -EAGAIN Waiting period timed out.
-##  @retval -EINTR Polling has been interrupted, e.g. with
-##          k_queue_cancel_wait(). All output events are still set and valid,
-##          cancelled event(s) will be set to K_POLL_STATE_CANCELLED. In other
-##          words, -EINTR status means that at least one of output events is
-##          K_POLL_STATE_CANCELLED.
-##  @retval -ENOMEM Thread resource pool insufficient memory (user mode only)
-##  @retval -EINVAL Bad parameters (user mode only)
-##
-proc k_poll*(events: ptr k_poll_event; num_events: cint; timeout: k_timeout_t): cint {.
-    syscall, importc: "k_poll", header: "kernel.h".}
-
-
-## *
-##  @brief Initialize a poll signal object.
-##
-##  Ready a poll signal object to be signaled via k_poll_signal_raise().
-##
-##  @param sig A poll signal.
-##
-##  @return N/A
-##
-proc k_poll_signal_init*(sig: ptr k_poll_signal) {.syscall,
-    importc: "k_poll_signal_init", header: "kernel.h".}
-##
-##  @brief Reset a poll signal object's state to unsignaled.
-##
-##  @param sig A poll signal object
-##
-proc k_poll_signal_reset*(sig: ptr k_poll_signal) {.syscall,
-    importc: "k_poll_signal_reset", header: "kernel.h".}
-
-
-## *
-##  @brief Fetch the signaled state and result value of a poll signal
-##
-##  @param sig A poll signal object
-##  @param signaled An integer buffer which will be written nonzero if the
-## 		   object was signaled
-##  @param result An integer destination buffer which will be written with the
-## 		   result value if the object was signaled, or an undefined
-## 		   value if it was not.
-##
-proc k_poll_signal_check*(sig: ptr k_poll_signal; signaled: ptr cuint;
-                          result: ptr cint) {.syscall,
-    importc: "k_poll_signal_check", header: "kernel.h".}
-
-
-## *
-##  @brief Signal a poll signal object.
-##
-##  This routine makes ready a poll signal, which is basically a poll event of
-##  type K_POLL_TYPE_SIGNAL. If a thread was polling on that event, it will be
-##  made ready to run. A @a result value can be specified.
-##
-##  The poll signal contains a 'signaled' field that, when set by
-##  k_poll_signal_raise(), stays set until the user sets it back to 0 with
-##  k_poll_signal_reset(). It thus has to be reset by the user before being
-##  passed again to k_poll() or k_poll() will consider it being signaled, and
-##  will return immediately.
-##
-##  @note The result is stored and the 'signaled' field is set even if
-##  this function returns an error indicating that an expiring poll was
-##  not notified.  The next k_poll() will detect the missed raise.
-##
-##  @param sig A poll signal.
-##  @param result The value to store in the result field of the signal.
-##
-##  @retval 0 The signal was delivered successfully.
-##  @retval -EAGAIN The polling thread's timeout is in the process of expiring.
-##
-proc k_poll_signal_raise*(sig: ptr k_poll_signal; result: cint): cint {.syscall,
-    importc: "k_poll_signal_raise", header: "kernel.h".}
-
 
 ## *
 ##  @internal
@@ -5158,8 +3305,7 @@ proc z_handle_obj_poll_events*(events: ptr sys_dlist_t; state: uint32) {.
 ##
 ##  @return N/A
 ##
-proc k_cpu_idle*() {.inline.} =
-  arch_cpu_idle()
+proc k_cpu_idle*() {.importc:"k_cpu_idle", header: "kernel.h".} 
 
 ## *
 ##  @brief Make the CPU idle in an atomic fashion.
@@ -5177,8 +3323,7 @@ proc k_cpu_idle*() {.inline.} =
 ##
 ##  @return N/A
 ##
-proc k_cpu_atomic_idle*(key: cuint) {.inline.} =
-  arch_cpu_atomic_idle(key)
+proc k_cpu_atomic_idle*(key: cuint) {.importc:"k_cpu_idle", header: "kernel.h".} 
 
 ## *
 ##  @}
@@ -5191,13 +3336,16 @@ when defined(ARCH_EXCEPT):
   proc z_except_reason*(reason: untyped) {.importc: "z_except_reason",
       header: "kernel.h".}
 else:
-  ##  NOTE: This is the implementation for arches that do not implement
-  ##  ARCH_EXCEPT() to generate a real CPU exception.
-  ##
-  ##  We won't have a real exception frame to determine the PC value when
-  ##  the oops occurred, so print file and line number before we jump into
-  ##  the fatal error handler.
-  ##
+  discard """
+   NOTE: This is the implementation for arches that do not implement
+   ARCH_EXCEPT() to generate a real CPU exception.
+  
+   We won't have a real exception frame to determine the PC value when
+   the oops occurred, so print file and line number before we jump into
+   the fatal error handler.
+  
+  """
+
 ## *
 ##  @brief Fatally terminate a thread
 ##
@@ -5223,20 +3371,11 @@ else:
 ## *
 ##  @internal
 ##
-proc z_init_thread_base*(thread_base: ptr _thread_base; priority: cint;
+proc z_init_thread_base*(thread_base: ptr z_thread_base; priority: cint;
                         initial_state: uint32; options: cuint) {.
     importc: "z_init_thread_base", header: "kernel.h".}
-when CONFIG_MULTITHREADING:
-  ## *
-  ##  @internal
-  ##
-  proc z_init_static_threads*() {.importc: "z_init_static_threads",
-                                header: "kernel.h".}
-else:
-  ## *
-  ##  @internal
-  ##
-  proc z_init_static_threads*() {.importc: "z_init_static_threads",
+
+proc z_init_static_threads*() {.importc: "z_init_static_threads",
                                 header: "kernel.h".}
 
 
@@ -5245,6 +3384,7 @@ else:
 ##
 proc z_is_thread_essential*(): bool {.importc: "z_is_thread_essential",
                                     header: "kernel.h".}
+
 when CONFIG_SMP:
   proc z_smp_thread_init*(arg: pointer; thread: ptr k_thread) {.
       importc: "z_smp_thread_init", header: "kernel.h".}
@@ -5254,8 +3394,9 @@ when CONFIG_SMP:
 ## *
 ##  @internal
 ##
-proc z_timer_expiration_handler*(t: ptr _timeout) {.
+proc z_timer_expiration_handler*(t: ptr k_priv_timeout) {.
     importc: "z_timer_expiration_handler", header: "kernel.h".}
+
 when CONFIG_PRINTK:
   ## *
   ##  @brief Emit a character buffer to the console device
@@ -5264,7 +3405,7 @@ when CONFIG_PRINTK:
   ##  @param n The length of the string
   ##
   ##
-  proc k_str_out*(c: cstring; n: csize_t) {.syscall, importc: "k_str_out",
+  proc k_str_out*(c: cstring; n: csize_t) {.zsyscall, importc: "k_str_out",
       header: "kernel.h".}
 
 
@@ -5288,7 +3429,7 @@ when CONFIG_PRINTK:
 ##  @retval -ENOTSUP If the floating point disabling is not implemented.
 ##          -EINVAL  If the floating point disabling could not be performed.
 ##
-proc k_float_disable*(thread: ptr k_thread): cint {.syscall,
+proc k_float_disable*(thread: ptr k_thread): cint {.zsyscall,
     importc: "k_float_disable", header: "kernel.h".}
 
 
@@ -5330,8 +3471,9 @@ proc k_float_disable*(thread: ptr k_thread): cint {.syscall,
 ##  @retval -ENOTSUP If the floating point enabling is not implemented.
 ##          -EINVAL  If the floating point enabling could not be performed.
 ##
-proc k_float_enable*(thread: ptr k_thread; options: cuint): cint {.syscall,
+proc k_float_enable*(thread: ptr k_thread; options: cuint): cint {.zsyscall,
     importc: "k_float_enable", header: "kernel.h".}
+
 when CONFIG_THREAD_RUNTIME_STATS:
   ## *
   ##  @brief Get the runtime statistics of a thread

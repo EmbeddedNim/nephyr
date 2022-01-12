@@ -4,11 +4,8 @@ import macros
 from os import getEnv, `/`
 
 import nephyr/general
-import zephyr_c/zconf
 
 export general
-
-generateZephyrConfigDefines()
 
 proc NimMain() {.importc.}
 
