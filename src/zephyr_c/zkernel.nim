@@ -604,9 +604,10 @@ when defined(CONFIG_SYS_CLOCK_EXISTS):
 ##  @cond INTERNAL_HIDDEN
 ##
 ##  timeout has timed out and is not on _timeout_q anymore
-var _EXPIRED* {.importc: "_EXPIRED", header: "kernel.h".}: int
+# var _EXPIRED* {.importc: "_EXPIRED", header: "kernel.h".}: int
+
 type
-  _static_thread_data* {.importc: "_static_thread_data", header: "kernel.h", bycopy.} = object
+  z_static_thread_data* {.importc: "_static_thread_data", header: "kernel.h", bycopy.} = object
     init_thread* {.importc: "init_thread".}: ptr k_thread
     init_stack* {.importc: "init_stack".}: ptr k_thread_stack_t
     init_stack_size* {.importc: "init_stack_size".}: cuint
@@ -620,13 +621,17 @@ type
     init_abort* {.importc: "init_abort".}: proc ()
     init_name* {.importc: "init_name".}: cstring
 
-proc Z_THREAD_INITIALIZER*(thread: untyped; stack: untyped; stack_size: untyped;
-                          entry: untyped; p1: untyped; p2: untyped; p3: untyped;
-                          prio: untyped; options: untyped; delay: untyped;
-                          abort: untyped; tname: untyped) {.
+proc Z_THREAD_INITIALIZER*(thread: ptr k_thread;
+                           stack: ptr k_thread_stack_t;
+                           stack_size: csize_t;
+                           entry: k_thread_proc;
+                           p1, p2, p3: pointer;
+                           prio: cint;
+                           options: uint32;
+                           delay: k_timeout_t;
+                           abort: proc () {.cdecl.};
+                           tname: cstring) {.
     importc: "Z_THREAD_INITIALIZER", header: "kernel.h".}
-
-
 
 
 
@@ -662,10 +667,24 @@ proc Z_THREAD_INITIALIZER*(thread: untyped; stack: untyped; stack_size: untyped;
 ##  wasting space. To work around this, force a 4-byte alignment.
 ##
 ##
-proc K_THREAD_DEFINE*(name: untyped; stack_size: untyped; entry: untyped;
-                      p1: untyped; p2: untyped; p3: untyped; prio: untyped;
-                      options: untyped; delay: untyped) {.
-    importc: "K_THREAD_DEFINE", header: "kernel.h".}
+# template K_THREAD_DEFINE*(name: untyped;
+#                           stack_size: untyped;
+#                           entry: untyped;
+#                           p1: untyped;
+#                           p2: untyped;
+#                           p3: untyped;
+#                           prio: untyped;
+#                           options: untyped;
+#                           delay: untyped) =
+#   K_THREAD_STACK_DEFINE(`k_thread_stack name`, stack_size)
+#   struct k_thread _k_thread_obj_##name;
+#   STRUCT_SECTION_ITERABLE(_static_thread_data, _k_thread_data_##name) = \
+#     Z_THREAD_INITIALIZER(&_k_thread_obj_##name,		 \
+#      _k_thread_stack_##name, stack_size,  \
+#      entry, p1, p2, p3, prio, options, delay, \
+#      NULL, name);				 	 \
+#   const k_tid_t name = (k_tid_t)&_k_thread_obj_##name
+
 
 
 
@@ -1113,7 +1132,8 @@ proc k_thread_state_str*(thread_id: k_tid_t): cstring {.
 ##
 ##  @return Timeout delay value.
 ##
-var K_NO_WAIT* {.importc: "K_NO_WAIT", header: "kernel.h".}: int
+proc K_NO_WAIT*(): k_timeout_t {.importc: "K_NO_WAIT", header: "kernel.h".}
+
 ## *
 ##  @brief Generate timeout delay from nanoseconds.
 ##
