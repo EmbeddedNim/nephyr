@@ -119,7 +119,7 @@ struct _thread_base {
 
 typedef struct _thread_base _thread_base_t;
 
-#if defined(CONFIG_THREAD_STACK_INFO)
+#if CONFIG_THREAD_STACK_INFO
 /* Contains the stack information of a thread */
 struct _thread_stack_info {
 	/* Stack start - Represents the start address of the thread-writable
@@ -146,7 +146,7 @@ struct _thread_stack_info {
 typedef struct _thread_stack_info _thread_stack_info_t;
 #endif /* CONFIG_THREAD_STACK_INFO */
 
-#if defined(CONFIG_USERSPACE)
+#if CONFIG_USERSPACE
 struct _mem_domain_info {
 	/** memory domain queue node */
 	sys_dnode_t mem_domain_q_node;
@@ -158,7 +158,7 @@ struct _mem_domain_info {
 
 #ifdef CONFIG_THREAD_USERSPACE_LOCAL_DATA
 struct _thread_userspace_local_data {
-#if defined(CONFIG_ERRNO) && !defined(CONFIG_ERRNO_IN_TLS)
+#if CONFIG_ERRNO && !CONFIG_ERRNO_IN_TLS
 	int errno_var;
 #endif
 };
@@ -210,11 +210,11 @@ struct k_thread {
 	/** threads waiting in k_thread_join() */
 	_wait_q_t join_queue;
 
-#if defined(CONFIG_POLL)
+#if CONFIG_POLL
 	struct z_poller poller;
 #endif
 
-#if defined(CONFIG_THREAD_MONITOR)
+#if CONFIG_THREAD_MONITOR
 	/** thread entry and parameters description */
 	struct __thread_entry entry;
 
@@ -222,7 +222,7 @@ struct k_thread {
 	struct k_thread *next_thread;
 #endif
 
-#if defined(CONFIG_THREAD_NAME)
+#if CONFIG_THREAD_NAME
 	/** Thread name */
 	char name[CONFIG_THREAD_MAX_NAME_LEN];
 #endif
@@ -236,19 +236,19 @@ struct k_thread {
 	struct _thread_userspace_local_data *userspace_local_data;
 #endif
 
-#if defined(CONFIG_ERRNO) && !defined(CONFIG_ERRNO_IN_TLS)
+#if CONFIG_ERRNO && !CONFIG_ERRNO_IN_TLS
 #ifndef CONFIG_USERSPACE
 	/** per-thread errno variable */
 	int errno_var;
 #endif
 #endif
 
-#if defined(CONFIG_THREAD_STACK_INFO)
+#if CONFIG_THREAD_STACK_INFO
 	/** Stack Info */
 	struct _thread_stack_info stack_info;
 #endif /* CONFIG_THREAD_STACK_INFO */
 
-#if defined(CONFIG_USERSPACE)
+#if CONFIG_USERSPACE
 	/** memory domain info of the thread */
 	struct _mem_domain_info mem_domain_info;
 	/** Base address of thread stack */
@@ -258,7 +258,7 @@ struct k_thread {
 #endif /* CONFIG_USERSPACE */
 
 
-#if defined(CONFIG_USE_SWITCH)
+#if CONFIG_USE_SWITCH
 	/* When using __switch() a few previously arch-specific items
 	 * become part of the core OS
 	 */
@@ -272,7 +272,7 @@ struct k_thread {
 
 	struct k_heap *resource_pool; /** resource pool */
 
-#if defined(CONFIG_THREAD_LOCAL_STORAGE)
+#if CONFIG_THREAD_LOCAL_STORAGE
 	/* Pointer to arch-specific TLS area */
 	uintptr_t tls;
 #endif /* CONFIG_THREAD_LOCAL_STORAGE */

@@ -127,7 +127,7 @@ proc k_thread_foreach_unlocked*(user_cb: k_thread_user_cb_t; user_data: pointer)
 var K_ESSENTIAL* {.importc: "K_ESSENTIAL", header: "kernel.h".}: int
 
 
-when defined(CONFIG_FPU_SHARING):
+when CONFIG_FPU_SHARING:
   ## *
   ##  @brief FPU registers are managed by context switch
   ##
@@ -173,9 +173,9 @@ var K_INHERIT_PERMS* {.importc: "K_INHERIT_PERMS", header: "kernel.h".}: int
 var K_CALLBACK_STATE* {.importc: "K_CALLBACK_STATE", header: "kernel.h".}: int
 
 
-when defined(CONFIG_X86):
+when CONFIG_X86:
   ##  x86 Bitmask definitions for threads user options
-  when defined(CONFIG_FPU_SHARING) and defined(CONFIG_X86_SSE):
+  when CONFIG_FPU_SHARING and CONFIG_X86_SSE:
     ## *
     ##  @brief FP and SSE registers are managed by context switch on x86
     ##
@@ -316,7 +316,7 @@ proc k_thread_heap_assign*(thread: ptr k_thread; heap: ptr k_heap) {.inline.} =
   thread.resource_pool = heap
 
 
-when defined(CONFIG_INIT_STACKS) and defined(CONFIG_THREAD_STACK_INFO):
+when CONFIG_INIT_STACKS and CONFIG_THREAD_STACK_INFO:
   ## *
   ##  @brief Obtain stack usage information for the specified thread
   ##
@@ -504,7 +504,7 @@ proc k_wakeup*(thread: k_tid_t) {.syscall, importc: "k_wakeup", header: "kernel.
 proc z_current_get*(): k_tid_t {.syscall, importc: "z_current_get",
                               header: "kernel.h".}
 
-when defined(CONFIG_THREAD_LOCAL_STORAGE):
+when CONFIG_THREAD_LOCAL_STORAGE:
   ##  Thread-local cache of current thread ID, set in z_thread_entry()
   var z_tls_current* {.importc: "z_tls_current", header: "kernel.h".}: k_tid_t
 
@@ -517,7 +517,7 @@ when defined(CONFIG_THREAD_LOCAL_STORAGE):
 ##
 ##
 proc k_current_get*(): k_tid_t =
-  when defined(CONFIG_THREAD_LOCAL_STORAGE):
+  when CONFIG_THREAD_LOCAL_STORAGE:
     return z_tls_current
   else:
     return z_current_get()
@@ -574,7 +574,7 @@ proc z_timeout_remaining*(timeout: ptr k_priv_timeout): k_ticks_t {.
 
 
 
-when defined(CONFIG_SYS_CLOCK_EXISTS):
+when CONFIG_SYS_CLOCK_EXISTS:
   ## *
   ##  @brief Get time when a thread wakes up, in system ticks
   ##
@@ -738,7 +738,7 @@ proc k_thread_priority_set*(thread: k_tid_t; prio: cint) {.syscall,
 
 
 
-when defined(CONFIG_SCHED_DEADLINE):
+when CONFIG_SCHED_DEADLINE:
   ## *
   ##  @brief Set deadline expiration time for scheduler
   ##
@@ -776,7 +776,7 @@ when defined(CONFIG_SCHED_DEADLINE):
 
 
 
-when defined(CONFIG_SCHED_CPU_MASK):
+when CONFIG_SCHED_CPU_MASK:
   ## *
   ##  @brief Sets all CPU enable masks to zero
   ##
@@ -1253,7 +1253,7 @@ proc K_HOURS*(h: int): k_timeout_t {.importc: "K_HOURS", header: "kernel.h".}
 var K_FOREVER* {.importc: "K_FOREVER", header: "kernel.h".}: int
 
 
-when defined(CONFIG_TIMEOUT_64BIT):
+when CONFIG_TIMEOUT_64BIT:
   ## *
   ##  @brief Generates an absolute/uptime timeout value from system ticks
   ##
@@ -1527,7 +1527,7 @@ proc k_timer_status_get*(timer: ptr k_timer): uint32 {.syscall,
 ##
 proc k_timer_status_sync*(timer: ptr k_timer): uint32 {.syscall,
     importc: "k_timer_status_sync", header: "kernel.h".}
-when defined(CONFIG_SYS_CLOCK_EXISTS):
+when CONFIG_SYS_CLOCK_EXISTS:
   ## *
   ##  @brief Get next expiration time of a timer, in system ticks
   ##
@@ -2040,7 +2040,7 @@ proc K_QUEUE_DEFINE*(name: untyped) {.importc: "K_QUEUE_DEFINE", header: "kernel
 
 
 ## * @}
-when defined(CONFIG_USERSPACE):
+when CONFIG_USERSPACE:
   ## *
   ##  @brief futex structure
   ##
@@ -4559,7 +4559,7 @@ type
     buffer* {.importc: "buffer".}: cstring
     free_list* {.importc: "free_list".}: cstring
     num_used* {.importc: "num_used".}: uint32
-    when defined(CONFIG_MEM_SLAB_TRACE_MAX_UTILIZATION):
+    when CONFIG_MEM_SLAB_TRACE_MAX_UTILIZATION:
       var max_used* {.importc: "max_used", header: "kernel.h".}: uint32
 
 proc Z_MEM_SLAB_INITIALIZER*(obj: untyped; slab_buffer: untyped;
@@ -4690,7 +4690,7 @@ proc k_mem_slab_num_used_get*(slab: ptr k_mem_slab): uint32 {.inline.} =
 ##  @return Maximum number of allocated memory blocks.
 ##
 proc k_mem_slab_max_used_get*(slab: ptr k_mem_slab): uint32 {.inline.} =
-  when defined(CONFIG_MEM_SLAB_TRACE_MAX_UTILIZATION):
+  when CONFIG_MEM_SLAB_TRACE_MAX_UTILIZATION:
     return slab.max_used
   else:
     ARG_UNUSED(slab)
@@ -4928,7 +4928,7 @@ proc k_calloc*(nmemb: csize_t; size: csize_t): pointer {.importc: "k_calloc",
 
 ## * @}
 ##  polling API - PRIVATE
-when defined(CONFIG_POLL):
+when CONFIG_POLL:
   proc _INIT_OBJ_POLL_EVENT*(obj: untyped) {.importc: "_INIT_OBJ_POLL_EVENT",
       header: "kernel.h".}
 else:
@@ -5226,7 +5226,7 @@ else:
 proc z_init_thread_base*(thread_base: ptr _thread_base; priority: cint;
                         initial_state: uint32; options: cuint) {.
     importc: "z_init_thread_base", header: "kernel.h".}
-when defined(CONFIG_MULTITHREADING):
+when CONFIG_MULTITHREADING:
   ## *
   ##  @internal
   ##
@@ -5245,7 +5245,7 @@ else:
 ##
 proc z_is_thread_essential*(): bool {.importc: "z_is_thread_essential",
                                     header: "kernel.h".}
-when defined(CONFIG_SMP):
+when CONFIG_SMP:
   proc z_smp_thread_init*(arg: pointer; thread: ptr k_thread) {.
       importc: "z_smp_thread_init", header: "kernel.h".}
   proc z_smp_thread_swap*() {.importc: "z_smp_thread_swap", header: "kernel.h".}
@@ -5256,7 +5256,7 @@ when defined(CONFIG_SMP):
 ##
 proc z_timer_expiration_handler*(t: ptr _timeout) {.
     importc: "z_timer_expiration_handler", header: "kernel.h".}
-when defined(CONFIG_PRINTK):
+when CONFIG_PRINTK:
   ## *
   ##  @brief Emit a character buffer to the console device
   ##
@@ -5332,7 +5332,7 @@ proc k_float_disable*(thread: ptr k_thread): cint {.syscall,
 ##
 proc k_float_enable*(thread: ptr k_thread; options: cuint): cint {.syscall,
     importc: "k_float_enable", header: "kernel.h".}
-when defined(CONFIG_THREAD_RUNTIME_STATS):
+when CONFIG_THREAD_RUNTIME_STATS:
   ## *
   ##  @brief Get the runtime statistics of a thread
   ##

@@ -383,7 +383,7 @@ type
 type
   spi_driver_api* {.importc: "spi_driver_api", header: hdr, bycopy.} = object
     transceive* {.importc: "transceive".}: spi_api_io
-    when defined(CONFIG_SPI_ASYNC):
+    when CONFIG_SPI_ASYNC:
       transceive_async* {.header: hdr.}: spi_api_io_async
     release* {.importc: "release".}: spi_api_release
 
@@ -455,7 +455,7 @@ proc spi_write*(dev: ptr device; config: ptr spi_config; tx_bufs: ptr spi_buf_se
 
 ##  Doxygen defines this so documentation is generated.
 
-when defined(CONFIG_SPI_ASYNC):
+when CONFIG_SPI_ASYNC:
   ## *
   ##  @brief Read/write the specified amount of data from the SPI driver.
   ##

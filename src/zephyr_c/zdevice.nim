@@ -90,7 +90,7 @@ type
         ## * Indicates the device initialization function has been
         ##  invoked.
         ##
-    when defined(CONFIG_PM_DEVICE):
+    when CONFIG_PM_DEVICE:
       ##  Power management data
       pm* {.header: "device.h".}: pm_device
 
@@ -111,7 +111,7 @@ type
                                    ##  device_required_handles_get().
                                    ##
     handles* {.importc: "handles".}: ptr device_handle_t
-    when defined(CONFIG_PM_DEVICE):
+    when CONFIG_PM_DEVICE:
       ## * Power Management function
       pm_control*: proc (dev: ptr device; command: uint32; state: ptr uint32;
                           cb: pm_device_cb; arg: pointer): cint
@@ -735,7 +735,7 @@ proc Z_DEVICE_EXTRA_HANDLES*() {.varargs, importc: "Z_DEVICE_EXTRA_HANDLES",
 ##  keep track of suspended devices during system power transitions.
 ##
 
-when defined(CONFIG_PM_DEVICE):
+when CONFIG_PM_DEVICE:
   proc Z_DEVICE_DEFINE_PM_SLOT*(dev_name: untyped) {.
       importc: "Z_DEVICE_DEFINE_PM_SLOT", header: "device.h".}
 

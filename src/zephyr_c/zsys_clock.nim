@@ -26,7 +26,7 @@
 ##  is always a 64 bit count of ticks.
 ##
 
-when defined(CONFIG_TIMEOUT_64BIT):
+when CONFIG_TIMEOUT_64BIT:
   type
     k_ticks_t* = int64
 else:
@@ -87,7 +87,7 @@ proc Z_TICK_ABS*(t: k_ticks_t): k_ticks_t {.importc: "Z_TICK_ABS", header: "sys_
 ##
 
 
-when defined(CONFIG_TICKLESS_KERNEL):
+when CONFIG_TICKLESS_KERNEL:
   proc z_enable_sys_clock*() {.importc: "z_enable_sys_clock", header: "sys_clock.h".}
 
 var NSEC_PER_USEC* {.importc: "NSEC_PER_USEC", header: "sys_clock.h".}: int ##  number of nsec per usec

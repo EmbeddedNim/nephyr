@@ -168,7 +168,7 @@ extern void k_thread_foreach_unlocked(
  * */
 #define K_ESSENTIAL (BIT(0))
 
-#if defined(CONFIG_FPU_SHARING)
+#if CONFIG_FPU_SHARING
 /**
  * @brief FPU registers are managed by context switch
  *
@@ -213,7 +213,7 @@ extern void k_thread_foreach_unlocked(
 #ifdef CONFIG_X86
 /* x86 Bitmask definitions for threads user options */
 
-#if defined(CONFIG_FPU_SHARING) && defined(CONFIG_X86_SSE)
+#if CONFIG_FPU_SHARING && CONFIG_X86_SSE
 /**
  * @brief FP and SSE registers are managed by context switch on x86
  *
@@ -346,7 +346,7 @@ static inline void k_thread_heap_assign(struct k_thread *thread,
 	thread->resource_pool = heap;
 }
 
-#if defined(CONFIG_INIT_STACKS) && defined(CONFIG_THREAD_STACK_INFO)
+#if CONFIG_INIT_STACKS && CONFIG_THREAD_STACK_INFO
 /**
  * @brief Obtain stack usage information for the specified thread
  *

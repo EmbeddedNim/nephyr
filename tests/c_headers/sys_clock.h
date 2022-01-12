@@ -115,7 +115,7 @@ typedef struct {
 extern void z_enable_sys_clock(void);
 #endif
 
-#if defined(CONFIG_SYS_CLOCK_EXISTS) && \
+#if CONFIG_SYS_CLOCK_EXISTS && \
 	(CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC == 0)
 #error "SYS_CLOCK_HW_CYCLES_PER_SEC must be non-zero!"
 #endif
@@ -146,7 +146,7 @@ extern void z_enable_sys_clock(void);
 
 #ifdef CONFIG_SYS_CLOCK_EXISTS
 
-#if defined(CONFIG_TIMER_READS_ITS_FREQUENCY_AT_RUNTIME) || \
+#if CONFIG_TIMER_READS_ITS_FREQUENCY_AT_RUNTIME || \
 	(MSEC_PER_SEC % CONFIG_SYS_CLOCK_TICKS_PER_SEC) || \
 	(CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC % CONFIG_SYS_CLOCK_TICKS_PER_SEC)
 #define _NEED_PRECISE_TICK_MS_CONVERSION

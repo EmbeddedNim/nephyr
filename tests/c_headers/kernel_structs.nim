@@ -26,14 +26,14 @@ var Z_PREEMPT_THRESHOLD* {.importc: "_PREEMPT_THRESHOLD", header: "kernel_struct
 
   type
     _ready_q* {.importc: "_ready_q", header: "kernel_structs.h", bycopy.} = object
-      when not defined(CONFIG_SMP):
+      when not CONFIG_SMP:
         ##  always contains next thread to run: cannot be NULL
         var cache* {.importc: "cache", header: "kernel_structs.h".}: ptr k_thread
-      when defined(CONFIG_SCHED_DUMB):
+      when CONFIG_SCHED_DUMB:
         var runq* {.importc: "runq", header: "kernel_structs.h".}: sys_dlist_t
-      elif defined(CONFIG_SCHED_SCALABLE):
+      elif CONFIG_SCHED_SCALABLE:
         var runq* {.importc: "runq", header: "kernel_structs.h".}: _priq_rb
-      elif defined(CONFIG_SCHED_MULTIQ):
+      elif CONFIG_SCHED_MULTIQ:
         var runq* {.importc: "runq", header: "kernel_structs.h".}: _priq_mq
 
   type
@@ -50,11 +50,11 @@ var Z_PREEMPT_THRESHOLD* {.importc: "_PREEMPT_THRESHOLD", header: "kernel_struct
         ##  Coop thread preempted by current metairq, or NULL
         var metairq_preempted* {.importc: "metairq_preempted",
                                header: "kernel_structs.h".}: ptr k_thread
-      when defined(CONFIG_TIMESLICING):
+      when CONFIG_TIMESLICING:
         ##  number of ticks remaining in current time slice
         var slice_ticks* {.importc: "slice_ticks", header: "kernel_structs.h".}: cint
       id* {.importc: "id".}: uint8
-      when defined(CONFIG_SMP):
+      when CONFIG_SMP:
         ##  True when _current is allowed to context switch
         var swap_ok* {.importc: "swap_ok", header: "kernel_structs.h".}: uint8
       arch* {.importc: "arch".}: _cpu_arch ##  Per CPU architecture specifics
@@ -64,14 +64,14 @@ var Z_PREEMPT_THRESHOLD* {.importc: "_PREEMPT_THRESHOLD", header: "kernel_struct
   type
     z_kernel* {.importc: "z_kernel", header: "kernel_structs.h", bycopy.} = object
       cpus* {.importc: "cpus".}: array[CONFIG_MP_NUM_CPUS, _cpu]
-      when defined(CONFIG_PM):
+      when CONFIG_PM:
         var idle* {.importc: "idle", header: "kernel_structs.h".}: int32
         ##  Number of ticks for kernel idling
       ready_q* {.importc: "ready_q".}: _ready_q ##
                                             ##  ready queue: can be big, keep after small fields, since some
                                             ##  assembly (e.g. ARC) are limited in the encoding of the offset
                                             ##
-      when defined(CONFIG_FPU_SHARING):
+      when CONFIG_FPU_SHARING:
         ##
         ##  A 'current_sse' field does not exist in addition to the 'current_fp'
         ##  field since it's not possible to divide the IA-32 non-integer
@@ -82,14 +82,14 @@ var Z_PREEMPT_THRESHOLD* {.importc: "_PREEMPT_THRESHOLD", header: "kernel_struct
         ##
         ##  thread that owns the FP regs
         var current_fp* {.importc: "current_fp", header: "kernel_structs.h".}: ptr k_thread
-      when defined(CONFIG_THREAD_MONITOR):
+      when CONFIG_THREAD_MONITOR:
         var threads* {.importc: "threads", header: "kernel_structs.h".}: ptr k_thread
         ##  singly linked list of ALL threads
 
   type
     _kernel_t* = z_kernel
   var _kernel* {.importc: "_kernel", header: "kernel_structs.h".}: z_kernel
-  when defined(CONFIG_SMP):
+  when CONFIG_SMP:
     ##  True if the current context can be preempted and migrated to
     ##  another SMP CPU.
     ##
@@ -99,7 +99,7 @@ var Z_PREEMPT_THRESHOLD* {.importc: "_PREEMPT_THRESHOLD", header: "kernel_struct
   else:
     var _current_cpu* {.importc: "_current_cpu", header: "kernel_structs.h".}: int
   ##  kernel wait queue record
-  when defined(CONFIG_WAITQ_SCALABLE):
+  when CONFIG_WAITQ_SCALABLE:
     type
       _wait_q_t* {.importc: "_wait_q_t", header: "kernel_structs.h", bycopy.} = object
         waitq* {.importc: "waitq".}: _priq_rb
@@ -123,7 +123,7 @@ var Z_PREEMPT_THRESHOLD* {.importc: "_PREEMPT_THRESHOLD", header: "kernel_struct
     _timeout* {.importc: "_timeout", header: "kernel_structs.h", bycopy.} = object
       node* {.importc: "node".}: sys_dnode_t
       fn* {.importc: "fn".}: _timeout_func_t
-      when defined(CONFIG_TIMEOUT_64BIT):
+      when CONFIG_TIMEOUT_64BIT:
         ##  Can't use k_ticks_t for header dependency reasons
         var dticks* {.importc: "dticks", header: "kernel_structs.h".}: int64
       else:

@@ -98,7 +98,7 @@ type
                                                           ##
     channel_id* {.importc: "channel_id", bitsize: 5.}: uint8 ## * Channel type: single-ended or differential.
     differential* {.importc: "differential", bitsize: 1.}: uint8
-    when defined(CONFIG_ADC_CONFIGURABLE_INPUTS):
+    when CONFIG_ADC_CONFIGURABLE_INPUTS:
       ## *
       ##  Positive ADC input.
       ##  This is a driver dependent value that identifies an ADC input to be
@@ -305,7 +305,7 @@ type
   adc_driver_api* {.importc: "adc_driver_api", header: "adc.h", bycopy.} = object
     channel_setup* {.importc: "channel_setup".}: adc_api_channel_setup
     read* {.importc: "read".}: adc_api_read
-    when defined(CONFIG_ADC_ASYNC):
+    when CONFIG_ADC_ASYNC:
       var read_async* {.header: "adc.h".}: adc_api_read_async
     ref_internal* {.importc: "ref_internal".}: uint16 ##  mV
 
@@ -383,7 +383,7 @@ proc z_impl_adc_read*(dev: ptr device; sequence: ptr adc_sequence): cint {.inlin
 proc adc_read_async*(dev: ptr device; sequence: ptr adc_sequence;
                     async: ptr k_poll_signal): cint {.syscall,
     importc: "adc_read_async", header: "adc.h".}
-when defined(CONFIG_ADC_ASYNC):
+when CONFIG_ADC_ASYNC:
   proc z_impl_adc_read_async*(dev: ptr device; sequence: ptr adc_sequence;
                              async: ptr k_poll_signal): cint {.inline,
       importc: "z_impl_adc_read_async".} =

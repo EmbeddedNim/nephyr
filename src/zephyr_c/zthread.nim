@@ -27,7 +27,7 @@
 ##
 ##  @return N/A
 ##
-when defined(CONFIG_THREAD_MONITOR):
+when CONFIG_THREAD_MONITOR:
   type
     z_thread_entry* {.importc: "__thread_entry", header: "thread.h", incompleteStruct, bycopy.} = object
       pEntry* {.importc: "pEntry".}: k_thread_entry_t
@@ -60,34 +60,34 @@ type
     ##  thread state
     thread_state* {.importc: "thread_state".}: uint8 
 
-    when defined(CONFIG_SCHED_DEADLINE):
+    when CONFIG_SCHED_DEADLINE:
       prio_deadline* {.importc: "prio_deadline", header: "thread.h".}: cint
 
     order_key* {.importc: "order_key".}: uint32
 
-    when defined(CONFIG_SMP):
+    when CONFIG_SMP:
       is_idle* {.importc: "is_idle", header: "thread.h".}: uint8 ##  True for the per-CPU idle threads
       cpu* {.importc: "cpu", header: "thread.h".}: uint8 ##  CPU index on which thread was last run
       global_lock_count* {.importc: "global_lock_count", header: "thread.h".}: uint8 ##  Recursive count of irq_lock() calls
 
-    when defined(CONFIG_SCHED_CPU_MASK):
+    when CONFIG_SCHED_CPU_MASK:
       cpu_mask* {.importc: "cpu_mask", header: "thread.h".}: uint8 ##  "May run on" bits for each CPU
 
     swap_data* {.importc: "swap_data".}: pointer ##  data returned by APIs
 
-    # when defined(CONFIG_SYS_CLOCK_EXISTS):
+    # when CONFIG_SYS_CLOCK_EXISTS:
     #   ##  this thread's entry in a timeout queue
     #   timeout* {.importc: "timeout", header: "thread.h".}: _timeout
 
 
-# when defined(CONFIG_THREAD_USERSPACE_LOCAL_DATA):
+# when CONFIG_THREAD_USERSPACE_LOCAL_DATA:
 #   type
 #     _thread_userspace_local_data* {.importc: "_thread_userspace_local_data",
 #                                    header: "thread.h", bycopy.} = object
-#       when defined(CONFIG_ERRNO) and not defined(CONFIG_ERRNO_IN_TLS):
+#       when CONFIG_ERRNO and not CONFIG_ERRNO_IN_TLS:
 #         var errno_var* {.importc: "errno_var", header: "thread.h".}: cint
 
-# when defined(CONFIG_THREAD_RUNTIME_STATS):
+# when CONFIG_THREAD_RUNTIME_STATS:
 #   type
 #     k_thread_runtime_stats* {.importc: "k_thread_runtime_stats",
 #                              header: "thread.h", bycopy.} = object
@@ -99,7 +99,7 @@ type
 #   type
 #     _thread_runtime_stats* {.importc: "_thread_runtime_stats", header: "thread.h",
 #                             bycopy.} = object
-#       when defined(CONFIG_THREAD_RUNTIME_STATS_USE_TIMING_FUNCTIONS): ##  Timestamp when last switched in
+#       when CONFIG_THREAD_RUNTIME_STATS_USE_TIMING_FUNCTIONS: ##  Timestamp when last switched in
 #         var last_switched_in* {.importc: "last_switched_in", header: "thread.h".}: timing_t
 #       else:
 #         var last_switched_in* {.importc: "last_switched_in", header: "thread.h".}: uint32
@@ -126,34 +126,34 @@ type
 
     # poller* {.importc: "poller", header: "thread.h".}: z_poller
 
-    # when defined(CONFIG_THREAD_MONITOR):
+    # when CONFIG_THREAD_MONITOR:
     #   ## * thread entry and parameters description
     #   entry* {.importc: "entry", header: "thread.h".}: __thread_entry
     #   ## * next item in list of all threads
     #   next_thread* {.importc: "next_thread", header: "thread.h".}: ptr k_thread
 
-    # when defined(CONFIG_THREAD_NAME):
+    # when CONFIG_THREAD_NAME:
     #   ## * Thread name
     #   name* {.importc: "name", header: "thread.h".}: array[CONFIG_THREAD_MAX_NAME_LEN, char]
 
-    when defined(CONFIG_THREAD_CUSTOM_DATA):
+    when CONFIG_THREAD_CUSTOM_DATA:
       ## * crude thread-local storage
       custom_data* {.importc: "custom_data", header: "thread.h".}: pointer
 
-    when defined(CONFIG_THREAD_USERSPACE_LOCAL_DATA):
+    when CONFIG_THREAD_USERSPACE_LOCAL_DATA:
       userspace_local_data* {.importc: "userspace_local_data",
                                 header: "thread.h".}: pointer
 
-    when defined(CONFIG_ERRNO) and not defined(CONFIG_ERRNO_IN_TLS):
-      when not defined(CONFIG_USERSPACE):
+    when CONFIG_ERRNO and not CONFIG_ERRNO_IN_TLS:
+      when not CONFIG_USERSPACE:
         ## * per-thread errno variable
         errno_var* {.importc: "errno_var", header: "thread.h".}: cint
 
-    # when defined(CONFIG_THREAD_STACK_INFO):
+    # when CONFIG_THREAD_STACK_INFO:
     #   ## * Stack Info
     #   stack_info* {.importc: "stack_info", header: "thread.h".}: _thread_stack_info
 
-    # when defined(CONFIG_USERSPACE):
+    # when CONFIG_USERSPACE:
     #   ## * memory domain info of the thread
     #   mem_domain_info* {.importc: "mem_domain_info", header: "thread.h".}: _mem_domain_info
     #   ## * Base address of thread stack
@@ -161,7 +161,7 @@ type
     #   ## * current syscall frame pointer
     #   syscall_frame* {.importc: "syscall_frame", header: "thread.h".}: pointer
 
-    # when defined(CONFIG_USE_SWITCH):
+    # when CONFIG_USE_SWITCH:
     #   ##  When using __switch() a few previously arch-specific items
     #   ##  become part of the core OS
     #   ##
@@ -172,15 +172,15 @@ type
 
     resource_pool* {.importc: "resource_pool".}: pointer ## * resource pool
 
-    when defined(CONFIG_THREAD_LOCAL_STORAGE):
+    when CONFIG_THREAD_LOCAL_STORAGE:
       ##  Pointer to arch-specific TLS area
       tls* {.importc: "tls", header: "thread.h".}: pointer
 
-    when defined(CONFIG_THREAD_RUNTIME_STATS):
+    when CONFIG_THREAD_RUNTIME_STATS:
       ## * Runtime statistics
       rt_stats* {.importc: "rt_stats", header: "thread.h".}: pointer
 
-    # when defined(CONFIG_DEMAND_PAGING_THREAD_STATS):
+    # when CONFIG_DEMAND_PAGING_THREAD_STATS:
     #   ## * Paging statistics
     #   paging_stats* {.importc: "paging_stats", header: "thread.h".}: k_mem_paging_stats_t
     # arch* {.importc: "arch".}: _thread_arch ## * arch-specifics: must always be at the end

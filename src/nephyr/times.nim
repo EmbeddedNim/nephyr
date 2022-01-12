@@ -21,7 +21,7 @@ proc k_cyc_to_us_floor64*(ts: uint64): uint64 {.importc: "$1", header: "kernel.h
 
 proc millis*(): Millis = Millis(k_uptime_get())
 
-when defined(CONFIG_TIMER_HAS_64BIT_CYCLE_COUNTER):
+when CONFIG_TIMER_HAS_64BIT_CYCLE_COUNTER:
   proc micros*(): Micros = Micros(k_cyc_to_us_floor64(k_cycle_get_64()))
 else:
   proc micros*(): Micros = Micros(k_cyc_to_us_floor64(k_cycle_get_32()))
