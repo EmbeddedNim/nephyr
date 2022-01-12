@@ -112,6 +112,14 @@ proc parseNimbleArgs(): NimbleArgs =
 
 # CONFIG_NET_IPV6=y
 
+proc pathCmakeConfig*(buildDir: string,
+                      zephyrDir="zephyr",
+                      configName=".config"): string =
+  var 
+    fpath = buildDir / zephyrDir / configName
+  echo "CMAKE ZCONFG: ", fpath
+  return fpath
+
 proc parseCmakeConfig*(buildDir: string,
                       zephyrDir="zephyr",
                       configName=".config"): TableRef[string, string] =
@@ -263,6 +271,7 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
   let board = getEnv("BOARD") 
   echo "CALLED ZEPHYR_COMPILE"
   var nopts = parseNimbleArgs() 
+  let zconfpath = pathCmakeConfig(buildDir= "build_" & board)
   let zconf = parseCmakeConfig(buildDir= "build_" & board)
 
   echo "\n[Nephyr] Compiling:"
@@ -287,7 +296,8 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
       "--compileOnly",
       "--nimcache:" & nopts.cachedir.quoteShell(),
       "-d:NimAppMain",
-      # if zconf.hasKey("CONFIG_NET_IPV6"): "-d:net_ipv6" else: ""
+      "-d:zconfpath:"&zconfpath,
+      if zconf.hasKey("CONFIG_NET_IPV6"): "-d:net_ipv6" else: ""
       # "-d:" & nopts.zephyr_version
     ].join(" ") 
     childargs = nopts.child_args.mapIt(it.quoteShell()).join(" ")
@@ -296,9 +306,8 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
   echo "compiler_cmd: ", compiler_cmd
   echo "compiler_childargs: ", nopts.child_args
 
-  if zconf.hasKey("CONFIG_NET_IPV6"):
+  zconf.hasKey("CONFIG_NET_IPV6"):
     switch("define","net_ipv6")
-
   if nopts.debug:
     echo "idf compile: command: ", compiler_cmd  
 

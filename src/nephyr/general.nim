@@ -15,17 +15,5 @@ import ../zephyr_c/zkernel
 
 export kernel
 
-proc NimMain() {.importc.}
 
 proc sysReboot*(coldReboot: bool = false) = sys_reboot(if coldReboot: 1 else: 0)
-
-template app_main*(blk: untyped): untyped =
-
-  proc main*() {.exportc.} =
-    NimMain() # initialize garbage collector memory, types and stack
-    try:
-      blk
-    except:
-      echo "Error: "
-      echo getCurrentExceptionMsg()
-      abort()
