@@ -5,6 +5,9 @@ const
   ZephyrConfigFile* {.strdefine.} = ""
 
 proc parseCmakeConfig*(configName=".config"): TableRef[string, string] =
+  if ZephyrConfigFile == "":
+    error("must define zephyr config file ")
+
   var 
     fpath = configName
   echo "Using CMAKE Config file: ", fpath

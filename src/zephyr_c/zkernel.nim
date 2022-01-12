@@ -22,6 +22,12 @@ import zsys_clock
 import zatomic
 import zthread
 
+export zconfs
+export zkernel_fixes
+export zsys_clock
+export zatomic
+export zthread
+
 const
   K_ANY* = nil
   K_END* = nil
@@ -314,8 +320,8 @@ proc k_thread_access_grant*(thread: k_tid_t, args: varargs[ptr k_sem]) {.varargs
 ##  @param heap Heap object to use for resources,
 ##              or NULL if the thread should no longer have a memory pool.
 ##
-proc k_thread_heap_assign*(thread: ptr k_thread; heap: ptr k_heap) {.inline.} =
-  thread.resource_pool = heap
+proc k_thread_heap_assign*(thread: ptr k_thread; heap: ptr k_heap) {.
+    importc: "$1", header: "kernel.h".}
 
 
 when CONFIG_INIT_STACKS and CONFIG_THREAD_STACK_INFO:
@@ -975,10 +981,8 @@ proc k_is_preempt_thread*(): cint {.zsyscall, importc: "k_is_preempt_thread",
 ##  @return true if invoked before post-kernel initialization
 ##  @return false if invoked during/after post-kernel initialization
 ##
-proc k_is_pre_kernel*(): bool {.inline.} =
-  var z_sys_post_kernel: bool
-  ##  in init.c
-  return not z_sys_post_kernel
+proc k_is_pre_kernel*(): bool {.
+    importc: "$1", header: "kernel.h".}
 
 
 ## *
@@ -1536,8 +1540,6 @@ when CONFIG_SYS_CLOCK_EXISTS:
   ##
   proc k_timer_expires_ticks*(timer: ptr k_timer): k_ticks_t {.zsyscall,
       importc: "k_timer_expires_ticks", header: "kernel.h".}
-  proc z_impl_k_timer_expires_ticks*(timer: ptr k_timer): k_ticks_t {.inline.} =
-    return z_timeout_expires(addr(timer.timeout))
 
   ## *
   ##  @brief Get time remaining before a timer next expires, in system ticks
@@ -1548,8 +1550,6 @@ when CONFIG_SYS_CLOCK_EXISTS:
   ##
   proc k_timer_remaining_ticks*(timer: ptr k_timer): k_ticks_t {.zsyscall,
       importc: "k_timer_remaining_ticks", header: "kernel.h".}
-  proc z_impl_k_timer_remaining_ticks*(timer: ptr k_timer): k_ticks_t {.inline.} =
-    return z_timeout_remaining(addr(timer.timeout))
 
   ## *
   ##  @brief Get time remaining before a timer next expires.
@@ -1587,8 +1587,8 @@ proc k_timer_user_data_set*(timer: ptr k_timer; user_data: pointer) {.zsyscall,
 ## *
 ##  @internal
 ##
-proc z_impl_k_timer_user_data_set*(timer: ptr k_timer; user_data: pointer) {.inline.} =
-  timer.user_data = user_data
+proc z_impl_k_timer_user_data_set*(timer: ptr k_timer; user_data: pointer) {.
+    importc: "$1", header: "kernel.h".}
 
 ## *
 ##  @brief Retrieve the user-specific data from a timer.
@@ -1599,8 +1599,6 @@ proc z_impl_k_timer_user_data_set*(timer: ptr k_timer; user_data: pointer) {.inl
 ##
 proc k_timer_user_data_get*(timer: ptr k_timer): pointer {.zsyscall,
     importc: "k_timer_user_data_get", header: "kernel.h".}
-proc z_impl_k_timer_user_data_get*(timer: ptr k_timer): pointer {.inline.} =
-  return timer.user_data
 
 ## * @}
 ## *
@@ -1672,14 +1670,8 @@ proc k_uptime_get_32*(): uint32 {.
 ##
 ##  @return Elapsed time.
 ##
-proc k_uptime_delta*(reftime: ptr int64): int64 {.inline.} =
-  var
-    uptime: int64
-    delta: int64
-  uptime = k_uptime_get()
-  delta = uptime - reftime[]
-  reftime[] = uptime
-  return delta
+proc k_uptime_delta*(reftime: ptr int64): int64 {.
+    importc: "$1", header: "kernel.h".}
 
 ## *
 ##  @brief Read the hardware clock.
@@ -2864,8 +2856,8 @@ proc k_sem_count_get*(sem: ptr k_sem): cuint {.zsyscall, importc: "k_sem_count_g
 ## *
 ##  @internal
 ##
-proc z_impl_k_sem_count_get*(sem: ptr k_sem): cuint {.inline.} =
-  return sem.count
+proc z_impl_k_sem_count_get*(sem: ptr k_sem): cuint {.
+    importc: "$1", header: "kernel.h".}
 
 ## *
 ##  @brief Statically define and initialize a semaphore.
@@ -3026,8 +3018,8 @@ proc k_mem_slab_free*(slab: ptr k_mem_slab; mem: ptr pointer) {.
 ##
 ##  @return Number of allocated memory blocks.
 ##
-proc k_mem_slab_num_used_get*(slab: ptr k_mem_slab): uint32 {.inline.} =
-  return slab.num_used
+proc k_mem_slab_num_used_get*(slab: ptr k_mem_slab): uint32 {.
+    importc: "$1", header: "kernel.h".}
 
 ## *
 ##  @brief Get the number of maximum used blocks so far in a memory slab.
@@ -3039,12 +3031,8 @@ proc k_mem_slab_num_used_get*(slab: ptr k_mem_slab): uint32 {.inline.} =
 ##
 ##  @return Maximum number of allocated memory blocks.
 ##
-proc k_mem_slab_max_used_get*(slab: ptr k_mem_slab): uint32 {.inline.} =
-  when CONFIG_MEM_SLAB_TRACE_MAX_UTILIZATION:
-    return slab.max_used
-  else:
-    ARG_UNUSED(slab)
-    return 0
+proc k_mem_slab_max_used_get*(slab: ptr k_mem_slab): uint32 {.
+    importc: "$1", header: "kernel.h".}
 
 ## *
 ##  @brief Get the number of unused blocks in a memory slab.
@@ -3056,8 +3044,8 @@ proc k_mem_slab_max_used_get*(slab: ptr k_mem_slab): uint32 {.inline.} =
 ##
 ##  @return Number of unallocated memory blocks.
 ##
-proc k_mem_slab_num_free_get*(slab: ptr k_mem_slab): uint32 {.inline.} =
-  return slab.num_blocks - slab.num_used
+proc k_mem_slab_num_free_get*(slab: ptr k_mem_slab): uint32 {.
+    importc: "$1", header: "kernel.h".}
 
 ## * @}
 ## *

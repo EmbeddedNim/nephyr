@@ -5,7 +5,7 @@ export wrapper_utils
 
 proc abort*() {.importc: "abort", header: "stdlib.h".}
 
-proc sys_reboot*(kind: cint) {.importc: "sys_reboot", header: "<sys/reboot.h>".}
+proc k_sys_reboot*(kind: cint) {.importc: "sys_reboot", header: "<sys/reboot.h>".}
 
 proc printk*(frmt: cstring) {.importc: "$1", varargs, header: "<sys/printk.h>".}
 

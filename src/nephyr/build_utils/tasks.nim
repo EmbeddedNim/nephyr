@@ -296,8 +296,8 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
       "--compileOnly",
       "--nimcache:" & nopts.cachedir.quoteShell(),
       "-d:NimAppMain",
-      "-d:zconfpath:"&zconfpath,
-      if zconf.hasKey("CONFIG_NET_IPV6"): "-d:net_ipv6" else: ""
+      "-d:ZephyrConfigFile:"&zconfpath,
+      # if zconf.hasKey("CONFIG_NET_IPV6"): "-d:net_ipv6" else: ""
       # "-d:" & nopts.zephyr_version
     ].join(" ") 
     childargs = nopts.child_args.mapIt(it.quoteShell()).join(" ")
@@ -306,8 +306,8 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
   echo "compiler_cmd: ", compiler_cmd
   echo "compiler_childargs: ", nopts.child_args
 
-  zconf.hasKey("CONFIG_NET_IPV6"):
-    switch("define","net_ipv6")
+  # zconf.hasKey("CONFIG_NET_IPV6"):
+    # switch("define","net_ipv6")
   if nopts.debug:
     echo "idf compile: command: ", compiler_cmd  
 

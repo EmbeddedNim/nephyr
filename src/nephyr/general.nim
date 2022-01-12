@@ -15,3 +15,4 @@ export zkernel
 export utils
 export logs
 
+proc sysReboot*(coldReboot: bool = false) = k_sys_reboot(if coldReboot: 1 else: 0)
