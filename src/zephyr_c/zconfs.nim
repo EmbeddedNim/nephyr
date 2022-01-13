@@ -1,46 +1,14 @@
-import tables, streams, parsecfg
+import tables, streams, parsecfg, strutils
+import json
 import macros
 
 const
   ZephyrConfigFile* {.strdefine.} = ""
 
-proc parseCmakeConfig*(configName=".config"): TableRef[string, string] =
-  if ZephyrConfigFile == "":
-    error("must define zephyr config file ")
-
-  var 
-    fpath = configName
-  echo "Using CMAKE Config file: ", fpath
-  var
-    f = readFile(fpath)
-    fs = newStringStream(f)
-    opts = newTable[string, string]()
-
-  if fs != nil:
-    var p: CfgParser
-    open(p, fs, "zephyr.config")
-    while true:
-      var e = next(p)
-      case e.kind
-      of cfgEof: break
-      of cfgSectionStart:   ## a ``[section]`` has been parsed
-        echo("warning ignoring new config section: " & e.section)
-      of cfgKeyValuePair:
-        # echo("key-value-pair: " & e.key & ": " & e.value)
-        if e.value != "n":
-          opts[e.key] = e.value
-      of cfgOption:
-        echo("warning ignoring config option: " & e.key & ": " & e.value)
-      of cfgError:
-        echo(e.msg)
-    close(p)
-  
-  result = opts
-
-## Current constants ... 
+## Current constants
+## 
+## add more constant defines as needed to match Zephyr
 const CONFIG_NAMES = [
-  "ADC_ASYNC",
-  "ADC_CONFIGURABLE_INPUTS",
   "DEMAND_PAGING_THREAD_STATS",
   "ERRNO", 
   "ERRNO_IN_TLS",
@@ -81,20 +49,84 @@ const OTHER_CONFIGS = [
   "ARCH_EXCEPT",
   ]
 
+proc parseCmakeConfig*(configName=".config"): TableRef[string, JsonNode] =
+  var 
+    fpath = configName
+  echo "Using CMAKE Config file: ", fpath
+  var
+    f = readFile(fpath)
+    fs = newStringStream(f)
+    opts = newTable[string, JsonNode]()
+
+  if fs != nil:
+    var p: CfgParser
+    open(p, fs, "zephyr.config")
+    while true:
+      var e = next(p)
+      case e.kind
+      of cfgEof: break
+      of cfgSectionStart:   ## a ``[section]`` has been parsed
+        echo("warning ignoring new config section: " & e.section)
+      of cfgKeyValuePair:
+        # echo("key-value-pair: " & e.key & ": " & e.value)
+        if e.value == "y":
+          opts[e.key] = % true
+        elif e.value != "n":
+          var jn = 
+            try:
+              % fromHex[int](e.value)
+            except ValueError:
+              try:
+                % parseInt(e.value)
+              except ValueError:
+                echo "unknown: config flag: ", e.key ," value: ", repr e.value
+                % e.value
+              
+          opts[e.key] = jn
+      of cfgOption:
+        echo("warning ignoring config option: " & e.key & ": " & e.value)
+      of cfgError:
+        echo(e.msg)
+    close(p)
+  
+  result = opts
+
 macro GenerateZephyrConfigDefines*(): untyped =
-  let cval = 
+  let cvals: TableRef[string, JsonNode] = 
     if ZephyrConfigFile == "":
-      quote do: true
+      var tbl = newTable[string,JsonNode]()
+      for name in CONFIG_NAMES:
+        tbl[name] = % true
+      tbl
     else:
-      quote do: false
+      parseCmakeConfig(ZephyrConfigFile)
+      
+  proc getCVal(name: string): NimNode =
+    let jnode = cvals.getOrDefault("CONFIG_" & name, newJNull())
+    echo "jnode: ", repr jnode
+    if jnode.kind == JBool:
+      result = newLit(jnode.getBool())
+    elif jnode.kind == JInt:
+      result = newLit(jnode.getInt())
+    elif jnode.kind == JFloat:
+      result = newLit(jnode.getFloat())
+    elif jnode.kind == JString:
+      result = newLit(jnode.getStr())
+    elif jnode.kind == JNull:
+      result = newLit(false)
+    else:
+      error("unhandled config flag: " & name & " type: " & $jnode)
 
   result = newStmtList()
   for name in CONFIG_NAMES:
     let confFlag = ident "CONFIG_" & name
+    let cval = name.getCVal()
     result.add quote do:
       const `confFlag`* = `cval`
+
   for name in OTHER_CONFIGS :
     let confFlag = ident name
+    let cval = name.getCVal()
     result.add quote do:
       const `confFlag`* = `cval`
 
