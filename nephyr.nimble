@@ -14,7 +14,7 @@ bin           = @["nephyr"]
 requires "nim >= 1.4.8"
 requires "msgpack4nim >= 0.3.1"
 requires "stew >= 0.1.0"
-requires "https://github.com/EmbeddedNim/mcu_utils"
+requires "https://github.com/EmbeddedNim/mcu_utils#main"
 requires "https://github.com/EmbeddedNim/fast_rpc"
 
 
