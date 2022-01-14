@@ -207,6 +207,7 @@ task zephyr_clean, "Clean nimcache":
   if nopts.distclean:
     echo "...cleaning Zephyr build cache"
     rmDir(nopts.projdir / "build")
+    rmDir(nopts.projdir / "build_" & getEnv("BOARD"))
 
   
 task zephyr_configure, "Run CMake configuration":
@@ -220,6 +221,7 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
   echo "CALLED ZEPHYR_COMPILE"
   var nopts = parseNimbleArgs() 
   let zconfpath = pathCmakeConfig(buildDir= "build_" & board)
+  let zconf = parseCmakeConfig(buildDir= "build_" & board)
 
   echo "\n[Nephyr] Compiling:"
 
@@ -243,7 +245,7 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
       "--compileOnly",
       "--nimcache:" & nopts.cachedir.quoteShell(),
       "-d:NimAppMain",
-      "-d:ZephyrConfigFile:"&zconfpath,
+      "-d:ZephyrConfigFile:"&zconfpath, # this is important now! sets the config flags
     ].join(" ") 
     childargs = nopts.child_args.mapIt(it.quoteShell()).join(" ")
     compiler_cmd = nimargs & " " & childargs & " " & nopts.projfile.quoteShell() 
@@ -275,8 +277,8 @@ task zephyr_flash, "Flasing Zephyr project":
     echo "\nError: west not found. Please run the Zephyr export commands: e.g. ` source ~/zephyrproject/zephyr/zephyr-env.sh` and try again.\n"
     quit(2)
 
-  # FIXME: make flasher configurable
-  exec("west -v flash -d build_${BOARD} -r jlink ")
+  exec("west -v flash -d build_${BOARD} -r ${FLASHER:-jlink} ")
+
 
 task zephyr_sign, "Flasing Zephyr project":
   echo "\n[Nephyr] Flashing Zephyr/west project:"
