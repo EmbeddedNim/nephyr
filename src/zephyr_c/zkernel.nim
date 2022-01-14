@@ -28,6 +28,8 @@ export zsys_clock
 export zatomic
 export zthread
 
+import kernel/zk_sem
+
 const
   K_ANY* = nil
   K_END* = nil
@@ -48,12 +50,6 @@ type
 
 type
   k_thread_user_cb_t* = proc (thread: ptr k_thread; user_data: pointer)
-
-  k_sem* {.importc: "k_sem", header: "kernel.h", incompleteStruct, bycopy.} = object
-    wait_q* {.importc: "wait_q".}: z_wait_q_t
-    count* {.importc: "count".}: cuint
-    limit* {.importc: "limit".}: cuint
-    poll_events* {.importc: "poll_events".}: sys_dlist_t ##  _POLL_EVENT;
 
   k_heap* {.importc: "k_heap", header: "kernel.h", bycopy.} = object
     ##  kernel synchronized heap struct

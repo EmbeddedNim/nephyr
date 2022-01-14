@@ -4,6 +4,8 @@
 ##  SPDX-License-Identifier: Apache-2.0
 ##
 
+import zconfs
+
 ## * @brief System-wide macro to denote "forever" in milliseconds
 ##
 ##   Usage of this macro is limited to APIs that want to expose a timeout value
@@ -26,11 +28,8 @@ when defined(CONFIG_TIMER_READS_ITS_FREQUENCY_AT_RUNTIME):
     var z_clock_hw_cycles_per_sec: cint
     return z_clock_hw_cycles_per_sec
 
-proc sys_clock_hw_cycles_per_sec*(): cint =
-  when defined(CONFIG_TIMER_READS_ITS_FREQUENCY_AT_RUNTIME):
-    return sys_clock_hw_cycles_per_sec_runtime_get()
-  else:
-    return CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC
+proc sys_clock_hw_cycles_per_sec*(): cint {.
+    importc: "sys_clock_hw_cycles_per_sec", header: "time_units.h".}
 
 ##  Time converter generator gadget.  Selects from one of three
 ##  conversion algorithms: ones that take advantage when the
@@ -53,34 +52,8 @@ proc sys_clock_hw_cycles_per_sec*(): cint =
 ##
 
 proc z_tmcvt*(t: uint64; from_hz: uint32; to_hz: uint32; const_hz: bool; result32: bool;
-             round_up: bool; round_off: bool): uint64 =
-  var mul_ratio: bool
-  var div_ratio: bool
-  if from_hz == to_hz:
-    return if result32: (cast[uint32](t)) else: t
-  var off: uint64
-  if not mul_ratio:
-    var rdivisor: uint32
-    if round_up:
-      off = rdivisor - 1'u
-    if round_off:
-      off = rdivisor div 2'u
-  if div_ratio:
-    inc(t, off)
-    if result32 and (t < BIT64(32)):
-      return (cast[uint32](t)) div (from_hz div to_hz)
-    else:
-      return t div (cast[uint64](from_hz div to_hz))
-  elif mul_ratio:
-    if result32:
-      return (cast[uint32](t)) * (to_hz div from_hz)
-    else:
-      return t * (cast[uint64](to_hz div from_hz))
-  else:
-    if result32:
-      return (uint32)((t * to_hz + off) div from_hz)
-    else:
-      return (t * to_hz + off) div from_hz
+             round_up: bool; round_off: bool): uint64 {.
+    importc: "z_tmcvt", header: "time_units.h".}
 
 ##  The following code is programmatically generated using this perl
 ##  code, which enumerates all possible combinations of units, rounding
@@ -160,9 +133,8 @@ var Z_HZ_ms* {.importc: "Z_HZ_ms", header: "time_units.h".}: int
 ##  @return The converted time value
 ##
 
-proc k_ms_to_cyc_floor32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ms, Z_HZ_cyc, Z_CCYC, true, false, false)
+proc k_ms_to_cyc_floor32*(t: uint32): uint32 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert milliseconds to hardware cycles
 ##
@@ -173,9 +145,8 @@ proc k_ms_to_cyc_floor32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ms_to_cyc_floor64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ms, Z_HZ_cyc, Z_CCYC, false, false, false)
+proc k_ms_to_cyc_floor64*(t: uint64): uint64 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert milliseconds to hardware cycles
 ##
@@ -186,9 +157,8 @@ proc k_ms_to_cyc_floor64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ms_to_cyc_near32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ms, Z_HZ_cyc, Z_CCYC, true, false, true)
+proc k_ms_to_cyc_near32*(t: uint32): uint32 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert milliseconds to hardware cycles
 ##
@@ -199,9 +169,8 @@ proc k_ms_to_cyc_near32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ms_to_cyc_near64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ms, Z_HZ_cyc, Z_CCYC, false, false, true)
+proc k_ms_to_cyc_near64*(t: uint64): uint64 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert milliseconds to hardware cycles
 ##
@@ -212,9 +181,8 @@ proc k_ms_to_cyc_near64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ms_to_cyc_ceil32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ms, Z_HZ_cyc, Z_CCYC, true, true, false)
+proc k_ms_to_cyc_ceil32*(t: uint32): uint32 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert milliseconds to hardware cycles
 ##
@@ -225,9 +193,8 @@ proc k_ms_to_cyc_ceil32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ms_to_cyc_ceil64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ms, Z_HZ_cyc, Z_CCYC, false, true, false)
+proc k_ms_to_cyc_ceil64*(t: uint64): uint64 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert milliseconds to ticks
 ##
@@ -238,9 +205,8 @@ proc k_ms_to_cyc_ceil64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ms_to_ticks_floor32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ms, Z_HZ_ticks, true, true, false, false)
+proc k_ms_to_ticks_floor32*(t: uint32): uint32 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert milliseconds to ticks
 ##
@@ -251,9 +217,8 @@ proc k_ms_to_ticks_floor32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ms_to_ticks_floor64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ms, Z_HZ_ticks, true, false, false, false)
+proc k_ms_to_ticks_floor64*(t: uint64): uint64 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert milliseconds to ticks
 ##
@@ -264,9 +229,8 @@ proc k_ms_to_ticks_floor64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ms_to_ticks_near32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ms, Z_HZ_ticks, true, true, false, true)
+proc k_ms_to_ticks_near32*(t: uint32): uint32 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert milliseconds to ticks
 ##
@@ -277,9 +241,8 @@ proc k_ms_to_ticks_near32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ms_to_ticks_near64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ms, Z_HZ_ticks, true, false, false, true)
+proc k_ms_to_ticks_near64*(t: uint64): uint64 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert milliseconds to ticks
 ##
@@ -290,9 +253,8 @@ proc k_ms_to_ticks_near64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ms_to_ticks_ceil32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ms, Z_HZ_ticks, true, true, true, false)
+proc k_ms_to_ticks_ceil32*(t: uint32): uint32 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert milliseconds to ticks
 ##
@@ -303,9 +265,8 @@ proc k_ms_to_ticks_ceil32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ms_to_ticks_ceil64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ms, Z_HZ_ticks, true, false, true, false)
+proc k_ms_to_ticks_ceil64*(t: uint64): uint64 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert microseconds to hardware cycles
 ##
@@ -316,9 +277,8 @@ proc k_ms_to_ticks_ceil64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_us_to_cyc_floor32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_us, Z_HZ_cyc, Z_CCYC, true, false, false)
+proc k_us_to_cyc_floor32*(t: uint32): uint32 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert microseconds to hardware cycles
 ##
@@ -329,9 +289,8 @@ proc k_us_to_cyc_floor32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_us_to_cyc_floor64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_us, Z_HZ_cyc, Z_CCYC, false, false, false)
+proc k_us_to_cyc_floor64*(t: uint64): uint64 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert microseconds to hardware cycles
 ##
@@ -342,9 +301,8 @@ proc k_us_to_cyc_floor64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_us_to_cyc_near32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_us, Z_HZ_cyc, Z_CCYC, true, false, true)
+proc k_us_to_cyc_near32*(t: uint32): uint32 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert microseconds to hardware cycles
 ##
@@ -355,9 +313,8 @@ proc k_us_to_cyc_near32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_us_to_cyc_near64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_us, Z_HZ_cyc, Z_CCYC, false, false, true)
+proc k_us_to_cyc_near64*(t: uint64): uint64 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert microseconds to hardware cycles
 ##
@@ -368,9 +325,8 @@ proc k_us_to_cyc_near64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_us_to_cyc_ceil32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_us, Z_HZ_cyc, Z_CCYC, true, true, false)
+proc k_us_to_cyc_ceil32*(t: uint32): uint32 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert microseconds to hardware cycles
 ##
@@ -381,9 +337,8 @@ proc k_us_to_cyc_ceil32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_us_to_cyc_ceil64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_us, Z_HZ_cyc, Z_CCYC, false, true, false)
+proc k_us_to_cyc_ceil64*(t: uint64): uint64 {.
+    importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert microseconds to ticks
 ##
@@ -394,9 +349,8 @@ proc k_us_to_cyc_ceil64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_us_to_ticks_floor32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_us, Z_HZ_ticks, true, true, false, false)
+proc k_us_to_ticks_floor32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert microseconds to ticks
 ##
@@ -407,9 +361,8 @@ proc k_us_to_ticks_floor32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_us_to_ticks_floor64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_us, Z_HZ_ticks, true, false, false, false)
+proc k_us_to_ticks_floor64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert microseconds to ticks
 ##
@@ -420,9 +373,8 @@ proc k_us_to_ticks_floor64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_us_to_ticks_near32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_us, Z_HZ_ticks, true, true, false, true)
+proc k_us_to_ticks_near32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert microseconds to ticks
 ##
@@ -433,9 +385,8 @@ proc k_us_to_ticks_near32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_us_to_ticks_near64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_us, Z_HZ_ticks, true, false, false, true)
+proc k_us_to_ticks_near64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert microseconds to ticks
 ##
@@ -446,9 +397,8 @@ proc k_us_to_ticks_near64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_us_to_ticks_ceil32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_us, Z_HZ_ticks, true, true, true, false)
+proc k_us_to_ticks_ceil32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert microseconds to ticks
 ##
@@ -459,9 +409,8 @@ proc k_us_to_ticks_ceil32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_us_to_ticks_ceil64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_us, Z_HZ_ticks, true, false, true, false)
+proc k_us_to_ticks_ceil64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert nanoseconds to hardware cycles
 ##
@@ -472,9 +421,8 @@ proc k_us_to_ticks_ceil64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ns_to_cyc_floor32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ns, Z_HZ_cyc, Z_CCYC, true, false, false)
+proc k_ns_to_cyc_floor32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert nanoseconds to hardware cycles
 ##
@@ -485,9 +433,8 @@ proc k_ns_to_cyc_floor32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ns_to_cyc_floor64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ns, Z_HZ_cyc, Z_CCYC, false, false, false)
+proc k_ns_to_cyc_floor64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert nanoseconds to hardware cycles
 ##
@@ -498,9 +445,8 @@ proc k_ns_to_cyc_floor64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ns_to_cyc_near32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ns, Z_HZ_cyc, Z_CCYC, true, false, true)
+proc k_ns_to_cyc_near32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert nanoseconds to hardware cycles
 ##
@@ -511,9 +457,8 @@ proc k_ns_to_cyc_near32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ns_to_cyc_near64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ns, Z_HZ_cyc, Z_CCYC, false, false, true)
+proc k_ns_to_cyc_near64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert nanoseconds to hardware cycles
 ##
@@ -524,9 +469,8 @@ proc k_ns_to_cyc_near64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ns_to_cyc_ceil32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ns, Z_HZ_cyc, Z_CCYC, true, true, false)
+proc k_ns_to_cyc_ceil32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert nanoseconds to hardware cycles
 ##
@@ -537,9 +481,8 @@ proc k_ns_to_cyc_ceil32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ns_to_cyc_ceil64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ns, Z_HZ_cyc, Z_CCYC, false, true, false)
+proc k_ns_to_cyc_ceil64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert nanoseconds to ticks
 ##
@@ -550,9 +493,8 @@ proc k_ns_to_cyc_ceil64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ns_to_ticks_floor32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ns, Z_HZ_ticks, true, true, false, false)
+proc k_ns_to_ticks_floor32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert nanoseconds to ticks
 ##
@@ -563,9 +505,8 @@ proc k_ns_to_ticks_floor32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ns_to_ticks_floor64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ns, Z_HZ_ticks, true, false, false, false)
+proc k_ns_to_ticks_floor64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert nanoseconds to ticks
 ##
@@ -576,9 +517,8 @@ proc k_ns_to_ticks_floor64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ns_to_ticks_near32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ns, Z_HZ_ticks, true, true, false, true)
+proc k_ns_to_ticks_near32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert nanoseconds to ticks
 ##
@@ -589,9 +529,8 @@ proc k_ns_to_ticks_near32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ns_to_ticks_near64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ns, Z_HZ_ticks, true, false, false, true)
+proc k_ns_to_ticks_near64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert nanoseconds to ticks
 ##
@@ -602,9 +541,8 @@ proc k_ns_to_ticks_near64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ns_to_ticks_ceil32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ns, Z_HZ_ticks, true, true, true, false)
+proc k_ns_to_ticks_ceil32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert nanoseconds to ticks
 ##
@@ -615,9 +553,8 @@ proc k_ns_to_ticks_ceil32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ns_to_ticks_ceil64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ns, Z_HZ_ticks, true, false, true, false)
+proc k_ns_to_ticks_ceil64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to milliseconds
 ##
@@ -628,9 +565,8 @@ proc k_ns_to_ticks_ceil64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ms_floor32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ms, Z_CCYC, true, false, false)
+proc k_cyc_to_ms_floor32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to milliseconds
 ##
@@ -641,9 +577,8 @@ proc k_cyc_to_ms_floor32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ms_floor64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ms, Z_CCYC, false, false, false)
+proc k_cyc_to_ms_floor64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to milliseconds
 ##
@@ -654,9 +589,8 @@ proc k_cyc_to_ms_floor64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ms_near32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ms, Z_CCYC, true, false, true)
+proc k_cyc_to_ms_near32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to milliseconds
 ##
@@ -667,9 +601,8 @@ proc k_cyc_to_ms_near32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ms_near64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ms, Z_CCYC, false, false, true)
+proc k_cyc_to_ms_near64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to milliseconds
 ##
@@ -680,9 +613,8 @@ proc k_cyc_to_ms_near64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ms_ceil32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ms, Z_CCYC, true, true, false)
+proc k_cyc_to_ms_ceil32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to milliseconds
 ##
@@ -693,9 +625,8 @@ proc k_cyc_to_ms_ceil32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ms_ceil64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ms, Z_CCYC, false, true, false)
+proc k_cyc_to_ms_ceil64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to microseconds
 ##
@@ -706,9 +637,8 @@ proc k_cyc_to_ms_ceil64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_us_floor32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_us, Z_CCYC, true, false, false)
+proc k_cyc_to_us_floor32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to microseconds
 ##
@@ -719,9 +649,8 @@ proc k_cyc_to_us_floor32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_us_floor64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_us, Z_CCYC, false, false, false)
+proc k_cyc_to_us_floor64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to microseconds
 ##
@@ -732,9 +661,8 @@ proc k_cyc_to_us_floor64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_us_near32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_us, Z_CCYC, true, false, true)
+proc k_cyc_to_us_near32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to microseconds
 ##
@@ -745,9 +673,8 @@ proc k_cyc_to_us_near32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_us_near64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_us, Z_CCYC, false, false, true)
+proc k_cyc_to_us_near64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to microseconds
 ##
@@ -758,9 +685,8 @@ proc k_cyc_to_us_near64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_us_ceil32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_us, Z_CCYC, true, true, false)
+proc k_cyc_to_us_ceil32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to microseconds
 ##
@@ -771,9 +697,8 @@ proc k_cyc_to_us_ceil32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_us_ceil64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_us, Z_CCYC, false, true, false)
+proc k_cyc_to_us_ceil64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to nanoseconds
 ##
@@ -784,9 +709,8 @@ proc k_cyc_to_us_ceil64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ns_floor32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ns, Z_CCYC, true, false, false)
+proc k_cyc_to_ns_floor32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to nanoseconds
 ##
@@ -797,9 +721,8 @@ proc k_cyc_to_ns_floor32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ns_floor64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ns, Z_CCYC, false, false, false)
+proc k_cyc_to_ns_floor64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to nanoseconds
 ##
@@ -810,9 +733,8 @@ proc k_cyc_to_ns_floor64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ns_near32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ns, Z_CCYC, true, false, true)
+proc k_cyc_to_ns_near32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to nanoseconds
 ##
@@ -823,9 +745,8 @@ proc k_cyc_to_ns_near32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ns_near64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ns, Z_CCYC, false, false, true)
+proc k_cyc_to_ns_near64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to nanoseconds
 ##
@@ -836,9 +757,8 @@ proc k_cyc_to_ns_near64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ns_ceil32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ns, Z_CCYC, true, true, false)
+proc k_cyc_to_ns_ceil32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to nanoseconds
 ##
@@ -849,9 +769,8 @@ proc k_cyc_to_ns_ceil32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ns_ceil64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ns, Z_CCYC, false, true, false)
+proc k_cyc_to_ns_ceil64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to ticks
 ##
@@ -862,9 +781,8 @@ proc k_cyc_to_ns_ceil64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ticks_floor32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ticks, Z_CCYC, true, false, false)
+proc k_cyc_to_ticks_floor32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to ticks
 ##
@@ -875,9 +793,8 @@ proc k_cyc_to_ticks_floor32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ticks_floor64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ticks, Z_CCYC, false, false, false)
+proc k_cyc_to_ticks_floor64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to ticks
 ##
@@ -888,9 +805,8 @@ proc k_cyc_to_ticks_floor64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ticks_near32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ticks, Z_CCYC, true, false, true)
+proc k_cyc_to_ticks_near32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to ticks
 ##
@@ -901,9 +817,8 @@ proc k_cyc_to_ticks_near32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ticks_near64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ticks, Z_CCYC, false, false, true)
+proc k_cyc_to_ticks_near64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to ticks
 ##
@@ -914,9 +829,8 @@ proc k_cyc_to_ticks_near64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ticks_ceil32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ticks, Z_CCYC, true, true, false)
+proc k_cyc_to_ticks_ceil32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert hardware cycles to ticks
 ##
@@ -927,9 +841,8 @@ proc k_cyc_to_ticks_ceil32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_cyc_to_ticks_ceil64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_cyc, Z_HZ_ticks, Z_CCYC, false, true, false)
+proc k_cyc_to_ticks_ceil64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to milliseconds
 ##
@@ -940,9 +853,8 @@ proc k_cyc_to_ticks_ceil64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_ms_floor32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_ms, true, true, false, false)
+proc k_ticks_to_ms_floor32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to milliseconds
 ##
@@ -953,9 +865,8 @@ proc k_ticks_to_ms_floor32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_ms_floor64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_ms, true, false, false, false)
+proc k_ticks_to_ms_floor64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to milliseconds
 ##
@@ -966,9 +877,8 @@ proc k_ticks_to_ms_floor64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_ms_near32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_ms, true, true, false, true)
+proc k_ticks_to_ms_near32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to milliseconds
 ##
@@ -979,9 +889,8 @@ proc k_ticks_to_ms_near32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_ms_near64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_ms, true, false, false, true)
+proc k_ticks_to_ms_near64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to milliseconds
 ##
@@ -992,9 +901,8 @@ proc k_ticks_to_ms_near64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_ms_ceil32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_ms, true, true, true, false)
+proc k_ticks_to_ms_ceil32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to milliseconds
 ##
@@ -1005,9 +913,8 @@ proc k_ticks_to_ms_ceil32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_ms_ceil64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_ms, true, false, true, false)
+proc k_ticks_to_ms_ceil64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to microseconds
 ##
@@ -1018,9 +925,8 @@ proc k_ticks_to_ms_ceil64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_us_floor32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_us, true, true, false, false)
+proc k_ticks_to_us_floor32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to microseconds
 ##
@@ -1031,9 +937,8 @@ proc k_ticks_to_us_floor32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_us_floor64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_us, true, false, false, false)
+proc k_ticks_to_us_floor64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to microseconds
 ##
@@ -1044,9 +949,8 @@ proc k_ticks_to_us_floor64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_us_near32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_us, true, true, false, true)
+proc k_ticks_to_us_near32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to microseconds
 ##
@@ -1057,9 +961,8 @@ proc k_ticks_to_us_near32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_us_near64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_us, true, false, false, true)
+proc k_ticks_to_us_near64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to microseconds
 ##
@@ -1070,9 +973,8 @@ proc k_ticks_to_us_near64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_us_ceil32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_us, true, true, true, false)
+proc k_ticks_to_us_ceil32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to microseconds
 ##
@@ -1083,9 +985,8 @@ proc k_ticks_to_us_ceil32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_us_ceil64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_us, true, false, true, false)
+proc k_ticks_to_us_ceil64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to nanoseconds
 ##
@@ -1096,9 +997,8 @@ proc k_ticks_to_us_ceil64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_ns_floor32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_ns, true, true, false, false)
+proc k_ticks_to_ns_floor32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to nanoseconds
 ##
@@ -1109,9 +1009,8 @@ proc k_ticks_to_ns_floor32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_ns_floor64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_ns, true, false, false, false)
+proc k_ticks_to_ns_floor64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to nanoseconds
 ##
@@ -1122,9 +1021,8 @@ proc k_ticks_to_ns_floor64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_ns_near32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_ns, true, true, false, true)
+proc k_ticks_to_ns_near32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to nanoseconds
 ##
@@ -1135,9 +1033,8 @@ proc k_ticks_to_ns_near32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_ns_near64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_ns, true, false, false, true)
+proc k_ticks_to_ns_near64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to nanoseconds
 ##
@@ -1148,9 +1045,8 @@ proc k_ticks_to_ns_near64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_ns_ceil32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_ns, true, true, true, false)
+proc k_ticks_to_ns_ceil32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to nanoseconds
 ##
@@ -1161,9 +1057,8 @@ proc k_ticks_to_ns_ceil32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_ns_ceil64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_ns, true, false, true, false)
+proc k_ticks_to_ns_ceil64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to hardware cycles
 ##
@@ -1174,9 +1069,8 @@ proc k_ticks_to_ns_ceil64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_cyc_floor32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_cyc, Z_CCYC, true, false, false)
+proc k_ticks_to_cyc_floor32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to hardware cycles
 ##
@@ -1187,9 +1081,8 @@ proc k_ticks_to_cyc_floor32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_cyc_floor64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_cyc, Z_CCYC, false, false, false)
+proc k_ticks_to_cyc_floor64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to hardware cycles
 ##
@@ -1200,9 +1093,8 @@ proc k_ticks_to_cyc_floor64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_cyc_near32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_cyc, Z_CCYC, true, false, true)
+proc k_ticks_to_cyc_near32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to hardware cycles
 ##
@@ -1213,9 +1105,8 @@ proc k_ticks_to_cyc_near32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_cyc_near64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_cyc, Z_CCYC, false, false, true)
+proc k_ticks_to_cyc_near64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to hardware cycles
 ##
@@ -1226,9 +1117,8 @@ proc k_ticks_to_cyc_near64*(t: uint64): uint64 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_cyc_ceil32*(t: uint32): uint32 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_cyc, Z_CCYC, true, true, false)
+proc k_ticks_to_cyc_ceil32*(t: uint32): uint32 {.
+ importc: "$1", header: "time_units.h".}
 
 ## * @brief Convert ticks to hardware cycles
 ##
@@ -1239,9 +1129,5 @@ proc k_ticks_to_cyc_ceil32*(t: uint32): uint32 =
 ##  @return The converted time value
 ##
 
-proc k_ticks_to_cyc_ceil64*(t: uint64): uint64 =
-  ##  Generated.  Do not edit.  See above.
-  return z_tmcvt(t, Z_HZ_ticks, Z_HZ_cyc, Z_CCYC, false, true, false)
-
-when defined(CONFIG_TIMER_READS_ITS_FREQUENCY_AT_RUNTIME):
-  discard
+proc k_ticks_to_cyc_ceil64*(t: uint64): uint64 {.
+ importc: "$1", header: "time_units.h".}

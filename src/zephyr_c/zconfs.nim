@@ -103,7 +103,7 @@ macro GenerateZephyrConfigDefines*(): untyped =
       
   proc getCVal(name: string): NimNode =
     let jnode = cvals.getOrDefault("CONFIG_" & name, newJNull())
-    echo "jnode: ", repr jnode
+    # echo "jnode: ", repr jnode
     if jnode.kind == JBool:
       result = newLit(jnode.getBool())
     elif jnode.kind == JInt:
