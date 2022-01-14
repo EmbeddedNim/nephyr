@@ -73,79 +73,77 @@ type
 
   adc_sequence_options* {.importc: "adc_sequence_options", header: "adc.h", bycopy.} = object
     ##  @brief Structure defining additional options for an ADC sampling sequence.
-    interval_us* {.importc: "interval_us".}: uint32 ## *
-                                                ##  Interval between consecutive samplings (in microseconds), 0 means
-                                                ##  sample as fast as possible, without involving any timer.
-                                                ##  The accuracy of this interval is dependent on the implementation of
-                                                ##  a given driver. The default routine that handles the intervals uses
-                                                ##  a kernel timer for this purpose, thus, it has the accuracy of the
-                                                ##  kernel's system clock. Particular drivers may use some dedicated
-                                                ##  hardware timers and achieve a better precision.
-                                                ##
-    ## *
-    ##  Callback function to be called after each sampling is done.
-    ##  Optional - set to NULL if it is not needed.
-    ##
-    callback* {.importc: "callback".}: adc_sequence_callback ## *
-                                                         ##  Pointer to user data. It can be used to associate the sequence
-                                                         ##  with any other data that is needed in the callback function.
-                                                         ##
-    user_data* {.importc: "user_data".}: pointer ## *
-                                             ##  Number of extra samplings to perform (the total number of samplings
-                                             ##  is 1 + extra_samplings).
-                                             ##
-    extra_samplings* {.importc: "extra_samplings".}: uint16
+    interval_us* {.importc: "interval_us".}: uint32 ##\
+      ##  Interval between consecutive samplings (in microseconds), 0 means
+      ##  sample as fast as possible, without involving any timer.
+      ##  The accuracy of this interval is dependent on the implementation of
+      ##  a given driver. The default routine that handles the intervals uses
+      ##  a kernel timer for this purpose, thus, it has the accuracy of the
+      ##  kernel's system clock. Particular drivers may use some dedicated
+      ##  hardware timers and achieve a better precision.
+      ##
+    callback* {.importc: "callback".}: adc_sequence_callback ##\
+      ## *
+      ##  Callback function to be called after each sampling is done.
+      ##  Optional - set to NULL if it is not needed.
+      ##
+    user_data* {.importc: "user_data".}: pointer ##\
+      ##  Pointer to user data. It can be used to associate the sequence
+      ##  with any other data that is needed in the callback function.
+      ##
+    extra_samplings* {.importc: "extra_samplings".}: uint16 ##\
+      ##  Number of extra samplings to perform (the total number of samplings
+      ##  is 1 + extra_samplings).
+      ##
 
 
   adc_sequence* {.importc: "adc_sequence", header: "adc.h", bycopy.} = object
     ##  @brief Structure defining an ADC sampling sequence.
-    options* {.importc: "options".}: ptr adc_sequence_options ## *
-                                                         ##  Pointer to a structure defining additional options for the sequence.
-                                                         ##  If NULL, the sequence consists of a single sampling.
-                                                         ##
-    ## *
-    ##  Bit-mask indicating the channels to be included in each sampling
-    ##  of this sequence.
-    ##  All selected channels must be configured with adc_channel_setup()
-    ##  before they are used in a sequence.
-    ##
-    channels* {.importc: "channels".}: uint32 ## *
-                                          ##  Pointer to a buffer where the samples are to be written. Samples
-                                          ##  from subsequent samplings are written sequentially in the buffer.
-                                          ##  The number of samples written for each sampling is determined by
-                                          ##  the number of channels selected in the "channels" field.
-                                          ##  The buffer must be of an appropriate size, taking into account
-                                          ##  the number of selected channels and the ADC resolution used,
-                                          ##  as well as the number of samplings contained in the sequence.
-                                          ##
-    buffer* {.importc: "buffer".}: pointer ## *
-                                       ##  Specifies the actual size of the buffer pointed by the "buffer"
-                                       ##  field (in bytes). The driver must ensure that samples are not
-                                       ##  written beyond the limit and it must return an error if the buffer
-                                       ##  turns out to be not large enough to hold all the requested samples.
-                                       ##
-    buffer_size* {.importc: "buffer_size".}: csize_t ## *
-                                                 ##  ADC resolution.
-                                                 ##  For single-ended channels the sample values are from range:
-                                                 ##    0 .. 2^resolution - 1,
-                                                 ##  for differential ones:
-                                                 ##    - 2^(resolution-1) .. 2^(resolution-1) - 1.
-                                                 ##
-    resolution* {.importc: "resolution".}: uint8 ## *
-                                             ##  Oversampling setting.
-                                             ##  Each sample is averaged from 2^oversampling conversion results.
-                                             ##  This feature may be unsupported by a given ADC hardware, or in
-                                             ##  a specific mode (e.g. when sampling multiple channels).
-                                             ##
-    oversampling* {.importc: "oversampling".}: uint8 ## *
-                                                 ##  Perform calibration before the reading is taken if requested.
-                                                 ##
-                                                 ##  The impact of channel configuration on the calibration
-                                                 ##  process is specific to the underlying hardware.  ADC
-                                                 ##  implementations that do not support calibration should
-                                                 ##  ignore this flag.
-                                                 ##
-    calibrate* {.importc: "calibrate".}: bool
+    options* {.importc: "options".}: ptr adc_sequence_options ##\
+      ##  Pointer to a structure defining additional options for the sequence.
+      ##  If NULL, the sequence consists of a single sampling.
+      ##
+    channels* {.importc: "channels".}: uint32 ##\
+      ##  Bit-mask indicating the channels to be included in each sampling
+      ##  of this sequence.
+      ##  All selected channels must be configured with adc_channel_setup()
+      ##  before they are used in a sequence.
+      ##
+    buffer* {.importc: "buffer".}: pointer ##\
+      ##  Pointer to a buffer where the samples are to be written. Samples
+      ##  from subsequent samplings are written sequentially in the buffer.
+      ##  The number of samples written for each sampling is determined by
+      ##  the number of channels selected in the "channels" field.
+      ##  The buffer must be of an appropriate size, taking into account
+      ##  the number of selected channels and the ADC resolution used,
+      ##  as well as the number of samplings contained in the sequence.
+      ##
+    buffer_size* {.importc: "buffer_size".}: csize_t ##\
+      ##  Specifies the actual size of the buffer pointed by the "buffer"
+      ##  field (in bytes). The driver must ensure that samples are not
+      ##  written beyond the limit and it must return an error if the buffer
+      ##  turns out to be not large enough to hold all the requested samples.
+      ##
+    resolution* {.importc: "resolution".}: uint8 ##\
+      ##  ADC resolution.
+      ##  For single-ended channels the sample values are from range:
+      ##    0 .. 2^resolution - 1,
+      ##  for differential ones:
+      ##    - 2^(resolution-1) .. 2^(resolution-1) - 1.
+    oversampling* {.importc: "oversampling".}: uint8 ##\
+      ##  Oversampling setting.
+      ##  Each sample is averaged from 2^oversampling conversion results.
+      ##  This feature may be unsupported by a given ADC hardware, or in
+      ##  a specific mode (e.g. when sampling multiple channels).
+      ##
+    calibrate* {.importc: "calibrate".}: bool ##\
+      ##  Perform calibration before the reading is taken if requested.
+      ##
+      ##  The impact of channel configuration on the calibration
+      ##  process is specific to the underlying hardware.  ADC
+      ##  implementations that do not support calibration should
+      ##  ignore this flag.
+      ##
 
 
   adc_api_channel_setup* = proc (dev: ptr device; channel_cfg: ptr adc_channel_cfg): cint ##\
@@ -181,36 +179,36 @@ type
     gain* {.importc: "gain".}: adc_gain ## * Gain selection.
     ## * Reference selection.
     reference* {.importc: "reference".}: adc_reference ## *
-                                                   ##  Acquisition time.
-                                                   ##  Use the ADC_ACQ_TIME macro to compose the value for this field or
-                                                   ##  pass ADC_ACQ_TIME_DEFAULT to use the default setting for a given
-                                                   ##  hardware (e.g. when the hardware does not allow to configure the
-                                                   ##  acquisition time).
-                                                   ##  Particular drivers do not necessarily support all the possible units.
-                                                   ##  Value range is 0-16383 for a given unit.
-                                                   ##
+      ##  Acquisition time.
+      ##  Use the ADC_ACQ_TIME macro to compose the value for this field or
+      ##  pass ADC_ACQ_TIME_DEFAULT to use the default setting for a given
+      ##  hardware (e.g. when the hardware does not allow to configure the
+      ##  acquisition time).
+      ##  Particular drivers do not necessarily support all the possible units.
+      ##  Value range is 0-16383 for a given unit.
+      ##
     acquisition_time* {.importc: "acquisition_time".}: uint16 ## *
-                                                          ##  Channel identifier.
-                                                          ##  This value primarily identifies the channel within the ADC API - when
-                                                          ##  a read request is done, the corresponding bit in the "channels" field
-                                                          ##  of the "adc_sequence" structure must be set to include this channel
-                                                          ##  in the sampling.
-                                                          ##  For hardware that does not allow selection of analog inputs for given
-                                                          ##  channels, but rather have dedicated ones, this value also selects the
-                                                          ##  physical ADC input to be used in the sampling. Otherwise, when it is
-                                                          ##  needed to explicitly select an analog input for the channel, or two
-                                                          ##  inputs when the channel is a differential one, the selection is done
-                                                          ##  in "input_positive" and "input_negative" fields.
-                                                          ##  Particular drivers indicate which one of the above two cases they
-                                                          ##  support by selecting or not a special hidden Kconfig option named
-                                                          ##  ADC_CONFIGURABLE_INPUTS. If this option is not selected, the macro
-                                                          ##  CONFIG_ADC_CONFIGURABLE_INPUTS is not defined and consequently the
-                                                          ##  mentioned two fields are not present in this structure.
-                                                          ##  While this API allows identifiers from range 0-31, particular drivers
-                                                          ##  may support only a limited number of channel identifiers (dependent
-                                                          ##  on the underlying hardware capabilities or configured via a dedicated
-                                                          ##  Kconfig option).
-                                                          ##
+      ##  Channel identifier.
+      ##  This value primarily identifies the channel within the ADC API - when
+      ##  a read request is done, the corresponding bit in the "channels" field
+      ##  of the "adc_sequence" structure must be set to include this channel
+      ##  in the sampling.
+      ##  For hardware that does not allow selection of analog inputs for given
+      ##  channels, but rather have dedicated ones, this value also selects the
+      ##  physical ADC input to be used in the sampling. Otherwise, when it is
+      ##  needed to explicitly select an analog input for the channel, or two
+      ##  inputs when the channel is a differential one, the selection is done
+      ##  in "input_positive" and "input_negative" fields.
+      ##  Particular drivers indicate which one of the above two cases they
+      ##  support by selecting or not a special hidden Kconfig option named
+      ##  ADC_CONFIGURABLE_INPUTS. If this option is not selected, the macro
+      ##  CONFIG_ADC_CONFIGURABLE_INPUTS is not defined and consequently the
+      ##  mentioned two fields are not present in this structure.
+      ##  While this API allows identifiers from range 0-31, particular drivers
+      ##  may support only a limited number of channel identifiers (dependent
+      ##  on the underlying hardware capabilities or configured via a dedicated
+      ##  Kconfig option).
+      ##
     channel_id* {.importc: "channel_id", bitsize: 5.}: uint8 ## * Channel type: single-ended or differential.
     differential* {.importc: "differential", bitsize: 1.}: uint8
     when CONFIG_ADC_CONFIGURABLE_INPUTS:
