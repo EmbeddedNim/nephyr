@@ -1,6 +1,8 @@
 
 import ../zkernel_fixes
 import ../zsys_clock
+import ../zthread
+import ../kernel/zk_sem
 
 type
   k_msgq* {.importc: "k_msgq", header: "kernel.h", bycopy.} = object
@@ -257,20 +259,18 @@ proc z_impl_k_msgq_num_used_get*(msgq: ptr k_msgq): uint32 {.inline.} =
 ##
 ##
 type
-  k_mbox_msg* {.importc: "k_mbox_msg", header: "kernel.h", bycopy.} = object
-    _mailbox* {.importc: "_mailbox".}: uint32 ## * internal use only - needed for legacy API support
+
+  k_mbox_msg* {.importc: "k_mbox_msg", header: "kernel.h", incompleteStruct, bycopy.} = object
+    z_mailbox* {.importc: "_mailbox".}: uint32 ## * internal use only - needed for legacy API support
     ## * size of message (in bytes)
     size* {.importc: "size".}: csize_t ## * application-defined information value
     info* {.importc: "info".}: uint32 ## * sender's message data buffer
     tx_data* {.importc: "tx_data".}: pointer ## * internal use only - needed for legacy API support
-    _rx_data* {.importc: "_rx_data".}: pointer ## * message data block descriptor
+    z_rx_data* {.importc: "_rx_data".}: pointer ## * message data block descriptor
     tx_block* {.importc: "tx_block".}: k_mem_block ## * source thread id
     rx_source_thread* {.importc: "rx_source_thread".}: k_tid_t ## * target thread id
     tx_target_thread* {.importc: "tx_target_thread".}: k_tid_t ## * internal use only - thread waiting on send (may be a dummy)
-    _syncing_thread* {.importc: "_syncing_thread".}: k_tid_t
-    when (CONFIG_NUM_MBOX_ASYNC_MSGS > 0):
-      ## * internal use only - semaphore used during asynchronous send
-      var _async_sem* {.importc: "_async_sem", header: "kernel.h".}: ptr k_sem
+    z_syncing_thread* {.importc: "_syncing_thread".}: k_tid_t
 
 ## *
 ##  @brief Mailbox Structure
@@ -278,16 +278,16 @@ type
 ##
 type
   k_mbox* {.importc: "k_mbox", header: "kernel.h", bycopy.} = object
-    tx_msg_queue* {.importc: "tx_msg_queue".}: _wait_q_t ## * Transmit messages queue
+    tx_msg_queue* {.importc: "tx_msg_queue".}: z_wait_q_t ## * Transmit messages queue
     ## * Receive message queue
-    rx_msg_queue* {.importc: "rx_msg_queue".}: _wait_q_t
+    rx_msg_queue* {.importc: "rx_msg_queue".}: z_wait_q_t
     lock* {.importc: "lock".}: k_spinlock
 
 ## *
 ##  @cond INTERNAL_HIDDEN
 ##
-proc Z_MBOX_INITIALIZER*(obj: untyped) {.importc: "Z_MBOX_INITIALIZER",
-                                      header: "kernel.h".}
+# proc Z_MBOX_INITIALIZER*(obj: untyped) {.importc: "Z_MBOX_INITIALIZER",
+                                      # header: "kernel.h".}
 
 
 ## *
@@ -302,7 +302,7 @@ proc Z_MBOX_INITIALIZER*(obj: untyped) {.importc: "Z_MBOX_INITIALIZER",
 ##
 ##  @param name Name of the mailbox.
 ##
-proc K_MBOX_DEFINE*(name: untyped) {.importc: "K_MBOX_DEFINE", header: "kernel.h".}
+# proc K_MBOX_DEFINE*(name: untyped) {.importc: "K_MBOX_DEFINE", header: "kernel.h".}
 
 
 ## *
