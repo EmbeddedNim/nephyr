@@ -9,6 +9,8 @@ const
 ## 
 ## add more constant defines as needed to match Zephyr
 const CONFIG_NAMES = [
+  "ADC_ASYNC",
+  "ADC_CONFIGURABLE_INPUTS",
   "DEMAND_PAGING_THREAD_STATS",
   "ERRNO", 
   "ERRNO_IN_TLS",

@@ -4,7 +4,6 @@ import ../zsys_clock
 
 import zk_queue
 
-  ## * @}
 type
   k_fifo* {.importc: "k_fifo", header: "kernel.h", bycopy.} = object
     z_queue* {.importc: "_queue".}: k_queue

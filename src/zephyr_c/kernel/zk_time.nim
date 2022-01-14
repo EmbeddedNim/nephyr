@@ -1,4 +1,5 @@
 
+import ../zconfs
 import ../zkernel_fixes
 import ../zsys_clock
 

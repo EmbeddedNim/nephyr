@@ -17,6 +17,7 @@ requires "stew >= 0.1.0"
 requires "https://github.com/EmbeddedNim/mcu_utils"
 requires "https://github.com/EmbeddedNim/fast_rpc"
 
+
 import os, sequtils, sugar
 
 task test_nim_api_compilation, "compile Nim wrapper apis":
@@ -35,7 +36,8 @@ task test_zephyr_c_api, "compile Zephyr wrapper apis":
   dump all_tests
   for test in all_tests:
     if not test.endswith(".nim"): continue
-    exec "nim c --compileonly:on " & test
+    let cmd = "nim c --compileonly:on " & test
+    exec(cmd)
 
 before test:
   test_zephyr_c_apiTask()

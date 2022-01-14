@@ -1,12 +1,67 @@
 
 import ../zkernel_fixes
 import ../zsys_clock
+import ../zthread
+import ../zatomic
+import zk_sem
+import zk_queue
+import zk_poll
 
 type
 
-  k_work * {.importc: "_timeout", header: "<kernel.h>", bycopy, incompleteStruct.} = object
-  k_work_q * {.importc: "_timeout", header: "<kernel.h>", bycopy, incompleteStruct.} = object
-  k_work_queue_config * {.importc: "_timeout", header: "<kernel.h>", bycopy, incompleteStruct.} = object
+  k_work* {.importc: "k_work", header: "kernel.h", bycopy.} = object
+    ## * @brief A structure used to submit work.
+    node* {.importc: "node".}: sys_snode_t ##  All fields are protected by the work module spinlock.  No fields
+                                        ##  are to be accessed except through kernel API.
+                                        ##
+                                        ##  Node to link into k_work_q pending list.
+    ##  The function to be invoked by the work queue thread.
+    handler* {.importc: "handler".}: k_work_handler_t ##  The queue on which the work item was last submitted.
+    queue* {.importc: "queue".}: ptr k_work_q ##  State of the work item.
+                                          ##
+                                          ##  The item can be DELAYED, QUEUED, and RUNNING simultaneously.
+                                          ##
+                                          ##  It can be RUNNING and CANCELING simultaneously.
+                                          ##
+    flags* {.importc: "flags".}: uint32
+
+  k_work_queue_config* {.importc: "k_work_queue_config", header: "kernel.h", bycopy.} = object
+    ## * @brief A structure holding optional configuration items for a work
+    ##  queue.
+    ##
+    ##  This structure, and values it references, are not retained by
+    ##  k_work_queue_start().
+    ##
+    name* {.importc: "name".}: cstring ## * The name to be given to the work queue thread.
+                                    ##
+                                    ##  If left null the thread will not have a name.
+                                    ##
+    ## * Control whether the work queue thread should yield between
+    ##  items.
+    ##
+    ##  Yielding between items helps guarantee the work queue
+    ##  thread does not starve other threads, including cooperative
+    ##  ones released by a work item.  This is the default behavior.
+    ##
+    ##  Set this to @c true to prevent the work queue thread from
+    ##  yielding between items.  This may be appropriate when a
+    ##  sequence of items should complete without yielding
+    ##  control.
+    ##
+    no_yield* {.importc: "no_yield".}: bool
+
+  k_work_q* {.importc: "k_work_q", header: "kernel.h", bycopy.} = object
+    ## * @brief A structure used to hold work until it can be processed.
+    thread* {.importc: "thread".}: k_thread ##  The thread that animates the work.
+    ##  All the following fields must be accessed only while the
+    ##  work module spinlock is held.
+    ##
+    ##  List of k_work items to be worked.
+    pending* {.importc: "pending".}: sys_slist_t ##  Wait queue for idle work thread.
+    notifyq* {.importc: "notifyq".}: z_wait_q_t ##  Wait queue for threads waiting for the queue to drain.
+    drainq* {.importc: "drainq".}: z_wait_q_t ##  Flags describing queue state.
+    flags* {.importc: "flags".}: uint32
+
   k_delayed_work * {.importc: "_timeout", header: "<kernel.h>", bycopy, incompleteStruct.} = object
 
   k_work_handler_t* = proc (work: ptr k_work) {.cdecl.}
@@ -32,28 +87,53 @@ type
     work* {.importc: "work".}: ptr k_work
     sem* {.importc: "sem".}: k_sem
 
-##
-## * @brief A structure holding internal state for a pending synchronous
-##  operation on a work item or queue.
-##
-##  Instances of this type are provided by the caller for invocation of
-##  k_work_flush(), k_work_cancel_sync() and sibling flush and cancel APIs.  A
-##  referenced object must persist until the call returns, and be accessible
-##  from both the caller thread and the work queue thread.
-##
-##  @note If CONFIG_KERNEL_COHERENCE is enabled the object must be allocated in
-##  coherent memory; see arch_mem_coherent().  The stack on these architectures
-##  is generally not coherent.  be stack-allocated.  Violations are detected by
-##  runtime assertion.
-##
+  k_work_delayable* {.importc: "k_work_delayable", header: "kernel.h", bycopy.} = object
+    ## * @brief A structure used to submit work after a delay.
+    work* {.importc: "work".}: k_work ##  The work item.
+    ##  Timeout used to submit work after a delay.
+    timeout* {.importc: "timeout".}: k_priv_timeout ##  The queue to which the work should be submitted.
+    queue* {.importc: "queue".}: ptr k_work_q
 
-type
+  k_work_user* {.importc: "k_work_user", header: "kernel.h", incompleteStruct, bycopy.} = object
+    # k_reserved* {.importc: "_reserved".}: pointer ##  Used by k_queue implementation.
+    handler* {.importc: "handler".}: k_work_user_handler_t
+    flags* {.importc: "flags".}: atomic_t
+
+  k_work_poll* {.importc: "k_work_poll", header: "kernel.h", bycopy.} = object
+    work* {.importc: "work".}: k_work
+    workq* {.importc: "workq".}: ptr k_work_q
+    poller* {.importc: "poller".}: z_poller
+    events* {.importc: "events".}: ptr k_poll_event
+    num_events* {.importc: "num_events".}: cint
+    real_handler* {.importc: "real_handler".}: k_work_handler_t
+    timeout* {.importc: "timeout".}: k_priv_timeout
+    poll_result* {.importc: "poll_result".}: cint
+  ##
+  ## * @brief A structure holding internal state for a pending synchronous
+  ##  operation on a work item or queue.
+  ##
+  ##  Instances of this type are provided by the caller for invocation of
+  ##  k_work_flush(), k_work_cancel_sync() and sibling flush and cancel APIs.  A
+  ##  referenced object must persist until the call returns, and be accessible
+  ##  from both the caller thread and the work queue thread.
+  ##
+  ##  @note If CONFIG_KERNEL_COHERENCE is enabled the object must be allocated in
+  ##  coherent memory; see arch_mem_coherent().  The stack on these architectures
+  ##  is generally not coherent.  be stack-allocated.  Violations are detected by
+  ##  runtime assertion.
+  ##
+
   k_work_sync* {.importc: "k_work_sync", header: "kernel.h", incompleteStruct, bycopy.} = object
     # C union
     flusher* {.importc: "flusher".}: z_work_flusher # union 1
     canceller* {.importc: "canceller".}: z_work_canceller # union 2
     # end c union
 
+  k_work_user_handler_t* = proc (work: ptr k_work_user)
+
+  k_work_user_q* {.importc: "k_work_user_q", header: "kernel.h", bycopy.} = object
+    queue* {.importc: "queue".}: k_queue
+    thread* {.importc: "thread".}: k_thread
 
 ## * @brief Initialize a (non-delayable) work structure.
 ##
@@ -660,37 +740,14 @@ const ## *
                                         ##  Accessed via k_work_busy_get().  May co-occur with other flags.
                                         ##
   K_WORK_DELAYED* = BIT(K_WORK_DELAYED_BIT)
-## * @brief A structure used to submit work.
-type
-  k_work* {.importc: "k_work", header: "kernel.h", bycopy.} = object
-    node* {.importc: "node".}: sys_snode_t ##  All fields are protected by the work module spinlock.  No fields
-                                        ##  are to be accessed except through kernel API.
-                                        ##
-                                        ##  Node to link into k_work_q pending list.
-    ##  The function to be invoked by the work queue thread.
-    handler* {.importc: "handler".}: k_work_handler_t ##  The queue on which the work item was last submitted.
-    queue* {.importc: "queue".}: ptr k_work_q ##  State of the work item.
-                                          ##
-                                          ##  The item can be DELAYED, QUEUED, and RUNNING simultaneously.
-                                          ##
-                                          ##  It can be RUNNING and CANCELING simultaneously.
-                                          ##
-    flags* {.importc: "flags".}: uint32
-
-proc Z_WORK_INITIALIZER*(work_handler: untyped) {.importc: "Z_WORK_INITIALIZER",
-    header: "kernel.h".}
 
 
-## * @brief A structure used to submit work after a delay.
-type
-  k_work_delayable* {.importc: "k_work_delayable", header: "kernel.h", bycopy.} = object
-    work* {.importc: "work".}: k_work ##  The work item.
-    ##  Timeout used to submit work after a delay.
-    timeout* {.importc: "timeout".}: _timeout ##  The queue to which the work should be submitted.
-    queue* {.importc: "queue".}: ptr k_work_q
+# proc Z_WORK_INITIALIZER*(work_handler: untyped) {.importc: "Z_WORK_INITIALIZER",
+    # header: "kernel.h".}
 
-proc Z_WORK_DELAYABLE_INITIALIZER*(work_handler: untyped) {.
-    importc: "Z_WORK_DELAYABLE_INITIALIZER", header: "kernel.h".}
+
+# proc Z_WORK_DELAYABLE_INITIALIZER*(work_handler: untyped) {.
+    # importc: "Z_WORK_DELAYABLE_INITIALIZER", header: "kernel.h".}
 
 
 ## *
@@ -709,93 +766,22 @@ proc Z_WORK_DELAYABLE_INITIALIZER*(work_handler: untyped) {.
 ##  @param work Symbol name for delayable work item object
 ##  @param work_handler Function to invoke each time work item is processed.
 ##
-proc K_WORK_DELAYABLE_DEFINE*(work: untyped; work_handler: untyped) {.
-    importc: "K_WORK_DELAYABLE_DEFINE", header: "kernel.h".}
+# proc K_WORK_DELAYABLE_DEFINE*(work: untyped; work_handler: untyped) {.
+    # importc: "K_WORK_DELAYABLE_DEFINE", header: "kernel.h".}
 
 
-## * @brief A structure holding optional configuration items for a work
-##  queue.
-##
-##  This structure, and values it references, are not retained by
-##  k_work_queue_start().
-##
-type
-  k_work_queue_config* {.importc: "k_work_queue_config", header: "kernel.h", bycopy.} = object
-    name* {.importc: "name".}: cstring ## * The name to be given to the work queue thread.
-                                    ##
-                                    ##  If left null the thread will not have a name.
-                                    ##
-    ## * Control whether the work queue thread should yield between
-    ##  items.
-    ##
-    ##  Yielding between items helps guarantee the work queue
-    ##  thread does not starve other threads, including cooperative
-    ##  ones released by a work item.  This is the default behavior.
-    ##
-    ##  Set this to @c true to prevent the work queue thread from
-    ##  yielding between items.  This may be appropriate when a
-    ##  sequence of items should complete without yielding
-    ##  control.
-    ##
-    no_yield* {.importc: "no_yield".}: bool
-
-## * @brief A structure used to hold work until it can be processed.
-type
-  k_work_q* {.importc: "k_work_q", header: "kernel.h", bycopy.} = object
-    thread* {.importc: "thread".}: k_thread ##  The thread that animates the work.
-    ##  All the following fields must be accessed only while the
-    ##  work module spinlock is held.
-    ##
-    ##  List of k_work items to be worked.
-    pending* {.importc: "pending".}: sys_slist_t ##  Wait queue for idle work thread.
-    notifyq* {.importc: "notifyq".}: _wait_q_t ##  Wait queue for threads waiting for the queue to drain.
-    drainq* {.importc: "drainq".}: _wait_q_t ##  Flags describing queue state.
-    flags* {.importc: "flags".}: uint32
-
-##  Provide the implementation for inline functions declared above
-proc k_work_is_pending*(work: ptr k_work): bool {.inline.} =
-  return k_work_busy_get(work) != 0
-
-proc k_work_delayable_from_work*(work: ptr k_work): ptr k_work_delayable {.inline.} =
-  return CONTAINER_OF(work, struct, k_work_delayable, work)
-
-proc k_work_delayable_is_pending*(dwork: ptr k_work_delayable): bool {.inline.} =
-  return k_work_delayable_busy_get(dwork) != 0
-
-proc k_work_delayable_expires_get*(dwork: ptr k_work_delayable): k_ticks_t {.inline.} =
-  return z_timeout_expires(addr(dwork.timeout))
-
-proc k_work_delayable_remaining_get*(dwork: ptr k_work_delayable): k_ticks_t {.
-    inline.} =
-  return z_timeout_remaining(addr(dwork.timeout))
-
-proc k_work_queue_thread_get*(queue: ptr k_work_q): k_tid_t {.inline.} =
-  return addr(queue.thread)
-
-discard "forward decl of k_work_user"
-type
-  k_work_user_handler_t* = proc (work: ptr k_work_user)
 ## *
 ##  @cond INTERNAL_HIDDEN
 ##
-type
-  k_work_user_q* {.importc: "k_work_user_q", header: "kernel.h", bycopy.} = object
-    queue* {.importc: "queue".}: k_queue
-    thread* {.importc: "thread".}: k_thread
 
 const
   K_WORK_USER_STATE_PENDING* = 0 ##  Work item pending state
-type
-  k_work_user* {.importc: "k_work_user", header: "kernel.h", bycopy.} = object
-    _reserved* {.importc: "_reserved".}: pointer ##  Used by k_queue implementation.
-    handler* {.importc: "handler".}: k_work_user_handler_t
-    flags* {.importc: "flags".}: atomic_t
 
 ## *
 ##  INTERNAL_HIDDEN @endcond
 ##
-proc Z_WORK_USER_INITIALIZER*(work_handler: untyped) {.
-    importc: "Z_WORK_USER_INITIALIZER", header: "kernel.h".}
+# proc Z_WORK_USER_INITIALIZER*(work_handler: untyped) {.
+    # importc: "Z_WORK_USER_INITIALIZER", header: "kernel.h".}
 
 
 ## *
@@ -809,8 +795,8 @@ proc Z_WORK_USER_INITIALIZER*(work_handler: untyped) {.
 ##  @param work Symbol name for work item object
 ##  @param work_handler Function to invoke each time work item is processed.
 ##
-proc K_WORK_USER_DEFINE*(work: untyped; work_handler: untyped) {.
-    importc: "K_WORK_USER_DEFINE", header: "kernel.h".}
+# proc K_WORK_USER_DEFINE*(work: untyped; work_handler: untyped) {.
+    # importc: "K_WORK_USER_DEFINE", header: "kernel.h".}
 
 
 ## *
@@ -825,8 +811,7 @@ proc K_WORK_USER_DEFINE*(work: untyped; work_handler: untyped) {.
 ##  @return N/A
 ##
 proc k_work_user_init*(work: ptr k_work_user; handler: k_work_user_handler_t) {.
-    inline.} =
-  work[] = cast[k_work_user](Z_WORK_USER_INITIALIZER(handler))
+    importc: "$1", header: "kernel.h".}
 
 ## *
 ##  @brief Check if a userspace work item is pending.
@@ -844,8 +829,8 @@ proc k_work_user_init*(work: ptr k_work_user; handler: k_work_user_handler_t) {.
 ##
 ##  @return true if work item is pending, or false if it is not pending.
 ##
-proc k_work_user_is_pending*(work: ptr k_work_user): bool {.inline.} =
-  return atomic_test_bit(addr(work.flags), K_WORK_USER_STATE_PENDING)
+proc k_work_user_is_pending*(work: ptr k_work_user): bool {.
+    importc: "$1", header: "kernel.h".}
 
 ## *
 ##  @brief Submit a work item to a user mode workqueue
@@ -866,16 +851,7 @@ proc k_work_user_is_pending*(work: ptr k_work_user): bool {.inline.} =
 ##  @retval 0 Success
 ##
 proc k_work_user_submit_to_queue*(work_q: ptr k_work_user_q; work: ptr k_work_user): cint {.
-    inline.} =
-  var ret: cint
-  if not atomic_test_and_set_bit(addr(work.flags), K_WORK_USER_STATE_PENDING):
-    ret = k_queue_alloc_append(addr(work_q.queue), work)
-    ##  Couldn't insert into the queue. Clear the pending bit
-    ##  so the work item can be submitted again
-    ##
-    if ret != 0:
-      atomic_clear_bit(addr(work.flags), K_WORK_USER_STATE_PENDING)
-  return ret
+    importc: "$1", header: "kernel.h".}
 
 ## *
 ##  @brief Start a workqueue in user mode
@@ -908,16 +884,6 @@ proc k_work_user_queue_start*(work_q: ptr k_work_user_q;
 ## *
 ##  @cond INTERNAL_HIDDEN
 ##
-type
-  k_work_poll* {.importc: "k_work_poll", header: "kernel.h", bycopy.} = object
-    work* {.importc: "work".}: k_work
-    workq* {.importc: "workq".}: ptr k_work_q
-    poller* {.importc: "poller".}: z_poller
-    events* {.importc: "events".}: ptr k_poll_event
-    num_events* {.importc: "num_events".}: cint
-    real_handler* {.importc: "real_handler".}: k_work_handler_t
-    timeout* {.importc: "timeout".}: _timeout
-    poll_result* {.importc: "poll_result".}: cint
 
 ## *
 ##  INTERNAL_HIDDEN @endcond
@@ -937,8 +903,8 @@ type
 ##  @param work Symbol name for work item object
 ##  @param work_handler Function to invoke each time work item is processed.
 ##
-proc K_WORK_DEFINE*(work: untyped; work_handler: untyped) {.
-    importc: "K_WORK_DEFINE", header: "kernel.h".}
+# proc K_WORK_DEFINE*(work: untyped; work_handler: untyped) {.
+    # importc: "K_WORK_DEFINE", header: "kernel.h".}
 
 
 ## *
