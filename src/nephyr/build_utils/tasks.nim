@@ -221,7 +221,6 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
   echo "CALLED ZEPHYR_COMPILE"
   var nopts = parseNimbleArgs() 
   let zconfpath = pathCmakeConfig(buildDir= "build_" & board)
-  let zconf = parseCmakeConfig(buildDir= "build_" & board)
 
   echo "\n[Nephyr] Compiling:"
 
@@ -295,7 +294,6 @@ task zephyr_sign, "Flasing Zephyr project":
 
 before zephyr_compile:
   zephyrConfigureTask()
-  # zephyrParseCmakeTask()
 
 after zephyr_compile:
   zephyrInstallHeadersTask()
