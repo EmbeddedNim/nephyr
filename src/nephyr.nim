@@ -7,6 +7,8 @@ import nephyr/general
 
 export general
 
+include mcu_utils/threads
+
 proc NimMain() {.importc.}
 
 template app_main*(blk: untyped): untyped =

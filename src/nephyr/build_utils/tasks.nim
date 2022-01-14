@@ -120,40 +120,6 @@ proc pathCmakeConfig*(buildDir: string,
   echo "CMAKE ZCONFG: ", fpath
   return fpath
 
-proc parseCmakeConfig*(buildDir: string,
-                      zephyrDir="zephyr",
-                      configName=".config"): TableRef[string, string] =
-  var 
-    fpath = buildDir / zephyrDir / configName
-  echo "CMAKE ZCONFG: ", fpath
-  echo "CMAKE ZCONFG: PWD: ", getCurrentDir()
-  var
-    f = readFile(fpath)
-    fs = newStringStream(f)
-    opts = newTable[string, string]()
-
-  if fs != nil:
-    var p: CfgParser
-    open(p, fs, "zephyr.config")
-    while true:
-      var e = next(p)
-      case e.kind
-      of cfgEof: break
-      of cfgSectionStart:   ## a ``[section]`` has been parsed
-        echo("warning ignoring new config section: " & e.section)
-      of cfgKeyValuePair:
-        # echo("key-value-pair: " & e.key & ": " & e.value)
-        if e.value != "n":
-          opts[e.key] = e.value
-      of cfgOption:
-        echo("warning ignoring config option: " & e.key & ": " & e.value)
-      of cfgError:
-        echo(e.msg)
-    close(p)
-  
-  result = opts
-
-
 proc extraArgs(): string =
   result = if existsEnv("NEPHYR_SHIELDS"): "-- -DSHIELD=\"${NEPHYR_SHIELDS}\"" else: ""
 
@@ -207,24 +173,6 @@ when defined(NEPHYR_TASKS_FIX_TEMPLATES):
       echo "...copying template: ", fileName, " from: ", tmpltPth, " to: ", getCurrentDir()
       writeFile(nopts.appsrc / nopts.projname / fileName, readFile(tmpltPth) % tmplt_args )
 
-proc configureFromCmake() =
-  echo "CALLED ZEPHYR_PARSE_CMAKE"
-  let board = getEnv("BOARD") 
-  echo "NIM BOARD: ", board
-
-  let zconf = parseCmakeConfig(buildDir= "build_" & board)
-  echo "ZCONF: net_ipv6? ", zconf.hasKey("CONFIG_NET_IPV6")
-  echo "ZCONF: net_ipv6_router? ", zconf.hasKey("CONFIG_NET_CONFIG_NEED_IPV6_ROUTER")
-  echo "ZCONF: count: ", zconf.len()
-
-  if zconf.hasKey("CONFIG_NET_IPV6"):
-    switch("define", "net_ipv6")
-    echo "ZCONF: defining ipv6"
-  if zconf.hasKey("CONFIG_NET_IPV4"):
-    switch("define", "net_ipv4")
-  if zconf.hasKey("CONFIG_NET_SOCKETS_PACKET"):
-    switch("define", "net_raw")
-
 task zephyr_install_headers, "Install nim headers":
   echo "\n[Nephyr] Installing nim headers:"
   let
@@ -272,7 +220,6 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
   echo "CALLED ZEPHYR_COMPILE"
   var nopts = parseNimbleArgs() 
   let zconfpath = pathCmakeConfig(buildDir= "build_" & board)
-  let zconf = parseCmakeConfig(buildDir= "build_" & board)
 
   echo "\n[Nephyr] Compiling:"
 
@@ -297,8 +244,6 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
       "--nimcache:" & nopts.cachedir.quoteShell(),
       "-d:NimAppMain",
       "-d:ZephyrConfigFile:"&zconfpath,
-      # if zconf.hasKey("CONFIG_NET_IPV6"): "-d:net_ipv6" else: ""
-      # "-d:" & nopts.zephyr_version
     ].join(" ") 
     childargs = nopts.child_args.mapIt(it.quoteShell()).join(" ")
     compiler_cmd = nimargs & " " & childargs & " " & nopts.projfile.quoteShell() 
