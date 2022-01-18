@@ -38,7 +38,7 @@ proc k_fifo_init*(fifo: ptr k_fifo) {.importc: "k_fifo_init", header: "kernel.h"
 ##
 ##  @return N/A
 ##
-proc k_fifo_cancel_wait*(fifo: k_fifo) {.importc: "k_fifo_cancel_wait",
+proc k_fifo_cancel_wait*(fifo: ptr k_fifo) {.importc: "k_fifo_cancel_wait",
     header: "kernel.h".}
 
 
@@ -76,7 +76,7 @@ proc k_fifo_put*(fifo: ptr k_fifo; data: pointer) {.importc: "k_fifo_put",
 ##  @retval 0 on success
 ##  @retval -ENOMEM if there isn't sufficient RAM in the caller's resource pool
 ##
-proc k_fifo_alloc_put*(fifo: k_fifo; data: pointer) {.importc: "k_fifo_alloc_put",
+proc k_fifo_alloc_put*(fifo: ptr k_fifo; data: pointer) {.importc: "k_fifo_alloc_put",
     header: "kernel.h".}
 
 
@@ -96,7 +96,7 @@ proc k_fifo_alloc_put*(fifo: k_fifo; data: pointer) {.importc: "k_fifo_alloc_put
 ##
 ##  @return N/A
 ##
-proc k_fifo_put_list*(fifo: k_fifo; head: ptr sys_slist_t; tail: ptr sys_slist_t) {.
+proc k_fifo_put_list*(fifo: ptr k_fifo; head: ptr sys_slist_t; tail: ptr sys_slist_t) {.
     importc: "k_fifo_put_list", header: "kernel.h".}
 
 
@@ -115,7 +115,7 @@ proc k_fifo_put_list*(fifo: k_fifo; head: ptr sys_slist_t; tail: ptr sys_slist_t
 ##
 ##  @return N/A
 ##
-proc k_fifo_put_slist*(fifo: k_fifo; list: ptr sys_slist_t) {.importc: "k_fifo_put_slist",
+proc k_fifo_put_slist*(fifo: ptr k_fifo; list: ptr sys_slist_t) {.importc: "k_fifo_put_slist",
     header: "kernel.h".}
 
 
@@ -136,7 +136,7 @@ proc k_fifo_put_slist*(fifo: k_fifo; list: ptr sys_slist_t) {.importc: "k_fifo_p
 ##  @return Address of the data item if successful; NULL if returned
 ##  without waiting, or waiting period timed out.
 ##
-proc k_fifo_get*(fifo: k_fifo; timeout: k_timeout_t): pointer {.importc: "k_fifo_get",
+proc k_fifo_get*(fifo: ptr k_fifo; timeout: k_timeout_t): pointer {.importc: "k_fifo_get",
     header: "kernel.h".}
 
 
@@ -153,7 +153,7 @@ proc k_fifo_get*(fifo: k_fifo; timeout: k_timeout_t): pointer {.importc: "k_fifo
 ##  @return Non-zero if the FIFO queue is empty.
 ##  @return 0 if data is available.
 ##
-proc k_fifo_is_empty*(fifo: k_fifo) {.importc: "k_fifo_is_empty",
+proc k_fifo_is_empty*(fifo: ptr k_fifo) {.importc: "k_fifo_is_empty",
                                     header: "kernel.h".}
 
 
@@ -170,7 +170,7 @@ proc k_fifo_is_empty*(fifo: k_fifo) {.importc: "k_fifo_is_empty",
 ##
 ##  @return Head element, or NULL if the FIFO queue is empty.
 ##
-proc k_fifo_peek_head*(fifo: k_fifo) {.importc: "k_fifo_peek_head",
+proc k_fifo_peek_head*(fifo: ptr k_fifo) {.importc: "k_fifo_peek_head",
                                       header: "kernel.h".}
 
 
@@ -185,7 +185,7 @@ proc k_fifo_peek_head*(fifo: k_fifo) {.importc: "k_fifo_peek_head",
 ##
 ##  @return Tail element, or NULL if a FIFO queue is empty.
 ##
-proc k_fifo_peek_tail*(fifo: k_fifo) {.importc: "k_fifo_peek_tail",
+proc k_fifo_peek_tail*(fifo: ptr k_fifo) {.importc: "k_fifo_peek_tail",
                                       header: "kernel.h".}
 
 
@@ -198,7 +198,7 @@ proc k_fifo_peek_tail*(fifo: k_fifo) {.importc: "k_fifo_peek_tail",
 ##
 ##  @param name Name of the FIFO queue.
 ##
-proc K_FIFO_DEFINE*(name: k_fifo) {.importc: "K_FIFO_DEFINE", header: "kernel.h".}
+# proc K_FIFO_DEFINE*(name: k_fifo) {.importc: "K_FIFO_DEFINE", header: "kernel.h".}
 
 
 ## * @}
@@ -221,7 +221,7 @@ type
 ##
 ##  @return N/A
 ##
-proc k_lifo_init*(lifo: k_lifo) {.importc: "k_lifo_init", header: "kernel.h".}
+proc k_lifo_init*(lifo: ptr k_lifo) {.importc: "k_lifo_init", header: "kernel.h".}
 
 
 ## *
@@ -238,7 +238,7 @@ proc k_lifo_init*(lifo: k_lifo) {.importc: "k_lifo_init", header: "kernel.h".}
 ##
 ##  @return N/A
 ##
-proc k_lifo_put*(lifo: k_lifo; data: pointer) {.importc: "k_lifo_put",
+proc k_lifo_put*(lifo: ptr k_lifo; data: pointer) {.importc: "k_lifo_put",
     header: "kernel.h".}
 
 
@@ -258,7 +258,7 @@ proc k_lifo_put*(lifo: k_lifo; data: pointer) {.importc: "k_lifo_put",
 ##  @retval 0 on success
 ##  @retval -ENOMEM if there isn't sufficient RAM in the caller's resource pool
 ##
-proc k_lifo_alloc_put*(lifo: k_lifo; data: pointer) {.importc: "k_lifo_alloc_put",
+proc k_lifo_alloc_put*(lifo: ptr k_lifo; data: pointer) {.importc: "k_lifo_alloc_put",
     header: "kernel.h".}
 
 
@@ -279,7 +279,7 @@ proc k_lifo_alloc_put*(lifo: k_lifo; data: pointer) {.importc: "k_lifo_alloc_put
 ##  @return Address of the data item if successful; NULL if returned
 ##  without waiting, or waiting period timed out.
 ##
-proc k_lifo_get*(lifo: k_lifo; timeout: k_timeout_t) {.importc: "k_lifo_get",
+proc k_lifo_get*(lifo: ptr k_lifo; timeout: k_timeout_t) {.importc: "k_lifo_get",
     header: "kernel.h".}
 
 
@@ -292,4 +292,4 @@ proc k_lifo_get*(lifo: k_lifo; timeout: k_timeout_t) {.importc: "k_lifo_get",
 ##
 ##  @param name Name of the fifo.
 ##
-proc K_LIFO_DEFINE*(name: cminvtoken) {.importc: "K_LIFO_DEFINE", header: "kernel.h".}
+# proc K_LIFO_DEFINE*(name: cminvtoken) {.importc: "K_LIFO_DEFINE", header: "kernel.h".}

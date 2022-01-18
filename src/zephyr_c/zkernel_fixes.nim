@@ -26,12 +26,24 @@ type
   k_thread_proc* = proc (p1, p2, p3: pointer) {.cdecl.}
 
   z_wait_q_t* {.importc: "_wait_q_t", header: "<kernel.h>", bycopy, incompleteStruct.} = object
-    waitq: sys_dlist_t
+    waitq {.importc: "$1".}: sys_dlist_t
 
   # these are all opaque kernel types
-  sys_slist_t * {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
-  sys_sflist_t * {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
-  sys_dlist_t * {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
+  dnode* {.importc: "struct _dnode", header: "<kernel.h>",
+            bycopy, incompleteStruct.} = object
+    # head: pointer
+    # next: pointer
+    head {.importc: "$1".}: ptr dnode
+    next {.importc: "$1".}: ptr dnode
+
+  sys_slist_t* {.importc: "$1", header: "<kernel.h>",
+                 bycopy, incompleteStruct.} = object
+  sys_sflist_t* {.importc: "$1", header: "<kernel.h>",
+                  bycopy, incompleteStruct.} = object
+  sys_dlist_t* {.importc: "$1", header: "<kernel.h>",
+                 bycopy, incompleteStruct.} = dnode
+  sys_dnode_t* {.importc: "$1", header: "<kernel.h>",
+                 bycopy, incompleteStruct.} = dnode
 
   sys_heap * {.importc: "struct $1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
 
@@ -45,6 +57,22 @@ type
   # K_NO_WAIT* {.importc: "$1", header: "<kernel.h>".}: k_timeout_t
 
 # proc K_MSEC*(ts: int): k_timeout_t {.importc: "$1", header: "<kernel.h>".}
+
+proc sys_dlist_peek_head(list: ptr sys_dlist_t): ptr sys_dnode_t {.importc: "$1", header: "<kernel.h>".}
+proc sys_dlist_peek_next(list, node: ptr sys_dlist_t): ptr sys_dnode_t {.importc: "$1", header: "<kernel.h>".}
+
+proc repr*(val: sys_dlist_t): string = 
+
+  var
+    node: ptr dnode = sys_dlist_peek_head(addr val)
+    dlist = newSeq[pointer]()
+
+  while node != nil:
+    echo "dlist: node: ", repr(node.pointer)
+    dlist.add(node.pointer)
+    node = sys_dlist_peek_next(addr val, node)
+
+  return "dlist: " & repr(dlist)
 
 proc K_THREAD_STACK_SIZEOF*(stack: ptr k_thread_stack_t): csize_t {.
       importc: "$1", header: "<kernel.h>".}
