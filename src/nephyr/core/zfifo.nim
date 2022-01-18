@@ -1,53 +1,69 @@
+import std/options
 
 import ../../zephyr_c/kernel/zk_fifo
+import ../../zephyr_c/kernel/zk_time
 
 type
-  ZFifo* = ref object
+  ZFifoItem*[T] = ref object
+    reserved: pointer
+    data: T
+
+  ZFifo*[T] = ref object
     fifo*: k_fifo
 
 
 template testsZkFifo*() =
-  var zf = newZFifo()
-  echo "zf: ", repr(zf)
 
-proc newZFifo*(): ZFifo =
+  var myFifo = newZFifo[int]()
+  echo "zf: ", repr(myFifo)
+
+  proc producerThread() =
+    for i in 0..<10:
+      # /* create data item to send */
+      var txData = 1234 + 100 * i
+
+      # /* send data to consumers */
+      echo "producer: tx_data: ", repr(txData)
+      myFifo.put(txData)
+
+  proc consumerThread() =
+    for i in 0..<10:
+      var rxData  = myFifo.get(K_FOREVER)
+      echo "consumer: rx_data: ", repr(rxData)
+
+  proc runTestsZkFifo() =
+    producerThread()
+
+proc newZFifoItem*[T](data: var T): ZFifoItem[T] =
+  new(result)
+  result.data = move data
+
+proc newZFifo*[T](): ZFifo[T] =
   ##  This routine initializes a FIFO queue, prior to its first use.
   new(result)
-  k_fifo_init(result.fifo) # C Macro
+  let fptr = addr result.fifo
+  k_fifo_init(fptr) # C Macro
 
-##  @brief Cancel waiting on a FIFO queue.
-##
-##  This routine causes first thread pending on @a fifo, if any, to
-##  return from k_fifo_get() call with NULL value (as if timeout
-##  expired).
-##
-##  @funcprops \isr_ok
-##
-##  @param fifo Address of the FIFO queue.
-##
-##  @return N/A
-##
-# proc k_fifo_cancel_wait*(fifo: k_fifo) {.importc: "k_fifo_cancel_wait",
-    # header: "kernel.h".}
+proc put*[T](self: var ZFifo[T]; data: var T) =
+  ##  This routine adds a data item to @a fifo. A FIFO data item must be
+  ##  aligned on a word boundary, and the first word of the item is reserved
+  ##  for the kernel's use.
+  var item = newZFifoItem(data)
+  GC_ref(item)
+  # when T is SomePointer:
+  var fifoptr = addr self.fifo
+  k_fifo_put(fifoptr, addr item)
 
-
-# ## *
-# ##  @brief Add an element to a FIFO queue.
-# ##
-# ##  This routine adds a data item to @a fifo. A FIFO data item must be
-# ##  aligned on a word boundary, and the first word of the item is reserved
-# ##  for the kernel's use.
-# ##
-# ##  @funcprops \isr_ok
-# ##
-# ##  @param fifo Address of the FIFO.
-# ##  @param data Address of the data item.
-# ##
-# ##  @return N/A
-# ##
-# proc k_fifo_put*(fifo: k_fifo; data: pointer) {.importc: "k_fifo_put",
-#     header: "kernel.h".}
-
+proc get*[T](self: var ZFifo[T], timeout = K_FOREVER): Option[T] =
+  ##  This routine adds a data item to @a fifo. A FIFO data item must be
+  ##  aligned on a word boundary, and the first word of the item is reserved
+  ##  for the kernel's use.
+  var itemptr = k_fifo_get(self.fifo, timeout)
+  if itemptr.isNil:
+    none(T)
+  else:
+    var item = cast[ZFifoItem[T]](itemptr)
+    some(item.data)
 
 # ## *
 # ##  @brief Add an element to a FIFO queue.

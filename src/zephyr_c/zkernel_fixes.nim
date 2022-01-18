@@ -25,21 +25,21 @@ type
 
   k_thread_proc* = proc (p1, p2, p3: pointer) {.cdecl.}
 
-  z_wait_q_t* {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
-    waitq: pointer
+  z_wait_q_t* {.importc: "_wait_q_t", header: "<kernel.h>", bycopy, incompleteStruct.} = object
+    waitq: sys_dlist_t
 
   # these are all opaque kernel types
   sys_slist_t * {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
   sys_sflist_t * {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
   sys_dlist_t * {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
 
-  sys_heap * {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
+  sys_heap * {.importc: "struct $1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
 
-  k_spinlock * {.importc: "$1", header: "<spinlock.h>", bycopy, incompleteStruct.} = object
+  k_spinlock * {.importc: "struct $1", header: "<spinlock.h>", bycopy, incompleteStruct.} = object
 
-  k_priv_timeout * {.importc: "_timeout", header: "<kernel.h>", bycopy, incompleteStruct.} = object
+  k_priv_timeout * {.importc: "struct _timeout", header: "<kernel.h>", bycopy, incompleteStruct.} = object
 
-  k_mem_block * {.importc: "k_mem_block", header: "<kernel.h>", bycopy, incompleteStruct.} = object
+  k_mem_block * {.importc: "struct k_mem_block", header: "<kernel.h>", bycopy, incompleteStruct.} = object
 
 # var
   # K_NO_WAIT* {.importc: "$1", header: "<kernel.h>".}: k_timeout_t

@@ -133,7 +133,7 @@ proc K_HOURS*(h: int): k_timeout_t {.importc: "K_HOURS", header: "kernel.h".}
 ##
 ##  @return Timeout delay value.
 ##
-var K_FOREVER* {.importc: "K_FOREVER", header: "kernel.h".}: int
+var K_FOREVER* {.importc: "K_FOREVER", header: "kernel.h".}: k_timeout_t
 
 
 when CONFIG_TIMEOUT_64BIT:

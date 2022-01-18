@@ -6,7 +6,7 @@ import zk_queue
 
 type
   k_fifo* {.importc: "struct k_fifo", header: "kernel.h", bycopy.} = object
-    z_queue* {.importc: "_queue".}: k_queue
+    z_queue {.importc: "_queue".}: k_queue
 
 ## *
 ##  @defgroup fifo_apis FIFO APIs
@@ -22,7 +22,7 @@ type
 ##
 ##  @return N/A
 ##
-proc k_fifo_init*(fifo: k_fifo) {.importc: "k_fifo_init", header: "kernel.h".}
+proc k_fifo_init*(fifo: ptr k_fifo) {.importc: "k_fifo_init", header: "kernel.h".}
 
 
 ## *
@@ -56,7 +56,7 @@ proc k_fifo_cancel_wait*(fifo: k_fifo) {.importc: "k_fifo_cancel_wait",
 ##
 ##  @return N/A
 ##
-proc k_fifo_put*(fifo: k_fifo; data: pointer) {.importc: "k_fifo_put",
+proc k_fifo_put*(fifo: ptr k_fifo; data: pointer) {.importc: "k_fifo_put",
     header: "kernel.h".}
 
 
@@ -136,7 +136,7 @@ proc k_fifo_put_slist*(fifo: k_fifo; list: ptr sys_slist_t) {.importc: "k_fifo_p
 ##  @return Address of the data item if successful; NULL if returned
 ##  without waiting, or waiting period timed out.
 ##
-proc k_fifo_get*(fifo: k_fifo; timeout: k_timeout_t) {.importc: "k_fifo_get",
+proc k_fifo_get*(fifo: k_fifo; timeout: k_timeout_t): pointer {.importc: "k_fifo_get",
     header: "kernel.h".}
 
 
