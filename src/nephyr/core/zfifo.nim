@@ -14,11 +14,11 @@ type
     kfifo*: k_fifo
 
 
-proc `=destroy`*[T](x: var ZFifoItem[T]) =
-  echo "destroy: zfifoitem: ", x.addr.pointer.repr
-  when T is ref:
-    if x.data != nil:
-      dealloc(x.data)
+# proc `=destroy`*[T](x: var ZFifoItem[T]) =
+#   echo "destroy: zfifoitem: ", x.addr.pointer.repr
+#   when T is ref:
+#     if x.data != nil:
+#       dealloc(x.data)
 
 
 template testsZkFifo*() =
@@ -58,36 +58,25 @@ proc newZFifo*[T](): ZFifo[T] =
   ##  This routine initializes a FIFO queue, prior to its first use.
   new(result)
   k_fifo_init(addr result.kfifo) # C Macro
-  echo "newZFifo: ptr: ", result.addr.pointer.repr
-  echo "newZFifo: kfifo: ptr: ", addr(result.kfifo).pointer.repr
 
 proc put*[T](self: var ZFifo[T]; data: var T) =
   ##  This routine adds a data item to @a fifo. A FIFO data item must be
   ##  aligned on a word boundary, and the first word of the item is reserved
   ##  for the kernel's use.
-  
   var item = newZFifoItem(data)
-  var itemptr = cast[pointer](item)
-  echo "fifo: put: item: ", repr(item)
-  echo "fifo: put: item: ptr: ", repr(itemptr)
-
   GC_ref(item)
-  # when T is SomePointer:
-  # var fifoptr = addr self.fifo
-  k_fifo_put(addr self.kfifo, itemptr)
+  k_fifo_put(addr self.kfifo, cast[pointer](move item))
 
 proc get*[T](self: var ZFifo[T], timeout = K_FOREVER): Option[T] =
   ##  This routine adds a data item to @a fifo. A FIFO data item must be
   ##  aligned on a word boundary, and the first word of the item is reserved
   ##  for the kernel's use.
   var itemptr = k_fifo_get(addr self.kfifo, timeout)
-  echo "fifo: get: ptr: ", itemptr.repr
   if itemptr.isNil:
     none(T)
   else:
     var item = cast[ZFifoItemRef[T]](itemptr)
     GC_unref(item)
-    echo "fifo: get: data: ", repr(item)
     some(item.data)
 
 # ## *

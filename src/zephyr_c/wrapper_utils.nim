@@ -11,7 +11,6 @@ template NephyrDefineDistinctFlag*(T: untyped, V: typedesc)  =
   proc `or` *(x, y: T): T {.borrow.}
 
 type
-  sys_snode_t* {.importc: "sys_snode_t", header: "slist.h", bycopy.} = object ##\
   ## single linked list node, used in some api's
   
   k_poll_signal* {.importc: "k_poll_signal", header: "kernel.h", bycopy.} = object ##\
