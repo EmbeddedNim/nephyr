@@ -9,16 +9,6 @@ type
     z_queue* {.importc: "_queue".}: k_queue
 
 ## *
-##  @cond INTERNAL_HIDDEN
-##
-proc Z_FIFO_INITIALIZER*(obj: k_fifo) {.importc: "Z_FIFO_INITIALIZER",
-                                      header: "kernel.h".}
-
-
-## *
-##  INTERNAL_HIDDEN @endcond
-##
-## *
 ##  @defgroup fifo_apis FIFO APIs
 ##  @ingroup kernel_apis
 ##  @{
