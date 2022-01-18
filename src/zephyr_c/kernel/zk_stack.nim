@@ -13,7 +13,7 @@ import ../zsys_clock
 type
   stack_data_t* = pointer
 
-  k_stack* {.importc: "k_stack", header: "kernel.h", bycopy.} = object
+  k_stack* {.importc: "struct k_stack", header: "kernel.h", bycopy.} = object
     wait_q* {.importc: "wait_q".}: z_wait_q_t
     lock* {.importc: "lock".}: k_spinlock
     base* {.importc: "base".}: ptr stack_data_t

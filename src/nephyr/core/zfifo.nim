@@ -5,6 +5,11 @@ type
   ZFifo* = ref object
     fifo*: k_fifo
 
+
+template testsZkFifo*() =
+  var zf = newZFifo()
+  echo "zf: ", repr(zf)
+
 proc newZFifo*(): ZFifo =
   ##  This routine initializes a FIFO queue, prior to its first use.
   new(result)

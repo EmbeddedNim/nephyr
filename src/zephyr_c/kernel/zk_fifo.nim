@@ -5,7 +5,7 @@ import ../zsys_clock
 import zk_queue
 
 type
-  k_fifo* {.importc: "k_fifo", header: "kernel.h", bycopy.} = object
+  k_fifo* {.importc: "struct k_fifo", header: "kernel.h", bycopy.} = object
     z_queue* {.importc: "_queue".}: k_queue
 
 ## *
@@ -203,7 +203,7 @@ proc K_FIFO_DEFINE*(name: k_fifo) {.importc: "K_FIFO_DEFINE", header: "kernel.h"
 
 ## * @}
 type
-  k_lifo* {.importc: "k_lifo", header: "kernel.h", bycopy.} = object
+  k_lifo* {.importc: "struct k_lifo", header: "kernel.h", bycopy.} = object
     z_queue* {.importc: "_queue".}: k_queue
 
 

@@ -9,7 +9,7 @@ import ../zsys_clock
 ##  @cond INTERNAL_HIDDEN
 ##
 type
-  k_queue* {.importc: "k_queue", header: "kernel.h", incompleteStruct, bycopy.} = object
+  k_queue* {.importc: "struct k_queue", header: "kernel.h", incompleteStruct, bycopy.} = object
     data_q* {.importc: "data_q".}: sys_sflist_t
     lock* {.importc: "lock".}: k_spinlock
     wait_q* {.importc: "wait_q".}: z_wait_q_t

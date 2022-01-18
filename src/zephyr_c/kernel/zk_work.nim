@@ -9,7 +9,7 @@ import zk_poll
 
 type
 
-  k_work* {.importc: "k_work", header: "kernel.h", bycopy.} = object
+  k_work* {.importc: "struct k_work", header: "kernel.h", bycopy.} = object
     ## * @brief A structure used to submit work.
     node* {.importc: "node".}: sys_snode_t ##  All fields are protected by the work module spinlock.  No fields
                                         ##  are to be accessed except through kernel API.
@@ -123,7 +123,7 @@ type
   ##  runtime assertion.
   ##
 
-  k_work_sync* {.importc: "k_work_sync", header: "kernel.h", incompleteStruct, bycopy.} = object
+  k_work_sync* {.importc: "struct k_work_sync", header: "kernel.h", incompleteStruct, bycopy.} = object
     # C union
     flusher* {.importc: "flusher".}: z_work_flusher # union 1
     canceller* {.importc: "canceller".}: z_work_canceller # union 2
@@ -131,7 +131,7 @@ type
 
   k_work_user_handler_t* = proc (work: ptr k_work_user)
 
-  k_work_user_q* {.importc: "k_work_user_q", header: "kernel.h", bycopy.} = object
+  k_work_user_q* {.importc: "struct k_work_user_q", header: "kernel.h", bycopy.} = object
     queue* {.importc: "queue".}: k_queue
     thread* {.importc: "thread".}: k_thread
 

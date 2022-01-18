@@ -16,7 +16,7 @@ when CONFIG_USERSPACE:
   ##  bypasses the kernel object permission management mechanism.
   ##
   type
-    k_futex* {.importc: "k_futex", header: "kernel.h", bycopy.} = object
+    k_futex* {.importc: "struct k_futex", header: "kernel.h", bycopy.} = object
       val* {.importc: "val".}: atomic_t
 
   ## *
@@ -27,7 +27,7 @@ when CONFIG_USERSPACE:
   ##  of every futex object is invisible in user mode.
   ##
   type
-    z_futex_data* {.importc: "z_futex_data", header: "kernel.h", bycopy.} = object
+    z_futex_data* {.importc: "struct z_futex_data", header: "kernel.h", bycopy.} = object
       wait_q* {.importc: "wait_q".}: z_wait_q_t
       lock* {.importc: "lock".}: k_spinlock
 

@@ -19,7 +19,7 @@ type
     K_POLL_MODE_NOTIFY_ONLY = 0, K_POLL_NUM_MODES
 
 
-  k_poll_event* {.importc: "k_poll_event", header: "1.c", incompleteStruct, bycopy.} = object
+  k_poll_event* {.importc: "struct k_poll_event", header: "1.c", incompleteStruct, bycopy.} = object
     # node* {.importc: "_node".}: sys_dnode_t ## * PRIVATE - DO NOT TOUCH
     # poller* {.importc: "poller".}: ptr z_poller ## * PRIVATE - DO NOT TOUCH
     tag* {.importc: "tag", bitsize: 8.}: uint32 ## * optional user-specified tag, opaque, untouched by the API
@@ -43,7 +43,7 @@ var K_POLL_STATE_NOT_READY* {.importc: "K_POLL_STATE_NOT_READY",
 
 ##  public - poll signal object
 type
-  k_poll_signal* {.importc: "k_poll_signal", header: "kernel.h", incompleteStruct, bycopy.} = object
+  k_poll_signal* {.importc: "struct k_poll_signal", header: "kernel.h", incompleteStruct, bycopy.} = object
     poll_events {.importc: "poll_events".}: sys_dlist_t ## * PRIVATE - DO NOT TOUCH
     signaled* {.importc: "signaled".}: cuint ## *\
     ##  1 if the event has been signaled, 0 otherwise. Stays set to 1 until

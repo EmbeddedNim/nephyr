@@ -234,7 +234,7 @@ when CONFIG_TIMEOUT_64BIT:
 type
   k_timer_cb_t* = proc (timer: ptr k_timer) {.cdecl.}
 
-  k_timer* {.importc: "k_timer", header: "kernel.h", bycopy.} = object
+  k_timer* {.importc: "struct k_timer", header: "kernel.h", bycopy.} = object
     timeout* {.importc: "timeout".}: k_priv_timeout ##
                                           ##  _timeout structure must be first here if we want to use
                                           ##  dynamic timer allocation. timeout.node is used in the double-linked
