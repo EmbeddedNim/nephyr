@@ -153,7 +153,7 @@ proc k_fifo_get*(fifo: ptr k_fifo; timeout: k_timeout_t): pointer {.importc: "k_
 ##  @return Non-zero if the FIFO queue is empty.
 ##  @return 0 if data is available.
 ##
-proc k_fifo_is_empty*(fifo: ptr k_fifo) {.importc: "k_fifo_is_empty",
+proc k_fifo_is_empty*(fifo: ptr k_fifo): cint {.importc: "k_fifo_is_empty",
                                     header: "kernel.h".}
 
 

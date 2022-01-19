@@ -14,50 +14,91 @@ type
     kfifo*: k_fifo
 
 
-# proc `=destroy`*[T](x: var ZFifoItem[T]) =
-#   echo "destroy: zfifoitem: ", x.addr.pointer.repr
-#   when T is ref:
-#     if x.data != nil:
-#       dealloc(x.data)
-
+when defined(DebugZFifoImpl):
+  proc `=destroy`*[T](x: var ZFifoItem[T]) =
+    echo "destroy: zfifoitem: ", x.addr.pointer.repr
+    when T is ref:
+      if x.data != nil:
+        dealloc(x.data)
 
 template testsZkFifo*() =
 
-  var myFifo = newZFifo[int]()
-  echo "zf: ", repr(myFifo)
+  import std/random
+  import std/options
 
-  proc producerThread() =
-    for i in 0..<10:
+  proc producerThread(args: (ZFifo[int], int)) =
+    var
+      myFifo = args[0]
+      count = args[1]
+    echo "\n===== running producer ===== "
+    myFifo.clear()
+    for i in 0..<count:
+      os.sleep(rand(400))
       # /* create data item to send */
       var txData = 1234 + 100 * i
 
       # /* send data to consumers */
-      echo "producer: tx_data: ", repr(txData)
+      echo "-> Producer: tx_data: putting: ", i, " -> ", repr(txData)
       myFifo.put(txData)
+      echo "-> Producer: tx_data: sent: ", i
+    echo "Done Producer: "
     
-  proc consumerThread() =
-    for i in 0..<10:
-      var rxData  = myFifo.get(K_FOREVER)
-      echo "consumer: rx_data: ", repr(rxData)
+  proc consumerThread(args: (ZFifo[int], int)) =
+    var
+      myFifo = args[0]
+      count = args[1]
+    echo "\n===== running consumer ===== "
+    for i in 0..<count:
+      os.sleep(rand(400))
+      echo "<- Consumer: rx_data: wait: ", i
+      echo "   Consumer: is_empty: ", myFifo.isEmpty()
+      var rxData = myFifo.get(K_FOREVER)
+      while rxData.isNone():
+        echo "<- Consumer: Got None..."
+        rxData = myFifo.get(K_FOREVER)
+
+      # os.sleep(rand(100))
+      echo "<- Consumer: rx_data: got: ", i, " <- ", repr(rxData)
+
+    echo "Done Consumer: "
 
   proc runTestsZkFifo() =
-    echo "\n===== running producer ===== "
-    producerThread()
+    randomize()
+    var myFifo = newZFifo[int]()
+    echo "zf: ", repr(myFifo)
+
+    producerThread((myFifo, 10))
     echo "myFifo: ", repr(myFifo)
-    echo "\n===== running consumer ===== "
-    consumerThread()
+    consumerThread((myFifo, 10))
     echo "myFifo: ", repr(myFifo)
+
+  proc runTestsZkFifoThreaded() =
+    randomize()
+    var myFifo = newZFifo[int]()
+    echo "zf: ", repr(myFifo)
+
+    var thrp: Thread[(ZFifo[int], int)]
+    var thrc: Thread[(ZFifo[int], int)]
+
+    createThread(thrc, consumerThread, (myFifo, 11))
+    # os.sleep(2000)
+    createThread(thrp, producerThread, (myFifo, 11))
+    # echo "myFifo: ", repr(myFifo)
+    joinThreads(thrp, thrc)
+    echo "[ZFifo] Done joined "
 
 
 proc newZFifoItem*[T](data: var T): ZFifoItemRef[T] =
   new(result)
-  echo "create: zfifoitem: ", cast[pointer](result).pointer.repr
   result.data = data
+  when defined(DebugZFifoImpl):
+    echo "create: zfifoitem: ", cast[pointer](result).pointer.repr
 
-proc newZFifo*[T](): ZFifo[T] =
-  ##  This routine initializes a FIFO queue, prior to its first use.
-  new(result)
-  k_fifo_init(addr result.kfifo) # C Macro
+proc clear*[T](self: var ZFifo[T]) =
+  k_fifo_cancel_wait(addr self.kfifo)
+
+proc isEmpty*[T](self: var ZFifo[T]): bool =
+  return k_fifo_is_empty(addr self.kfifo) != 0
 
 proc put*[T](self: var ZFifo[T]; data: var T) =
   ##  This routine adds a data item to @a fifo. A FIFO data item must be
@@ -78,6 +119,11 @@ proc get*[T](self: var ZFifo[T], timeout = K_FOREVER): Option[T] =
     var item = cast[ZFifoItemRef[T]](itemptr)
     GC_unref(item)
     some(item.data)
+
+proc newZFifo*[T](): ZFifo[T] =
+  ##  This routine initializes a FIFO queue, prior to its first use.
+  new(result)
+  k_fifo_init(addr result.kfifo) # C Macro
 
 # ## *
 # ##  @brief Add an element to a FIFO queue.
