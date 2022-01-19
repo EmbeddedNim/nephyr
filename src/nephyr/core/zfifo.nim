@@ -26,14 +26,15 @@ template testsZkFifo*() =
   import std/random
   import std/options
 
-  proc producerThread(args: (ZFifo[int], int)) =
+  proc producerThread(args: (ZFifo[int], int, int)) =
     var
       myFifo = args[0]
       count = args[1]
+      tsrand = args[2]
     echo "\n===== running producer ===== "
     myFifo.clear()
     for i in 0..<count:
-      os.sleep(rand(400))
+      os.sleep(rand(tsrand))
       # /* create data item to send */
       var txData = 1234 + 100 * i
 
@@ -43,13 +44,14 @@ template testsZkFifo*() =
       echo "-> Producer: tx_data: sent: ", i
     echo "Done Producer: "
     
-  proc consumerThread(args: (ZFifo[int], int)) =
+  proc consumerThread(args: (ZFifo[int], int, int)) =
     var
       myFifo = args[0]
       count = args[1]
+      tsrand = args[2]
     echo "\n===== running consumer ===== "
     for i in 0..<count:
-      os.sleep(rand(400))
+      os.sleep(rand(tsrand))
       echo "<- Consumer: rx_data: wait: ", i
       echo "   Consumer: is_empty: ", myFifo.isEmpty()
       var rxData = myFifo.get(K_FOREVER)
@@ -67,22 +69,22 @@ template testsZkFifo*() =
     var myFifo = newZFifo[int]()
     echo "zf: ", repr(myFifo)
 
-    producerThread((myFifo, 10))
+    producerThread((myFifo, 10, 100))
     echo "myFifo: ", repr(myFifo)
-    consumerThread((myFifo, 10))
+    consumerThread((myFifo, 10, 100))
     echo "myFifo: ", repr(myFifo)
 
-  proc runTestsZkFifoThreaded() =
+  proc runTestsZkFifoThreaded(ncnt, tsrand: int) =
     randomize()
     var myFifo = newZFifo[int]()
     echo "zf: ", repr(myFifo)
 
-    var thrp: Thread[(ZFifo[int], int)]
-    var thrc: Thread[(ZFifo[int], int)]
+    var thrp: Thread[(ZFifo[int], int, int)]
+    var thrc: Thread[(ZFifo[int], int, int)]
 
-    createThread(thrc, consumerThread, (myFifo, 11))
+    createThread(thrc, consumerThread, (myFifo, ncnt, tsrand))
     # os.sleep(2000)
-    createThread(thrp, producerThread, (myFifo, 11))
+    createThread(thrp, producerThread, (myFifo, ncnt, tsrand))
     # echo "myFifo: ", repr(myFifo)
     joinThreads(thrp, thrc)
     echo "[ZFifo] Done joined "
