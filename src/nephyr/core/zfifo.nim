@@ -32,7 +32,7 @@ template testsZkFifo*() =
       count = args[1]
       tsrand = args[2]
     echo "\n===== running producer ===== "
-    myFifo.clear()
+    # myFifo.clear()
     for i in 0..<count:
       os.sleep(rand(tsrand))
       # /* create data item to send */
@@ -55,9 +55,9 @@ template testsZkFifo*() =
       echo "<- Consumer: rx_data: wait: ", i
       echo "   Consumer: is_empty: ", myFifo.isEmpty()
       var rxData = myFifo.get(K_FOREVER)
-      while rxData.isNone():
-        echo "<- Consumer: Got None..."
-        rxData = myFifo.get(K_FOREVER)
+      # while rxData.isNone():
+        # echo "<- Consumer: Got None..."
+        # rxData = myFifo.get(K_FOREVER)
 
       # os.sleep(rand(100))
       echo "<- Consumer: rx_data: got: ", i, " <- ", repr(rxData)
@@ -75,6 +75,8 @@ template testsZkFifo*() =
     echo "myFifo: ", repr(myFifo)
 
   proc runTestsZkFifoThreaded(ncnt, tsrand: int) =
+    echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< "
+    echo "[ZFifo] Begin "
     randomize()
     var myFifo = newZFifo[int]()
     echo "zf: ", repr(myFifo)
@@ -88,6 +90,7 @@ template testsZkFifo*() =
     # echo "myFifo: ", repr(myFifo)
     joinThreads(thrp, thrc)
     echo "[ZFifo] Done joined "
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "
 
 
 proc newZFifoItem*[T](data: var T): ZFifoItemRef[T] =
