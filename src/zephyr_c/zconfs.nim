@@ -47,8 +47,10 @@ const CONFIG_NAMES = [
   "X86_SSE",
   ]
 
-const OTHER_CONFIGS = [
-  "ARCH_EXCEPT",
+template other_configs(): seq[(string, NimNode)] =
+  @[
+    ("ARCH_EXCEPT", newLit(true)),
+    ("CONFIG_BOARD", newLit("native_posix")),
   ]
 
 proc parseCmakeConfig*(configName=".config"): TableRef[string, JsonNode] =
@@ -126,9 +128,11 @@ macro GenerateZephyrConfigDefines*(): untyped =
     result.add quote do:
       const `confFlag`* = `cval`
 
-  for name in OTHER_CONFIGS :
+  for (name, defval) in other_configs():
+    assert typeof(name) is string
+    assert typeof(defval) is NimNode
     let confFlag = ident name
-    let cval = name.getCVal()
+    let cval = defval
     result.add quote do:
       const `confFlag`* = `cval`
 

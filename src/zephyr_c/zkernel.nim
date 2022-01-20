@@ -29,6 +29,9 @@ export zatomic
 export zthread
 
 import kernel/zk_sem
+import kernel/zk_fatal
+
+export zk_fatal
 
 const
   K_ANY* = nil
