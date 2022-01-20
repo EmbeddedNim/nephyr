@@ -23,6 +23,7 @@
 ##
 
 import ../wrapper_utils
+import ../zkernel_fixes
 import ../zdevice
 
 const hdr = "<drivers/gpio.h>"

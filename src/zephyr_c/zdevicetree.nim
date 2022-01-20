@@ -15,3 +15,10 @@ template dt*(ma: static string): cminvtoken =
 
 template alias*(ma: untyped): cminvtoken =
   DT_ALIAS(ma)
+
+type
+  nDevice* = object
+    name: string
+
+template nDeviceTree*(nd: static[string]): static[nDevice] =
+  nDevice(name: nd)

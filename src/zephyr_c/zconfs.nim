@@ -50,7 +50,7 @@ const CONFIG_NAMES = [
 template other_configs(): seq[(string, NimNode)] =
   @[
     ("ARCH_EXCEPT", newLit(true)),
-    ("CONFIG_BOARD", newLit("native_posix")),
+    ("BOARD", newLit("native_posix")),
   ]
 
 proc parseCmakeConfig*(configName=".config"): TableRef[string, JsonNode] =
@@ -105,7 +105,7 @@ macro GenerateZephyrConfigDefines*(): untyped =
     else:
       parseCmakeConfig(ZephyrConfigFile)
       
-  proc getCVal(name: string): NimNode =
+  proc getCVal(name: string, defval: NimNode = nil): NimNode =
     let jnode = cvals.getOrDefault("CONFIG_" & name, newJNull())
     # echo "jnode: ", repr jnode
     if jnode.kind == JBool:
@@ -117,7 +117,10 @@ macro GenerateZephyrConfigDefines*(): untyped =
     elif jnode.kind == JString:
       result = newLit(jnode.getStr())
     elif jnode.kind == JNull:
-      result = newLit(false)
+      if defval.isNil:
+        result = newLit(false)
+      else:
+        result = defval
     else:
       error("unhandled config flag: " & name & " type: " & $jnode)
 
@@ -132,7 +135,7 @@ macro GenerateZephyrConfigDefines*(): untyped =
     assert typeof(name) is string
     assert typeof(defval) is NimNode
     let confFlag = ident name
-    let cval = defval
+    var cval = name.getCVal(defval)
     result.add quote do:
       const `confFlag`* = `cval`
 
