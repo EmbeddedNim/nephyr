@@ -30,6 +30,9 @@ template initPin*(name: cminvtoken, config: GpioFlags, property: cminvtoken): Pi
     pin = DT_GPIO_PIN(name, property)
     port = device_get_binding(label)
 
+  if port.isNil:
+    raise newException(OSError, "gpio port nil label: " & $label)
+
   var pinobj: Pin = Pin(port: port, pin: pin, mode: config)
   check: gpio_pin_configure(pinobj.port, pinobj.pin, config)
   pinobj

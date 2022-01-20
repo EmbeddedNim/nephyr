@@ -3,7 +3,7 @@ import ../zsys_clock
 
 type
 
-  k_sem* {.importc: "k_sem", header: "kernel.h", incompleteStruct, bycopy.} = object
+  k_sem* {.importc: "struct k_sem", header: "kernel.h", incompleteStruct, bycopy.} = object
     wait_q* {.importc: "wait_q".}: z_wait_q_t
     count* {.importc: "count".}: cuint
     limit* {.importc: "limit".}: cuint

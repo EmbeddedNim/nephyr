@@ -133,7 +133,7 @@ proc K_HOURS*(h: int): k_timeout_t {.importc: "K_HOURS", header: "kernel.h".}
 ##
 ##  @return Timeout delay value.
 ##
-var K_FOREVER* {.importc: "K_FOREVER", header: "kernel.h".}: int
+var K_FOREVER* {.importc: "K_FOREVER", header: "kernel.h".}: k_timeout_t
 
 
 when CONFIG_TIMEOUT_64BIT:
@@ -234,7 +234,7 @@ when CONFIG_TIMEOUT_64BIT:
 type
   k_timer_cb_t* = proc (timer: ptr k_timer) {.cdecl.}
 
-  k_timer* {.importc: "k_timer", header: "kernel.h", bycopy.} = object
+  k_timer* {.importc: "struct k_timer", header: "kernel.h", bycopy.} = object
     timeout* {.importc: "timeout".}: k_priv_timeout ##
                                           ##  _timeout structure must be first here if we want to use
                                           ##  dynamic timer allocation. timeout.node is used in the double-linked

@@ -1538,26 +1538,7 @@ proc k_cpu_idle*() {.importc:"k_cpu_idle", header: "kernel.h".}
 ##
 proc k_cpu_atomic_idle*(key: cuint) {.importc:"k_cpu_idle", header: "kernel.h".} 
 
-## *
-##  @}
-##
-## *
-##  @internal
-##
-when defined(ARCH_EXCEPT):
-  ##  This architecture has direct support for triggering a CPU exception
-  proc z_except_reason*(reason: untyped) {.importc: "z_except_reason",
-      header: "kernel.h".}
-else:
-  discard """
-   NOTE: This is the implementation for arches that do not implement
-   ARCH_EXCEPT() to generate a real CPU exception.
-  
-   We won't have a real exception frame to determine the PC value when
-   the oops occurred, so print file and line number before we jump into
-   the fatal error handler.
-  
-  """
+proc k_panic*() {.importc: "k_panic", header: "kernel.h".}
 
 ## *
 ##  @brief Fatally terminate a thread

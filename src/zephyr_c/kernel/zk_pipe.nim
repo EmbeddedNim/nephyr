@@ -14,7 +14,7 @@ type
     writers* {.importc: "writers".}: z_wait_q_t ## *< Writer wait queue
 
 type
-  k_pipe* {.importc: "k_pipe", header: "kernel.h", bycopy.} = object
+  k_pipe* {.importc: "struct k_pipe", header: "kernel.h", bycopy.} = object
     buffer* {.importc: "buffer".}: ptr cuchar ## *< Pipe buffer: may be NULL
     size* {.importc: "size".}: csize_t ## *< Buffer size
     bytes_used* {.importc: "bytes_used".}: csize_t ## *< # bytes used in buffer

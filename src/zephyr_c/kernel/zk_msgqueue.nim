@@ -5,7 +5,7 @@ import ../zthread
 import ../kernel/zk_sem
 
 type
-  k_msgq* {.importc: "k_msgq", header: "kernel.h", bycopy.} = object
+  k_msgq* {.importc: "struct k_msgq", header: "kernel.h", bycopy.} = object
     ##  @brief Message Queue Structure
     wait_q* {.importc: "wait_q".}: z_wait_q_t ## * Message queue wait queue
     ## * Lock
@@ -21,7 +21,7 @@ type
                                                       ## * Message queue
     flags* {.importc: "flags".}: uint8
 
-  k_msgq_attrs* {.importc: "k_msgq_attrs", header: "kernel.h", bycopy.} = object
+  k_msgq_attrs* {.importc: "struct k_msgq_attrs", header: "kernel.h", bycopy.} = object
     ##  @brief Message Queue Attributes
     msg_size* {.importc: "msg_size".}: csize_t ## * Message Size
     ## * Maximal number of messages
@@ -260,7 +260,7 @@ proc z_impl_k_msgq_num_used_get*(msgq: ptr k_msgq): uint32 {.inline.} =
 ##
 type
 
-  k_mbox_msg* {.importc: "k_mbox_msg", header: "kernel.h", incompleteStruct, bycopy.} = object
+  k_mbox_msg* {.importc: "struct k_mbox_msg", header: "kernel.h", incompleteStruct, bycopy.} = object
     z_mailbox* {.importc: "_mailbox".}: uint32 ## * internal use only - needed for legacy API support
     ## * size of message (in bytes)
     size* {.importc: "size".}: csize_t ## * application-defined information value
@@ -277,7 +277,7 @@ type
 ##
 ##
 type
-  k_mbox* {.importc: "k_mbox", header: "kernel.h", bycopy.} = object
+  k_mbox* {.importc: "struct k_mbox", header: "kernel.h", bycopy.} = object
     tx_msg_queue* {.importc: "tx_msg_queue".}: z_wait_q_t ## * Transmit messages queue
     ## * Receive message queue
     rx_msg_queue* {.importc: "rx_msg_queue".}: z_wait_q_t
