@@ -84,9 +84,9 @@ template testsZkFifo*() =
     var thrp: Thread[(ZFifo[int], int, int)]
     var thrc: Thread[(ZFifo[int], int, int)]
 
-    createThread(thrc, consumerThread, (myFifo, ncnt, tsrand))
-    # os.sleep(2000)
     createThread(thrp, producerThread, (myFifo, ncnt, tsrand))
+    os.sleep(100)
+    createThread(thrc, consumerThread, (myFifo, ncnt, tsrand))
     # echo "myFifo: ", repr(myFifo)
     joinThreads(thrp, thrc)
     echo "[ZFifo] Done joined "
