@@ -24,6 +24,7 @@ const hdr = "<drivers/i2c.h>"
 ##
 
 import ../wrapper_utils
+import ../zkernel_fixes
 import ../zdevice
 
 NephyrDefineDistinctFlag(I2cFlag, uint8)
