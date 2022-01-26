@@ -5,6 +5,9 @@ import os, strutils, sequtils
 import strformat, tables, sugar
 import os, streams, parsecfg, tables
 
+import json
+import ../../zephyr_c/zconfs
+
 if getEnv("BOARD") == "" and commandLineParams()[^1].startsWith("zephyr_"):
   echo "[Nephyr WARNING]: No BOARD variable found. Make sure you source an environment first! "
   echo "\nEnvironments available: "
@@ -237,6 +240,11 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
     rmDir(nopts.projdir / "build")
 
   let
+    configs = parseCmakeConfig(zconfpath)
+    hasMPU = configs.getOrDefault("CONFIG_MPU", % false).getBool(false)
+    useMallocFlag = "-d:zephyrUseLibcMalloc"
+
+  let
     nimargs = @[
       "c",
       "--path:" & thisDir() / nopts.appsrc,
@@ -244,6 +252,7 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
       "--compileOnly",
       "--nimcache:" & nopts.cachedir.quoteShell(),
       "-d:NimAppMain",
+      "" & useMallocFlag,
       "-d:ZephyrConfigFile:"&zconfpath, # this is important now! sets the config flags
     ].join(" ") 
     childargs = nopts.child_args.mapIt(it.quoteShell()).join(" ")
