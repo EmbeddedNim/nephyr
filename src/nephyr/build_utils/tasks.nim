@@ -252,7 +252,7 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
       "--compileOnly",
       "--nimcache:" & nopts.cachedir.quoteShell(),
       "-d:NimAppMain",
-      "" & useMallocFlag,
+      "" & useMallocFlag, # set whether to use k_malloc or libC malloc based on MPU / maybe MMU?
       "-d:ZephyrConfigFile:"&zconfpath, # this is important now! sets the config flags
     ].join(" ") 
     childargs = nopts.child_args.mapIt(it.quoteShell()).join(" ")
