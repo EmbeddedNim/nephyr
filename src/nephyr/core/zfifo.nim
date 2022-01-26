@@ -65,6 +65,8 @@ template testsZkFifo*() =
     echo "Done Consumer: "
 
   proc runTestsZkFifo() =
+    echo "\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< "
+    echo "[ZFifo] Begin "
     randomize()
     var myFifo = newZFifo[int]()
     echo "zf: ", repr(myFifo)
@@ -73,10 +75,12 @@ template testsZkFifo*() =
     echo "myFifo: ", repr(myFifo)
     consumerThread((myFifo, 10, 100))
     echo "myFifo: ", repr(myFifo)
+    echo "[ZFifo] Done joined "
+    echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "
 
   proc runTestsZkFifoThreaded(ncnt, tsrand: int) =
-    echo "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< "
-    echo "[ZFifo] Begin "
+    echo "\n<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< "
+    echo "[ZFifo Threaded] Begin "
     randomize()
     var myFifo = newZFifo[int]()
     echo "zf: ", repr(myFifo)
@@ -89,7 +93,7 @@ template testsZkFifo*() =
     createThread(thrc, consumerThread, (myFifo, ncnt, tsrand))
     # echo "myFifo: ", repr(myFifo)
     joinThreads(thrp, thrc)
-    echo "[ZFifo] Done joined "
+    echo "[ZFifo Threaded] Done joined "
     echo ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> "
 
 
