@@ -242,7 +242,13 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
   let
     configs = parseCmakeConfig(zconfpath)
     hasMPU = configs.getOrDefault("CONFIG_MPU", % false).getBool(false)
-    useMallocFlag = "-d:zephyrUseLibcMalloc"
+    hasMMU = configs.getOrDefault("CONFIG_MMU", % false).getBool(false)
+
+    # set whether to use k_malloc or libC malloc based on MPU 
+    # TODO: FIXME: maybe MMU's as well?
+    useMallocFlag =
+      if hasMPU or hasMMU: "-d:zephyrUseLibcMalloc"
+      else: ""
 
   let
     nimargs = @[
@@ -252,7 +258,7 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
       "--compileOnly",
       "--nimcache:" & nopts.cachedir.quoteShell(),
       "-d:NimAppMain",
-      "" & useMallocFlag, # set whether to use k_malloc or libC malloc based on MPU / maybe MMU?
+      "" & useMallocFlag, 
       "-d:ZephyrConfigFile:"&zconfpath, # this is important now! sets the config flags
     ].join(" ") 
     childargs = nopts.child_args.mapIt(it.quoteShell()).join(" ")
