@@ -22,7 +22,7 @@ proc sysPanic*() = k_fatal_halt(K_ERR_KERNEL_PANIC.cuint)
 
 proc usb_enable*(arg: pointer): cint {.importc: "usb_enable", header: "<usb/usb_device.h>".}
 
-proc sysUsbEnable*(arg: pointer = nil, check = false) =
+template sysUsbEnable*(arg: pointer = nil, check = false) =
   let res = usb_enable(arg)
   logWarn("sysUsbEnable:error: ", res)
   if check:
