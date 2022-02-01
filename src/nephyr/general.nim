@@ -2,6 +2,7 @@
 import std/sequtils, std/strutils
 
 import mcu_utils/basictypes
+import mcu_utils/logging
 
 export basictypes
 export sequtils
@@ -19,5 +20,11 @@ proc sysReboot*(coldReboot: bool = false) = k_sys_reboot(if coldReboot: 1 else: 
 proc sysPanic*(reason: k_fatal_error_reason | cuint) = k_fatal_halt(reason.cuint)
 proc sysPanic*() = k_fatal_halt(K_ERR_KERNEL_PANIC.cuint)
 
-when CONFIG_USB_DEVICE_STACK:
-  proc usbEnable*(arg: pointer = nil): cint {.importc: "usb_enable", header: "<usb/usb_device.h>", discardable.}
+proc usb_enable*(arg: pointer): cint {.importc: "usb_enable", header: "<usb/usb_device.h>".}
+
+proc sysUsbEnable*(arg: pointer = nil, check = false) =
+  let res = usb_enable(arg)
+  logWarn("sysUsbEnable:error: ", res)
+  if check:
+    doCheck(res)
+
