@@ -57,6 +57,12 @@ type
     SOCK_DGRAM,               ## *< Datagram socket type
     SOCK_RAW                  ## *< RAW socket type
 
+#[
+
+  ======================== ========================= ====================== 
+  ======================= Use Nim std/posix instead  ====================== 
+  ======================== ========================= ====================== 
+
 
 ## * @brief Convert 16-bit value from network to host byte order.
 ##
@@ -64,49 +70,48 @@ type
 ##
 ##  @return Host byte order value.
 ##
-
 proc ntohs*(x: untyped) {.importc: "ntohs", header: "net_ip.h".}
+
 ## * @brief Convert 32-bit value from network to host byte order.
 ##
 ##  @param x The network byte order value to convert.
 ##
 ##  @return Host byte order value.
 ##
-
 proc ntohl*(x: untyped) {.importc: "ntohl", header: "net_ip.h".}
+
 ## * @brief Convert 64-bit value from network to host byte order.
 ##
 ##  @param x The network byte order value to convert.
 ##
 ##  @return Host byte order value.
 ##
-
 proc ntohll*(x: untyped) {.importc: "ntohll", header: "net_ip.h".}
+
 ## * @brief Convert 16-bit value from host to network byte order.
 ##
 ##  @param x The host byte order value to convert.
 ##
 ##  @return Network byte order value.
 ##
-
 proc htons*(x: untyped) {.importc: "htons", header: "net_ip.h".}
+
 ## * @brief Convert 32-bit value from host to network byte order.
 ##
 ##  @param x The host byte order value to convert.
 ##
 ##  @return Network byte order value.
 ##
-
 proc htonl*(x: untyped) {.importc: "htonl", header: "net_ip.h".}
+
 ## * @brief Convert 64-bit value from host to network byte order.
 ##
 ##  @param x The host byte order value to convert.
 ##
 ##  @return Network byte order value.
 ##
-
 proc htonll*(x: untyped) {.importc: "htonll", header: "net_ip.h".}
-## * IPv6 address struct
+
 
 type
   INNER_C_UNION_net_ip_0* {.importc: "no_name", header: "net_ip.h", bycopy, union.} = object
@@ -114,6 +119,7 @@ type
     s6_addr16* {.importc: "s6_addr16".}: array[8, uint16] ##  In big endian
     s6_addr32* {.importc: "s6_addr32".}: array[4, uint32] ##  In big endian
 
+  ## * IPv6 address struct
   in6_addr* {.importc: "in6_addr", header: "net_ip.h", bycopy.} = object
     ano_net_ip_1* {.importc: "ano_net_ip_1".}: INNER_C_UNION_net_ip_0
 
@@ -331,19 +337,35 @@ var INET6_ADDRSTRLEN* {.importc: "INET6_ADDRSTRLEN", header: "net_ip.h".}: int
 var NET_IPV6_ADDR_LEN* {.importc: "NET_IPV6_ADDR_LEN", header: "net_ip.h".}: int
 ## * @endcond
 
+]#
+
+import posix
+
 type
-  net_ip_mtu* {.size: sizeof(cint).} = enum ## * IPv6 MTU length. We must be able to receive this size IPv6 packet
-                                       ##  without fragmentation.
-                                       ##
-    NET_IPV4_MTU = 576, NET_IPV6_MTU = 1280 ## * IPv4 MTU length. We must be able to receive this size IPv4 packet
-                                      ##  without fragmentation.
-                                      ##
+  TSa_Family = posix.TSa_Family
+
+  NetAddr* {.importc: "net_addr", header: "net_ip.h", bycopy, incompleteStruct.} = object
+    family* {.importc: "family".}: TSa_Family
+    ## the C code uses an anonymous union 
+    in6_addr* {.importc: "in6_addr".}: In6Addr
+    in_addr* {.importc: "in_addr".}: InAddr
 
 
-## * Network packet priority settings described in IEEE 802.1Q Annex I.1
+type
+  net_ip_mtu* {.size: sizeof(cint).} = enum
+    NET_IPV4_MTU = 576, ## *\
+      ## IPv6 MTU length. We must be able to receive this size IPv6 packet
+      ##  without fragmentation.
+      ##
+    NET_IPV6_MTU = 1280 ## *\
+      ## IPv4 MTU length. We must be able to receive this size IPv4 packet
+      ##  without fragmentation.
+      ##
+
 
 type
   net_priority* {.size: sizeof(uint8).} = enum
+    ## * Network packet priority settings described in IEEE 802.1Q Annex I.1
     NET_PRIORITY_BE = 0,        ## *< Best effort (default)
     NET_PRIORITY_BK = 1,        ## *< Background (lowest)
     NET_PRIORITY_EE = 2,        ## *< Excellent effort
@@ -351,7 +373,7 @@ type
     NET_PRIORITY_VI = 4,        ## *< Video, < 100 ms latency and jitter
     NET_PRIORITY_VO = 5,        ## *< Voice, < 10 ms latency and jitter
     NET_PRIORITY_IC = 6,        ## *< Internetwork control
-    NET_PRIORITY_NC = 7
+    NET_PRIORITY_NC = 7         ## *< Network control
 
 
 var NET_MAX_PRIORITIES* {.importc: "NET_MAX_PRIORITIES", header: "net_ip.h".}: int
