@@ -18,11 +18,13 @@
 
 ## * @cond INTERNAL_HIDDEN
 ##  Specifying VLAN tag here in order to avoid circular dependencies
+## 
+const hdr = "<net/net_ip.h>"
 
-var PF_UNSPEC* {.importc: "PF_UNSPEC", header: "net_ip.h".}: int
+var PF_UNSPEC* {.importc: "PF_UNSPEC", header: hdr.}: int
 ##  Address families.
 
-var AF_UNSPEC* {.importc: "AF_UNSPEC", header: "net_ip.h".}: int
+var AF_UNSPEC* {.importc: "AF_UNSPEC", header: hdr.}: int
 ## * Protocol numbers from IANA/BSD
 
 type
@@ -70,7 +72,7 @@ type
 ##
 ##  @return Host byte order value.
 ##
-proc ntohs*(x: untyped) {.importc: "ntohs", header: "net_ip.h".}
+proc ntohs*(x: untyped) {.importc: "ntohs", header: hdr.}
 
 ## * @brief Convert 32-bit value from network to host byte order.
 ##
@@ -78,7 +80,7 @@ proc ntohs*(x: untyped) {.importc: "ntohs", header: "net_ip.h".}
 ##
 ##  @return Host byte order value.
 ##
-proc ntohl*(x: untyped) {.importc: "ntohl", header: "net_ip.h".}
+proc ntohl*(x: untyped) {.importc: "ntohl", header: hdr.}
 
 ## * @brief Convert 64-bit value from network to host byte order.
 ##
@@ -86,7 +88,7 @@ proc ntohl*(x: untyped) {.importc: "ntohl", header: "net_ip.h".}
 ##
 ##  @return Host byte order value.
 ##
-proc ntohll*(x: untyped) {.importc: "ntohll", header: "net_ip.h".}
+proc ntohll*(x: untyped) {.importc: "ntohll", header: hdr.}
 
 ## * @brief Convert 16-bit value from host to network byte order.
 ##
@@ -94,7 +96,7 @@ proc ntohll*(x: untyped) {.importc: "ntohll", header: "net_ip.h".}
 ##
 ##  @return Network byte order value.
 ##
-proc htons*(x: untyped) {.importc: "htons", header: "net_ip.h".}
+proc htons*(x: untyped) {.importc: "htons", header: hdr.}
 
 ## * @brief Convert 32-bit value from host to network byte order.
 ##
@@ -102,7 +104,7 @@ proc htons*(x: untyped) {.importc: "htons", header: "net_ip.h".}
 ##
 ##  @return Network byte order value.
 ##
-proc htonl*(x: untyped) {.importc: "htonl", header: "net_ip.h".}
+proc htonl*(x: untyped) {.importc: "htonl", header: hdr.}
 
 ## * @brief Convert 64-bit value from host to network byte order.
 ##
@@ -110,30 +112,30 @@ proc htonl*(x: untyped) {.importc: "htonl", header: "net_ip.h".}
 ##
 ##  @return Network byte order value.
 ##
-proc htonll*(x: untyped) {.importc: "htonll", header: "net_ip.h".}
+proc htonll*(x: untyped) {.importc: "htonll", header: hdr.}
 
 
 type
-  INNER_C_UNION_net_ip_0* {.importc: "no_name", header: "net_ip.h", bycopy, union.} = object
+  INNER_C_UNION_net_ip_0* {.importc: "no_name", header: hdr, bycopy, union.} = object
     s6_addr* {.importc: "s6_addr".}: array[16, uint8]
     s6_addr16* {.importc: "s6_addr16".}: array[8, uint16] ##  In big endian
     s6_addr32* {.importc: "s6_addr32".}: array[4, uint32] ##  In big endian
 
   ## * IPv6 address struct
-  in6_addr* {.importc: "in6_addr", header: "net_ip.h", bycopy.} = object
+  In6Addr* {.importc: "In6Addr", header: hdr, bycopy.} = object
     ano_net_ip_1* {.importc: "ano_net_ip_1".}: INNER_C_UNION_net_ip_0
 
 
 ## * IPv4 address struct
 
 type
-  INNER_C_UNION_net_ip_2* {.importc: "no_name", header: "net_ip.h", bycopy, union.} = object
+  INNER_C_UNION_net_ip_2* {.importc: "no_name", header: hdr, bycopy, union.} = object
     s4_addr* {.importc: "s4_addr".}: array[4, uint8]
     s4_addr16* {.importc: "s4_addr16".}: array[2, uint16] ##  In big endian
     s4_addr32* {.importc: "s4_addr32".}: array[1, uint32] ##  In big endian
     s_addr* {.importc: "s_addr".}: uint32 ##  In big endian, for POSIX compatibility.
 
-  in_addr* {.importc: "in_addr", header: "net_ip.h", bycopy.} = object
+  InAddr* {.importc: "InAddr", header: hdr, bycopy.} = object
     ano_net_ip_3* {.importc: "ano_net_ip_3".}: INNER_C_UNION_net_ip_2
 
 
@@ -154,37 +156,37 @@ type
 ## * Socket address struct for IPv6.
 
 type
-  sockaddr_in6* {.importc: "sockaddr_in6", header: "net_ip.h", bycopy.} = object
+  sockaddr_in6* {.importc: "sockaddr_in6", header: hdr, bycopy.} = object
     sin6_family* {.importc: "sin6_family".}: sa_family_t ##  AF_INET6
     sin6_port* {.importc: "sin6_port".}: uint16 ##  Port number
-    sin6_addr* {.importc: "sin6_addr".}: in6_addr ##  IPv6 address
+    sin6_addr* {.importc: "sin6_addr".}: In6Addr ##  IPv6 address
     sin6_scope_id* {.importc: "sin6_scope_id".}: uint8 ##  interfaces for a scope
 
-  sockaddr_in6_ptr* {.importc: "sockaddr_in6_ptr", header: "net_ip.h", bycopy.} = object
+  sockaddr_in6_ptr* {.importc: "sockaddr_in6_ptr", header: hdr, bycopy.} = object
     sin6_family* {.importc: "sin6_family".}: sa_family_t ##  AF_INET6
     sin6_port* {.importc: "sin6_port".}: uint16 ##  Port number
-    sin6_addr* {.importc: "sin6_addr".}: ptr in6_addr ##  IPv6 address
+    sin6_addr* {.importc: "sin6_addr".}: ptr In6Addr ##  IPv6 address
     sin6_scope_id* {.importc: "sin6_scope_id".}: uint8 ##  interfaces for a scope
 
 
 ## * Socket address struct for IPv4.
 
 type
-  sockaddr_in* {.importc: "sockaddr_in", header: "net_ip.h", bycopy.} = object
+  sockaddr_in* {.importc: "sockaddr_in", header: hdr, bycopy.} = object
     sin_family* {.importc: "sin_family".}: sa_family_t ##  AF_INET
     sin_port* {.importc: "sin_port".}: uint16 ##  Port number
-    sin_addr* {.importc: "sin_addr".}: in_addr ##  IPv4 address
+    sin_addr* {.importc: "sin_addr".}: InAddr ##  IPv4 address
 
-  sockaddr_in_ptr* {.importc: "sockaddr_in_ptr", header: "net_ip.h", bycopy.} = object
+  sockaddr_in_ptr* {.importc: "sockaddr_in_ptr", header: hdr, bycopy.} = object
     sin_family* {.importc: "sin_family".}: sa_family_t ##  AF_INET
     sin_port* {.importc: "sin_port".}: uint16 ##  Port number
-    sin_addr* {.importc: "sin_addr".}: ptr in_addr ##  IPv4 address
+    sin_addr* {.importc: "sin_addr".}: ptr InAddr ##  IPv4 address
 
 
 ## * Socket address struct for packet socket.
 
 type
-  sockaddr_ll* {.importc: "sockaddr_ll", header: "net_ip.h", bycopy.} = object
+  sockaddr_ll* {.importc: "sockaddr_ll", header: hdr, bycopy.} = object
     sll_family* {.importc: "sll_family".}: sa_family_t ##  Always AF_PACKET
     sll_protocol* {.importc: "sll_protocol".}: uint16 ##  Physical-layer protocol
     sll_ifindex* {.importc: "sll_ifindex".}: cint ##  Interface number
@@ -193,7 +195,7 @@ type
     sll_halen* {.importc: "sll_halen".}: uint8 ##  Length of address
     sll_addr* {.importc: "sll_addr".}: array[8, uint8] ##  Physical-layer address
 
-  sockaddr_ll_ptr* {.importc: "sockaddr_ll_ptr", header: "net_ip.h", bycopy.} = object
+  sockaddr_ll_ptr* {.importc: "sockaddr_ll_ptr", header: hdr, bycopy.} = object
     sll_family* {.importc: "sll_family".}: sa_family_t ##  Always AF_PACKET
     sll_protocol* {.importc: "sll_protocol".}: uint16 ##  Physical-layer protocol
     sll_ifindex* {.importc: "sll_ifindex".}: cint ##  Interface number
@@ -202,19 +204,19 @@ type
     sll_halen* {.importc: "sll_halen".}: uint8 ##  Length of address
     sll_addr* {.importc: "sll_addr".}: ptr uint8 ##  Physical-layer address
 
-  sockaddr_can_ptr* {.importc: "sockaddr_can_ptr", header: "net_ip.h", bycopy.} = object
+  sockaddr_can_ptr* {.importc: "sockaddr_can_ptr", header: hdr, bycopy.} = object
     can_family* {.importc: "can_family".}: sa_family_t
     can_ifindex* {.importc: "can_ifindex".}: cint
 
 
 when not defined(HAVE_IOVEC):
   type
-    iovec* {.importc: "iovec", header: "net_ip.h", bycopy.} = object
+    iovec* {.importc: "iovec", header: hdr, bycopy.} = object
       iov_base* {.importc: "iov_base".}: pointer
       iov_len* {.importc: "iov_len".}: csize_t
 
 type
-  msghdr* {.importc: "msghdr", header: "net_ip.h", bycopy.} = object
+  msghdr* {.importc: "msghdr", header: hdr, bycopy.} = object
     msg_name* {.importc: "msg_name".}: pointer ##  optional socket address
     msg_namelen* {.importc: "msg_namelen".}: socklen_t ##  size of socket address
     msg_iov* {.importc: "msg_iov".}: ptr iovec ##  scatter/gather array
@@ -223,7 +225,7 @@ type
     msg_controllen* {.importc: "msg_controllen".}: csize_t ##  ancillary data buffer len
     msg_flags* {.importc: "msg_flags".}: cint ##  flags on received message
 
-  cmsghdr* {.importc: "cmsghdr", header: "net_ip.h", bycopy.} = object
+  cmsghdr* {.importc: "cmsghdr", header: hdr, bycopy.} = object
     cmsg_len* {.importc: "cmsg_len".}: socklen_t ##  Number of bytes, including header
     cmsg_level* {.importc: "cmsg_level".}: cint ##  Originating protocol
     cmsg_type* {.importc: "cmsg_type".}: cint ##  Protocol-specific type
@@ -236,47 +238,47 @@ type
 ##
 
 when not defined(ALIGN_H):
-  proc ALIGN_H*(x: untyped) {.importc: "ALIGN_H", header: "net_ip.h".}
+  proc ALIGN_H*(x: untyped) {.importc: "ALIGN_H", header: hdr.}
 when not defined(ALIGN_D):
-  proc ALIGN_D*(x: untyped) {.importc: "ALIGN_D", header: "net_ip.h".}
+  proc ALIGN_D*(x: untyped) {.importc: "ALIGN_D", header: hdr.}
 when not defined(CMSG_FIRSTHDR):
-  proc CMSG_FIRSTHDR*(msghdr: untyped) {.importc: "CMSG_FIRSTHDR", header: "net_ip.h".}
+  proc CMSG_FIRSTHDR*(msghdr: untyped) {.importc: "CMSG_FIRSTHDR", header: hdr.}
 when not defined(CMSG_NXTHDR):
   proc CMSG_NXTHDR*(msghdr: untyped; cmsg: untyped) {.importc: "CMSG_NXTHDR",
-      header: "net_ip.h".}
+      header: hdr.}
 when not defined(CMSG_DATA):
-  proc CMSG_DATA*(cmsg: untyped) {.importc: "CMSG_DATA", header: "net_ip.h".}
+  proc CMSG_DATA*(cmsg: untyped) {.importc: "CMSG_DATA", header: hdr.}
 when not defined(CMSG_SPACE):
-  proc CMSG_SPACE*(length: untyped) {.importc: "CMSG_SPACE", header: "net_ip.h".}
+  proc CMSG_SPACE*(length: untyped) {.importc: "CMSG_SPACE", header: hdr.}
 when not defined(CMSG_LEN):
-  proc CMSG_LEN*(length: untyped) {.importc: "CMSG_LEN", header: "net_ip.h".}
+  proc CMSG_LEN*(length: untyped) {.importc: "CMSG_LEN", header: hdr.}
 ## * @cond INTERNAL_HIDDEN
 ##  Packet types.
 
-var PACKET_HOST* {.importc: "PACKET_HOST", header: "net_ip.h".}: int
+var PACKET_HOST* {.importc: "PACKET_HOST", header: hdr.}: int
 ##  Note: These macros are defined in a specific order.
 ##  The largest sockaddr size is the last one.
 ##
 
 when defined(CONFIG_NET_IPV4):
-  var NET_SOCKADDR_MAX_SIZE* {.importc: "NET_SOCKADDR_MAX_SIZE", header: "net_ip.h".}: int
+  var NET_SOCKADDR_MAX_SIZE* {.importc: "NET_SOCKADDR_MAX_SIZE", header: hdr.}: int
 when defined(CONFIG_NET_SOCKETS_PACKET):
-  var NET_SOCKADDR_MAX_SIZE* {.importc: "NET_SOCKADDR_MAX_SIZE", header: "net_ip.h".}: int
+  var NET_SOCKADDR_MAX_SIZE* {.importc: "NET_SOCKADDR_MAX_SIZE", header: hdr.}: int
 when defined(CONFIG_NET_IPV6):
-  var NET_SOCKADDR_MAX_SIZE* {.importc: "NET_SOCKADDR_MAX_SIZE", header: "net_ip.h".}: int
+  var NET_SOCKADDR_MAX_SIZE* {.importc: "NET_SOCKADDR_MAX_SIZE", header: hdr.}: int
   when not defined(CONFIG_NET_SOCKETS_PACKET):
     var NET_SOCKADDR_PTR_MAX_SIZE* {.importc: "NET_SOCKADDR_PTR_MAX_SIZE",
-                                   header: "net_ip.h".}: int
+                                   header: hdr.}: int
 when not defined(CONFIG_NET_IPV4):
   when not defined(CONFIG_NET_IPV6):
     when not defined(CONFIG_NET_SOCKETS_PACKET):
       var NET_SOCKADDR_MAX_SIZE* {.importc: "NET_SOCKADDR_MAX_SIZE",
-                                 header: "net_ip.h".}: int
+                                 header: hdr.}: int
 ## * @endcond
 ## * Generic sockaddr struct. Must be cast to proper type.
 
 type
-  sockaddr* {.importc: "sockaddr", header: "net_ip.h", bycopy.} = object
+  sockaddr* {.importc: "sockaddr", header: hdr, bycopy.} = object
     sa_family* {.importc: "sa_family".}: sa_family_t
     data* {.importc: "data".}: array[NET_SOCKADDR_MAX_SIZE - sizeof((sa_family_t)),
                                   char]
@@ -285,7 +287,7 @@ type
 ## * @cond INTERNAL_HIDDEN
 
 type
-  sockaddr_ptr* {.importc: "sockaddr_ptr", header: "net_ip.h", bycopy.} = object
+  sockaddr_ptr* {.importc: "sockaddr_ptr", header: hdr, bycopy.} = object
     family* {.importc: "family".}: sa_family_t
     data* {.importc: "data".}: array[NET_SOCKADDR_PTR_MAX_SIZE -
         sizeof((sa_family_t)), char]
@@ -294,7 +296,7 @@ type
 ##  Same as sockaddr in our case
 
 type
-  sockaddr_storage* {.importc: "sockaddr_storage", header: "net_ip.h", bycopy.} = object
+  sockaddr_storage* {.importc: "sockaddr_storage", header: hdr, bycopy.} = object
     ss_family* {.importc: "ss_family".}: sa_family_t
     data* {.importc: "data".}: array[NET_SOCKADDR_MAX_SIZE - sizeof((sa_family_t)),
                                   char]
@@ -303,38 +305,38 @@ type
 ##  Socket address struct for UNIX domain sockets
 
 type
-  sockaddr_un* {.importc: "sockaddr_un", header: "net_ip.h", bycopy.} = object
+  sockaddr_un* {.importc: "sockaddr_un", header: hdr, bycopy.} = object
     sun_family* {.importc: "sun_family".}: sa_family_t ##  AF_UNIX
     sun_path* {.importc: "sun_path".}: array[
         NET_SOCKADDR_MAX_SIZE - sizeof((sa_family_t)), char]
 
-  INNER_C_UNION_net_ip_4* {.importc: "no_name", header: "net_ip.h", bycopy, union.} = object
-    in6_addr* {.importc: "in6_addr".}: in6_addr
-    in_addr* {.importc: "in_addr".}: in_addr
+  INNER_C_UNION_net_ip_4* {.importc: "no_name", header: hdr, bycopy, union.} = object
+    In6Addr* {.importc: "In6Addr".}: In6Addr
+    InAddr* {.importc: "InAddr".}: InAddr
 
-  net_addr* {.importc: "net_addr", header: "net_ip.h", bycopy.} = object
+  NetAddr* {.importc: "NetAddr", header: hdr, bycopy.} = object
     family* {.importc: "family".}: sa_family_t
     ano_net_ip_5* {.importc: "ano_net_ip_5".}: INNER_C_UNION_net_ip_4
 
 
-var IN6ADDR_ANY_INIT* {.importc: "IN6ADDR_ANY_INIT", header: "net_ip.h".}: int
-let in6addr_any* {.importc: "in6addr_any", header: "net_ip.h".}: in6_addr
+var IN6ADDR_ANY_INIT* {.importc: "IN6ADDR_ANY_INIT", header: hdr.}: int
+let in6addr_any* {.importc: "in6addr_any", header: hdr.}: In6Addr
 
-let in6addr_loopback* {.importc: "in6addr_loopback", header: "net_ip.h".}: in6_addr
+let in6addr_loopback* {.importc: "in6addr_loopback", header: hdr.}: In6Addr
 
 ## * @endcond
 ## * Max length of the IPv4 address as a string. Defined by POSIX.
 
-var INET_ADDRSTRLEN* {.importc: "INET_ADDRSTRLEN", header: "net_ip.h".}: int
+var INET_ADDRSTRLEN* {.importc: "INET_ADDRSTRLEN", header: hdr.}: int
 ## * Max length of the IPv6 address as a string. Takes into account possible
 ##  mapped IPv4 addresses.
 ##
 
-var INET6_ADDRSTRLEN* {.importc: "INET6_ADDRSTRLEN", header: "net_ip.h".}: int
+var INET6_ADDRSTRLEN* {.importc: "INET6_ADDRSTRLEN", header: hdr.}: int
 ## * @cond INTERNAL_HIDDEN
 ##  These are for internal usage of the stack
 
-var NET_IPV6_ADDR_LEN* {.importc: "NET_IPV6_ADDR_LEN", header: "net_ip.h".}: int
+var NET_IPV6_ADDR_LEN* {.importc: "NET_IPV6_ADDR_LEN", header: hdr.}: int
 ## * @endcond
 
 ]#
@@ -342,13 +344,12 @@ var NET_IPV6_ADDR_LEN* {.importc: "NET_IPV6_ADDR_LEN", header: "net_ip.h".}: int
 import posix
 
 type
-  TSa_Family = posix.TSa_Family
 
-  NetAddr* {.importc: "net_addr", header: "net_ip.h", bycopy, incompleteStruct.} = object
+  NetAddr* {.importc: "NetAddr", header: hdr, bycopy, incompleteStruct.} = object
     family* {.importc: "family".}: TSa_Family
     ## the C code uses an anonymous union 
-    in6_addr* {.importc: "in6_addr".}: In6Addr
-    in_addr* {.importc: "in_addr".}: InAddr
+    In6Addr* {.importc: "In6Addr".}: In6Addr
+    InAddr* {.importc: "InAddr".}: InAddr
 
 
 type
@@ -376,13 +377,13 @@ type
     NET_PRIORITY_NC = 7         ## *< Network control
 
 
-var NET_MAX_PRIORITIES* {.importc: "NET_MAX_PRIORITIES", header: "net_ip.h".}: int
+var NET_MAX_PRIORITIES* {.importc: "NET_MAX_PRIORITIES", header: hdr.}: int
 ## * IPv6/IPv4 network connection tuple
 
 type
-  net_tuple* {.importc: "net_tuple", header: "net_ip.h", bycopy.} = object
-    remote_addr* {.importc: "remote_addr".}: ptr net_addr ## *< IPv6/IPv4 remote address
-    local_addr* {.importc: "local_addr".}: ptr net_addr ## *< IPv6/IPv4 local address
+  net_tuple* {.importc: "net_tuple", header: hdr, bycopy.} = object
+    remote_addr* {.importc: "remote_addr".}: ptr NetAddr ## *< IPv6/IPv4 remote address
+    local_addr* {.importc: "local_addr".}: ptr NetAddr ## *< IPv6/IPv4 local address
     remote_port* {.importc: "remote_port".}: uint16 ## *< UDP/TCP remote port
     local_port* {.importc: "local_port".}: uint16 ## *< UDP/TCP local port
     ip_proto* {.importc: "ip_proto".}: net_ip_protocol ## *< IP protocol
@@ -412,23 +413,23 @@ type
 ## * @cond INTERNAL_HIDDEN
 
 type
-  net_ipv6_hdr* {.importc: "net_ipv6_hdr", header: "net_ip.h", bycopy, packed.} = object
+  net_ipv6_hdr* {.importc: "net_ipv6_hdr", header: hdr, bycopy, packed.} = object
     vtc* {.importc: "vtc".}: uint8
     tcflow* {.importc: "tcflow".}: uint8
     flow* {.importc: "flow".}: uint16
     len* {.importc: "len".}: uint16
     nexthdr* {.importc: "nexthdr".}: uint8
     hop_limit* {.importc: "hop_limit".}: uint8
-    src* {.importc: "src".}: in6_addr
-    dst* {.importc: "dst".}: in6_addr
+    src* {.importc: "src".}: In6Addr
+    dst* {.importc: "dst".}: In6Addr
 
-  net_ipv6_frag_hdr* {.importc: "net_ipv6_frag_hdr", header: "net_ip.h", bycopy, packed.} = object
+  net_ipv6_frag_hdr* {.importc: "net_ipv6_frag_hdr", header: hdr, bycopy, packed.} = object
     nexthdr* {.importc: "nexthdr".}: uint8
     reserved* {.importc: "reserved".}: uint8
     offset* {.importc: "offset".}: uint16
     id* {.importc: "id".}: uint32
 
-  net_ipv4_hdr* {.importc: "net_ipv4_hdr", header: "net_ip.h", bycopy, packed.} = object
+  net_ipv4_hdr* {.importc: "net_ipv4_hdr", header: hdr, bycopy, packed.} = object
     vhl* {.importc: "vhl".}: uint8
     tos* {.importc: "tos".}: uint8
     len* {.importc: "len".}: uint16
@@ -437,21 +438,21 @@ type
     ttl* {.importc: "ttl".}: uint8
     proto* {.importc: "proto".}: uint8
     chksum* {.importc: "chksum".}: uint16
-    src* {.importc: "src".}: in_addr
-    dst* {.importc: "dst".}: in_addr
+    src* {.importc: "src".}: InAddr
+    dst* {.importc: "dst".}: InAddr
 
-  net_icmp_hdr* {.importc: "net_icmp_hdr", header: "net_ip.h", bycopy, packed.} = object
-    `type`* {.importc: "type".}: uint8
+  net_icmp_hdr* {.importc: "net_icmp_hdr", header: hdr, bycopy, packed.} = object
+    typ* {.importc: "type".}: uint8
     code* {.importc: "code".}: uint8
     chksum* {.importc: "chksum".}: uint16
 
-  net_udp_hdr* {.importc: "net_udp_hdr", header: "net_ip.h", bycopy, packed.} = object
+  net_udp_hdr* {.importc: "net_udp_hdr", header: hdr, bycopy, packed.} = object
     src_port* {.importc: "src_port".}: uint16
     dst_port* {.importc: "dst_port".}: uint16
     len* {.importc: "len".}: uint16
     chksum* {.importc: "chksum".}: uint16
 
-  net_tcp_hdr* {.importc: "net_tcp_hdr", header: "net_ip.h", bycopy, packed.} = object
+  net_tcp_hdr* {.importc: "net_tcp_hdr", header: hdr, bycopy, packed.} = object
     src_port* {.importc: "src_port".}: uint16
     dst_port* {.importc: "dst_port".}: uint16
     seq* {.importc: "seq".}: array[4, uint8]
@@ -483,23 +484,23 @@ proc net_addr_type2str*(`type`: net_addr_type): cstring =
 
 ##  IPv6 extension headers types
 
-var NET_IPV6_NEXTHDR_HBHO* {.importc: "NET_IPV6_NEXTHDR_HBHO", header: "net_ip.h".}: int
+var NET_IPV6_NEXTHDR_HBHO* {.importc: "NET_IPV6_NEXTHDR_HBHO", header: hdr.}: int
 ## *
 ##  This 2 unions are here temporarily, as long as net_context.h will
 ##  be still public and not part of the core only.
 ##
 
 type
-  net_ip_header* {.importc: "net_ip_header", header: "net_ip.h", bycopy, union.} = object
+  net_ip_header* {.importc: "net_ip_header", header: hdr, bycopy, union.} = object
     ipv4* {.importc: "ipv4".}: ptr net_ipv4_hdr
     ipv6* {.importc: "ipv6".}: ptr net_ipv6_hdr
 
-  net_proto_header* {.importc: "net_proto_header", header: "net_ip.h", bycopy, union.} = object
+  net_proto_header* {.importc: "net_proto_header", header: hdr, bycopy, union.} = object
     udp* {.importc: "udp".}: ptr net_udp_hdr
     tcp* {.importc: "tcp".}: ptr net_tcp_hdr
 
 
-var NET_UDPH_LEN* {.importc: "NET_UDPH_LEN", header: "net_ip.h".}: int
+var NET_UDPH_LEN* {.importc: "NET_UDPH_LEN", header: hdr.}: int
 ## * @endcond
 ## *
 ##  @brief Check if the IPv6 address is a loopback address (::1).
@@ -509,11 +510,7 @@ var NET_UDPH_LEN* {.importc: "NET_UDPH_LEN", header: "net_ip.h".}: int
 ##  @return True if address is a loopback address, False otherwise.
 ##
 
-proc net_ipv6_is_addr_loopback*(`addr`: ptr in6_addr): bool =
-  return UNALIGNED_GET(addr(`addr`.s6_addr32[0])) == 0 and
-      UNALIGNED_GET(addr(`addr`.s6_addr32[1])) == 0 and
-      UNALIGNED_GET(addr(`addr`.s6_addr32[2])) == 0 and
-      ntohl(UNALIGNED_GET(addr(`addr`.s6_addr32[3]))) == 1
+proc net_ipv6_is_addr_loopback*(`addr`: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if the IPv6 address is a multicast address.
@@ -523,13 +520,12 @@ proc net_ipv6_is_addr_loopback*(`addr`: ptr in6_addr): bool =
 ##  @return True if address is multicast address, False otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast*(`addr`: ptr in6_addr): bool =
-  return `addr`.s6_addr[0] == 0xFF
+proc net_ipv6_is_addr_mcast*(`addr`: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 discard "forward decl of net_if"
 discard "forward decl of net_if_config"
-proc net_if_ipv6_addr_lookup*(`addr`: ptr in6_addr; iface: ptr ptr net_if): ptr net_if_addr {.
-    importc: "net_if_ipv6_addr_lookup", header: "net_ip.h".}
+proc net_if_ipv6_addr_lookup*(`addr`: ptr In6Addr; iface: ptr ptr net_if): ptr net_if_addr {.
+    importc: "net_if_ipv6_addr_lookup", header: hdr.}
 ## *
 ##  @brief Check if IPv6 address is found in one of the network interfaces.
 ##
@@ -538,11 +534,11 @@ proc net_if_ipv6_addr_lookup*(`addr`: ptr in6_addr; iface: ptr ptr net_if): ptr 
 ##  @return True if address was found, False otherwise.
 ##
 
-proc net_ipv6_is_my_addr*(`addr`: ptr in6_addr): bool =
+proc net_ipv6_is_my_addr*(`addr`: ptr In6Addr): bool =
   return net_if_ipv6_addr_lookup(`addr`, nil) != nil
 
-proc net_if_ipv6_maddr_lookup*(`addr`: ptr in6_addr; iface: ptr ptr net_if): ptr net_if_mcast_addr {.
-    importc: "net_if_ipv6_maddr_lookup", header: "net_ip.h".}
+proc net_if_ipv6_maddr_lookup*(`addr`: ptr In6Addr; iface: ptr ptr net_if): ptr net_if_mcast_addr {.
+    importc: "net_if_ipv6_maddr_lookup", header: hdr.}
 ## *
 ##  @brief Check if IPv6 multicast address is found in one of the
 ##  network interfaces.
@@ -552,7 +548,7 @@ proc net_if_ipv6_maddr_lookup*(`addr`: ptr in6_addr; iface: ptr ptr net_if): ptr
 ##  @return True if address was found, False otherwise.
 ##
 
-proc net_ipv6_is_my_maddr*(maddr: ptr in6_addr): bool =
+proc net_ipv6_is_my_maddr*(maddr: ptr In6Addr): bool =
   return net_if_ipv6_maddr_lookup(maddr, nil) != nil
 
 ## *
@@ -590,7 +586,7 @@ proc net_ipv6_is_prefix*(addr1: ptr uint8; addr2: ptr uint8; length: uint8): boo
 ##  @return True if address is a loopback address, False otherwise.
 ##
 
-proc net_ipv4_is_addr_loopback*(`addr`: ptr in_addr): bool =
+proc net_ipv4_is_addr_loopback*(`addr`: ptr InAddr): bool =
   return `addr`.s4_addr[0] == 127'u
 
 ## *
@@ -601,7 +597,7 @@ proc net_ipv4_is_addr_loopback*(`addr`: ptr in_addr): bool =
 ##   @return True if the address is unspecified, false otherwise.
 ##
 
-proc net_ipv4_is_addr_unspecified*(`addr`: ptr in_addr): bool =
+proc net_ipv4_is_addr_unspecified*(`addr`: ptr InAddr): bool =
   return UNALIGNED_GET(addr(`addr`.s_addr)) == 0
 
 ## *
@@ -612,7 +608,7 @@ proc net_ipv4_is_addr_unspecified*(`addr`: ptr in_addr): bool =
 ##  @return True if address is multicast address, False otherwise.
 ##
 
-proc net_ipv4_is_addr_mcast*(`addr`: ptr in_addr): bool =
+proc net_ipv4_is_addr_mcast*(`addr`: ptr InAddr): bool =
   return (ntohl(UNALIGNED_GET(addr(`addr`.s_addr))) and 0xF0000000) == 0xE0000000
 
 ## *
@@ -623,7 +619,7 @@ proc net_ipv4_is_addr_mcast*(`addr`: ptr in_addr): bool =
 ##  @return True if it is, false otherwise.
 ##
 
-proc net_ipv4_is_ll_addr*(`addr`: ptr in_addr): bool =
+proc net_ipv4_is_ll_addr*(`addr`: ptr InAddr): bool =
   return (ntohl(UNALIGNED_GET(addr(`addr`.s_addr))) and 0xA9FE0000) == 0xA9FE0000
 
 ## *
@@ -637,7 +633,7 @@ proc net_ipv4_is_ll_addr*(`addr`: ptr in_addr): bool =
 ##
 
 proc net_ipaddr_copy*(dest: untyped; src: untyped) {.importc: "net_ipaddr_copy",
-    header: "net_ip.h".}
+    header: hdr.}
 ## *
 ##   @brief Compare two IPv4 addresses
 ##
@@ -647,7 +643,7 @@ proc net_ipaddr_copy*(dest: untyped; src: untyped) {.importc: "net_ipaddr_copy",
 ##   @return True if the addresses are the same, false otherwise.
 ##
 
-proc net_ipv4_addr_cmp*(addr1: ptr in_addr; addr2: ptr in_addr): bool =
+proc net_ipv4_addr_cmp*(addr1: ptr InAddr; addr2: ptr InAddr): bool =
   return UNALIGNED_GET(addr(addr1.s_addr)) == UNALIGNED_GET(addr(addr2.s_addr))
 
 ## *
@@ -659,8 +655,8 @@ proc net_ipv4_addr_cmp*(addr1: ptr in_addr; addr2: ptr in_addr): bool =
 ##   @return True if the addresses are the same, false otherwise.
 ##
 
-proc net_ipv6_addr_cmp*(addr1: ptr in6_addr; addr2: ptr in6_addr): bool =
-  return not memcmp(addr1, addr2, sizeof(in6_addr))
+proc net_ipv6_addr_cmp*(addr1: ptr In6Addr; addr2: ptr In6Addr): bool =
+  return not memcmp(addr1, addr2, sizeof(In6Addr))
 
 ## *
 ##  @brief Check if the given IPv6 address is a link local address.
@@ -670,7 +666,7 @@ proc net_ipv6_addr_cmp*(addr1: ptr in6_addr; addr2: ptr in6_addr): bool =
 ##  @return True if it is, false otherwise.
 ##
 
-proc net_ipv6_is_ll_addr*(`addr`: ptr in6_addr): bool =
+proc net_ipv6_is_ll_addr*(`addr`: ptr In6Addr): bool =
   return UNALIGNED_GET(addr(`addr`.s6_addr16[0])) == htons(0xFE80)
 
 ## *
@@ -681,7 +677,7 @@ proc net_ipv6_is_ll_addr*(`addr`: ptr in6_addr): bool =
 ##  @return True if it is, false otherwise.
 ##
 
-proc net_ipv6_is_ula_addr*(`addr`: ptr in6_addr): bool =
+proc net_ipv6_is_ula_addr*(`addr`: ptr In6Addr): bool =
   return `addr`.s6_addr[0] == 0xFD
 
 ## *
@@ -690,27 +686,27 @@ proc net_ipv6_is_ula_addr*(`addr`: ptr in6_addr): bool =
 ##  @return Any IPv6 address.
 ##
 
-proc net_ipv6_unspecified_address*(): ptr in6_addr {.
-    importc: "net_ipv6_unspecified_address", header: "net_ip.h".}
+proc net_ipv6_unspecified_address*(): ptr In6Addr {.
+    importc: "net_ipv6_unspecified_address", header: hdr.}
 ## *
 ##  @brief Return pointer to any (all bits zeros) IPv4 address.
 ##
 ##  @return Any IPv4 address.
 ##
 
-proc net_ipv4_unspecified_address*(): ptr in_addr {.
-    importc: "net_ipv4_unspecified_address", header: "net_ip.h".}
+proc net_ipv4_unspecified_address*(): ptr InAddr {.
+    importc: "net_ipv4_unspecified_address", header: hdr.}
 ## *
 ##  @brief Return pointer to broadcast (all bits ones) IPv4 address.
 ##
 ##  @return Broadcast IPv4 address.
 ##
 
-proc net_ipv4_broadcast_address*(): ptr in_addr {.
-    importc: "net_ipv4_broadcast_address", header: "net_ip.h".}
+proc net_ipv4_broadcast_address*(): ptr InAddr {.
+    importc: "net_ipv4_broadcast_address", header: hdr.}
 discard "forward decl of net_if"
-proc net_if_ipv4_addr_mask_cmp*(iface: ptr net_if; `addr`: ptr in_addr): bool {.
-    importc: "net_if_ipv4_addr_mask_cmp", header: "net_ip.h".}
+proc net_if_ipv4_addr_mask_cmp*(iface: ptr net_if; `addr`: ptr InAddr): bool {.
+    importc: "net_if_ipv4_addr_mask_cmp", header: hdr.}
 ## *
 ##  @brief Check if the given address belongs to same subnet that
 ##  has been configured for the interface.
@@ -721,11 +717,11 @@ proc net_if_ipv4_addr_mask_cmp*(iface: ptr net_if; `addr`: ptr in_addr): bool {.
 ##  @return True if address is in same subnet, false otherwise.
 ##
 
-proc net_ipv4_addr_mask_cmp*(iface: ptr net_if; `addr`: ptr in_addr): bool =
+proc net_ipv4_addr_mask_cmp*(iface: ptr net_if; `addr`: ptr InAddr): bool =
   return net_if_ipv4_addr_mask_cmp(iface, `addr`)
 
-proc net_if_ipv4_is_addr_bcast*(iface: ptr net_if; `addr`: ptr in_addr): bool {.
-    importc: "net_if_ipv4_is_addr_bcast", header: "net_ip.h".}
+proc net_if_ipv4_is_addr_bcast*(iface: ptr net_if; `addr`: ptr InAddr): bool {.
+    importc: "net_if_ipv4_is_addr_bcast", header: hdr.}
 ## *
 ##  @brief Check if the given IPv4 address is a broadcast address.
 ##
@@ -736,19 +732,19 @@ proc net_if_ipv4_is_addr_bcast*(iface: ptr net_if; `addr`: ptr in_addr): bool {.
 ##
 
 when defined(CONFIG_NET_NATIVE_IPV4):
-  proc net_ipv4_is_addr_bcast*(iface: ptr net_if; `addr`: ptr in_addr): bool =
+  proc net_ipv4_is_addr_bcast*(iface: ptr net_if; `addr`: ptr InAddr): bool =
     if net_ipv4_addr_cmp(`addr`, net_ipv4_broadcast_address()):
       return true
     return net_if_ipv4_is_addr_bcast(iface, `addr`)
 
 else:
-  proc net_ipv4_is_addr_bcast*(iface: ptr net_if; `addr`: ptr in_addr): bool =
+  proc net_ipv4_is_addr_bcast*(iface: ptr net_if; `addr`: ptr InAddr): bool =
     ARG_UNUSED(iface)
     ARG_UNUSED(`addr`)
     return false
 
-proc net_if_ipv4_addr_lookup*(`addr`: ptr in_addr; iface: ptr ptr net_if): ptr net_if_addr {.
-    importc: "net_if_ipv4_addr_lookup", header: "net_ip.h".}
+proc net_if_ipv4_addr_lookup*(`addr`: ptr InAddr; iface: ptr ptr net_if): ptr net_if_addr {.
+    importc: "net_if_ipv4_addr_lookup", header: hdr.}
 ## *
 ##  @brief Check if the IPv4 address is assigned to any network interface
 ##  in the system.
@@ -759,7 +755,7 @@ proc net_if_ipv4_addr_lookup*(`addr`: ptr in_addr; iface: ptr ptr net_if): ptr n
 ##  False otherwise.
 ##
 
-proc net_ipv4_is_my_addr*(`addr`: ptr in_addr): bool =
+proc net_ipv4_is_my_addr*(`addr`: ptr InAddr): bool =
   var ret: bool
   ret = net_if_ipv4_addr_lookup(`addr`, nil) != nil
   if not ret:
@@ -774,7 +770,7 @@ proc net_ipv4_is_my_addr*(`addr`: ptr in_addr): bool =
 ##   @return True if the address is unspecified, false otherwise.
 ##
 
-proc net_ipv6_is_addr_unspecified*(`addr`: ptr in6_addr): bool =
+proc net_ipv6_is_addr_unspecified*(`addr`: ptr In6Addr): bool =
   return UNALIGNED_GET(addr(`addr`.s6_addr32[0])) == 0 and
       UNALIGNED_GET(addr(`addr`.s6_addr32[1])) == 0 and
       UNALIGNED_GET(addr(`addr`.s6_addr32[2])) == 0 and
@@ -789,7 +785,7 @@ proc net_ipv6_is_addr_unspecified*(`addr`: ptr in6_addr): bool =
 ##   @return True if the address is solicited node address, false otherwise.
 ##
 
-proc net_ipv6_is_addr_solicited_node*(`addr`: ptr in6_addr): bool =
+proc net_ipv6_is_addr_solicited_node*(`addr`: ptr In6Addr): bool =
   return UNALIGNED_GET(addr(`addr`.s6_addr32[0])) == htonl(0xff020000) and
       UNALIGNED_GET(addr(`addr`.s6_addr32[1])) == 0x00000000 and
       UNALIGNED_GET(addr(`addr`.s6_addr32[2])) == htonl(0x00000001) and
@@ -807,7 +803,7 @@ proc net_ipv6_is_addr_solicited_node*(`addr`: ptr in6_addr): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_scope*(`addr`: ptr in6_addr; scope: cint): bool =
+proc net_ipv6_is_addr_mcast_scope*(`addr`: ptr In6Addr; scope: cint): bool =
   return (`addr`.s6_addr[0] == 0xff) and (`addr`.s6_addr[1] == scope)
 
 ## *
@@ -820,7 +816,7 @@ proc net_ipv6_is_addr_mcast_scope*(`addr`: ptr in6_addr; scope: cint): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_same_mcast_scope*(addr_1: ptr in6_addr; addr_2: ptr in6_addr): bool =
+proc net_ipv6_is_same_mcast_scope*(addr_1: ptr In6Addr; addr_2: ptr In6Addr): bool =
   return (addr_1.s6_addr[0] == 0xff) and (addr_2.s6_addr[0] == 0xff) and
       (addr_1.s6_addr[1] == addr_2.s6_addr[1])
 
@@ -832,7 +828,7 @@ proc net_ipv6_is_same_mcast_scope*(addr_1: ptr in6_addr; addr_2: ptr in6_addr): 
 ##  @return True if the address is global multicast address, false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_global*(`addr`: ptr in6_addr): bool =
+proc net_ipv6_is_addr_mcast_global*(`addr`: ptr In6Addr): bool =
   return net_ipv6_is_addr_mcast_scope(`addr`, 0x0e)
 
 ## *
@@ -845,7 +841,7 @@ proc net_ipv6_is_addr_mcast_global*(`addr`: ptr in6_addr): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_iface*(`addr`: ptr in6_addr): bool =
+proc net_ipv6_is_addr_mcast_iface*(`addr`: ptr In6Addr): bool =
   return net_ipv6_is_addr_mcast_scope(`addr`, 0x01)
 
 ## *
@@ -858,7 +854,7 @@ proc net_ipv6_is_addr_mcast_iface*(`addr`: ptr in6_addr): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_link*(`addr`: ptr in6_addr): bool =
+proc net_ipv6_is_addr_mcast_link*(`addr`: ptr In6Addr): bool =
   return net_ipv6_is_addr_mcast_scope(`addr`, 0x02)
 
 ## *
@@ -871,7 +867,7 @@ proc net_ipv6_is_addr_mcast_link*(`addr`: ptr in6_addr): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_mesh*(`addr`: ptr in6_addr): bool =
+proc net_ipv6_is_addr_mcast_mesh*(`addr`: ptr In6Addr): bool =
   return net_ipv6_is_addr_mcast_scope(`addr`, 0x03)
 
 ## *
@@ -884,7 +880,7 @@ proc net_ipv6_is_addr_mcast_mesh*(`addr`: ptr in6_addr): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_site*(`addr`: ptr in6_addr): bool =
+proc net_ipv6_is_addr_mcast_site*(`addr`: ptr In6Addr): bool =
   return net_ipv6_is_addr_mcast_scope(`addr`, 0x05)
 
 ## *
@@ -897,7 +893,7 @@ proc net_ipv6_is_addr_mcast_site*(`addr`: ptr in6_addr): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_org*(`addr`: ptr in6_addr): bool =
+proc net_ipv6_is_addr_mcast_org*(`addr`: ptr In6Addr): bool =
   return net_ipv6_is_addr_mcast_scope(`addr`, 0x08)
 
 ## *
@@ -911,7 +907,7 @@ proc net_ipv6_is_addr_mcast_org*(`addr`: ptr in6_addr): bool =
 ##  group, false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_group*(`addr`: ptr in6_addr; group: ptr in6_addr): bool =
+proc net_ipv6_is_addr_mcast_group*(`addr`: ptr In6Addr; group: ptr In6Addr): bool =
   return UNALIGNED_GET(addr(`addr`.s6_addr16[1])) == group.s6_addr16[1] and
       UNALIGNED_GET(addr(`addr`.s6_addr16[2])) == group.s6_addr16[2] and
       UNALIGNED_GET(addr(`addr`.s6_addr16[3])) == group.s6_addr16[3] and
@@ -928,8 +924,8 @@ proc net_ipv6_is_addr_mcast_group*(`addr`: ptr in6_addr; group: ptr in6_addr): b
 ##  group, false otherwise
 ##
 
-proc net_ipv6_is_addr_mcast_all_nodes_group*(`addr`: ptr in6_addr): bool =
-  let all_nodes_mcast_group: in6_addr
+proc net_ipv6_is_addr_mcast_all_nodes_group*(`addr`: ptr In6Addr): bool =
+  let all_nodes_mcast_group: In6Addr
   return net_ipv6_is_addr_mcast_group(`addr`, addr(all_nodes_mcast_group))
 
 ## *
@@ -942,7 +938,7 @@ proc net_ipv6_is_addr_mcast_all_nodes_group*(`addr`: ptr in6_addr): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_iface_all_nodes*(`addr`: ptr in6_addr): bool =
+proc net_ipv6_is_addr_mcast_iface_all_nodes*(`addr`: ptr In6Addr): bool =
   return net_ipv6_is_addr_mcast_iface(`addr`) and
       net_ipv6_is_addr_mcast_all_nodes_group(`addr`)
 
@@ -956,7 +952,7 @@ proc net_ipv6_is_addr_mcast_iface_all_nodes*(`addr`: ptr in6_addr): bool =
 ##  address, false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_link_all_nodes*(`addr`: ptr in6_addr): bool =
+proc net_ipv6_is_addr_mcast_link_all_nodes*(`addr`: ptr In6Addr): bool =
   return net_ipv6_is_addr_mcast_link(`addr`) and
       net_ipv6_is_addr_mcast_all_nodes_group(`addr`)
 
@@ -968,7 +964,7 @@ proc net_ipv6_is_addr_mcast_link_all_nodes*(`addr`: ptr in6_addr): bool =
 ##   @param dst IPv6 address.
 ##
 
-proc net_ipv6_addr_create_solicited_node*(src: ptr in6_addr; dst: ptr in6_addr) =
+proc net_ipv6_addr_create_solicited_node*(src: ptr In6Addr; dst: ptr In6Addr) =
   dst.s6_addr[0] = 0xFF
   dst.s6_addr[1] = 0x02
   UNALIGNED_PUT(0, addr(dst.s6_addr16[1]))
@@ -994,7 +990,7 @@ proc net_ipv6_addr_create_solicited_node*(src: ptr in6_addr; dst: ptr in6_addr) 
 ##   @param addr7 16-bit word which is part of the address
 ##
 
-proc net_ipv6_addr_create*(`addr`: ptr in6_addr; addr0: uint16; addr1: uint16;
+proc net_ipv6_addr_create*(`addr`: ptr In6Addr; addr0: uint16; addr1: uint16;
                           addr2: uint16; addr3: uint16; addr4: uint16; addr5: uint16;
                           addr6: uint16; addr7: uint16) =
   UNALIGNED_PUT(htons(addr0), addr(`addr`.s6_addr16[0]))
@@ -1012,7 +1008,7 @@ proc net_ipv6_addr_create*(`addr`: ptr in6_addr; addr0: uint16; addr1: uint16;
 ##   @param addr IPv6 address
 ##
 
-proc net_ipv6_addr_create_ll_allnodes_mcast*(`addr`: ptr in6_addr) =
+proc net_ipv6_addr_create_ll_allnodes_mcast*(`addr`: ptr In6Addr) =
   net_ipv6_addr_create(`addr`, 0xff02, 0, 0, 0, 0, 0, 0, 0x0001)
 
 ## *
@@ -1021,7 +1017,7 @@ proc net_ipv6_addr_create_ll_allnodes_mcast*(`addr`: ptr in6_addr) =
 ##   @param addr IPv6 address
 ##
 
-proc net_ipv6_addr_create_ll_allrouters_mcast*(`addr`: ptr in6_addr) =
+proc net_ipv6_addr_create_ll_allrouters_mcast*(`addr`: ptr In6Addr) =
   net_ipv6_addr_create(`addr`, 0xff02, 0, 0, 0, 0, 0, 0, 0x0002)
 
 ## *
@@ -1031,7 +1027,7 @@ proc net_ipv6_addr_create_ll_allrouters_mcast*(`addr`: ptr in6_addr) =
 ##   @param lladdr Link local address
 ##
 
-proc net_ipv6_addr_create_iid*(`addr`: ptr in6_addr; lladdr: ptr net_linkaddr) =
+proc net_ipv6_addr_create_iid*(`addr`: ptr In6Addr; lladdr: ptr net_linkaddr) =
   UNALIGNED_PUT(htonl(0xfe800000), addr(`addr`.s6_addr32[0]))
   UNALIGNED_PUT(0, addr(`addr`.s6_addr32[1]))
   case lladdr.len
@@ -1070,7 +1066,7 @@ proc net_ipv6_addr_create_iid*(`addr`: ptr in6_addr; lladdr: ptr net_linkaddr) =
 ##   @return True if it is, False otherwise
 ##
 
-proc net_ipv6_addr_based_on_ll*(`addr`: ptr in6_addr; lladdr: ptr net_linkaddr): bool =
+proc net_ipv6_addr_based_on_ll*(`addr`: ptr In6Addr; lladdr: ptr net_linkaddr): bool =
   if not `addr` or not lladdr:
     return false
   case lladdr.len
@@ -1175,8 +1171,8 @@ proc net_can_ptr*(`addr`: ptr sockaddr_ptr): ptr sockaddr_can_ptr =
 ##
 ##  @param family IP address family (AF_INET or AF_INET6)
 ##  @param src IP address in a null terminated string
-##  @param dst Pointer to struct in_addr if family is AF_INET or
-##  pointer to struct in6_addr if family is AF_INET6
+##  @param dst Pointer to struct InAddr if family is AF_INET or
+##  pointer to struct In6Addr if family is AF_INET6
 ##
 ##  @note This function doesn't do precise error checking,
 ##  do not use for untrusted strings.
@@ -1185,13 +1181,13 @@ proc net_can_ptr*(`addr`: ptr sockaddr_ptr): ptr sockaddr_can_ptr =
 ##
 
 proc net_addr_pton*(family: sa_family_t; src: cstring; dst: pointer): cint {.syscall,
-    importc: "net_addr_pton", header: "net_ip.h".}
+    importc: "net_addr_pton", header: hdr.}
 ## *
 ##  @brief Convert IP address to string form.
 ##
 ##  @param family IP address family (AF_INET or AF_INET6)
-##  @param src Pointer to struct in_addr if family is AF_INET or
-##         pointer to struct in6_addr if family is AF_INET6
+##  @param src Pointer to struct InAddr if family is AF_INET or
+##         pointer to struct In6Addr if family is AF_INET6
 ##  @param dst Buffer for IP address as a null terminated string
 ##  @param size Number of bytes available in the buffer
 ##
@@ -1199,7 +1195,7 @@ proc net_addr_pton*(family: sa_family_t; src: cstring; dst: pointer): cint {.sys
 ##
 
 proc net_addr_ntop*(family: sa_family_t; src: pointer; dst: cstring; size: csize_t): cstring {.
-    syscall, importc: "net_addr_ntop", header: "net_ip.h".}
+    syscall, importc: "net_addr_ntop", header: hdr.}
 ## *
 ##  @brief Parse a string that contains either IPv4 or IPv6 address
 ##  and optional port, and store the information in user supplied
@@ -1223,7 +1219,7 @@ proc net_addr_ntop*(family: sa_family_t; src: pointer; dst: cstring; size: csize
 ##
 
 proc net_ipaddr_parse*(str: cstring; str_len: csize_t; `addr`: ptr sockaddr): bool {.
-    importc: "net_ipaddr_parse", header: "net_ip.h".}
+    importc: "net_ipaddr_parse", header: hdr.}
 ## *
 ##  @brief Compare TCP sequence numbers.
 ##
@@ -1266,7 +1262,7 @@ proc net_tcp_seq_greater*(seq1: uint32; seq2: uint32): bool =
 ##
 
 proc net_bytes_from_str*(buf: ptr uint8; buf_len: cint; src: cstring): cint {.
-    importc: "net_bytes_from_str", header: "net_ip.h".}
+    importc: "net_bytes_from_str", header: hdr.}
 ## *
 ##  @brief Convert Tx network packet priority to traffic class so we can place
 ##  the packet into correct Tx queue.
@@ -1277,7 +1273,7 @@ proc net_bytes_from_str*(buf: ptr uint8; buf_len: cint; src: cstring): cint {.
 ##
 
 proc net_tx_priority2tc*(prio: net_priority): cint {.importc: "net_tx_priority2tc",
-    header: "net_ip.h".}
+    header: hdr.}
 ## *
 ##  @brief Convert Rx network packet priority to traffic class so we can place
 ##  the packet into correct Rx queue.
@@ -1288,7 +1284,7 @@ proc net_tx_priority2tc*(prio: net_priority): cint {.importc: "net_tx_priority2t
 ##
 
 proc net_rx_priority2tc*(prio: net_priority): cint {.importc: "net_rx_priority2tc",
-    header: "net_ip.h".}
+    header: hdr.}
 ## *
 ##  @brief Convert network packet VLAN priority to network packet priority so we
 ##  can place the packet into correct queue.
@@ -1328,7 +1324,7 @@ proc net_priority2vlan*(priority: net_priority): uint8 =
 ##
 
 proc net_family2str*(family: sa_family_t): cstring {.importc: "net_family2str",
-    header: "net_ip.h".}
+    header: hdr.}
 ## *
 ##  @}
 ##
