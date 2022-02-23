@@ -662,9 +662,6 @@ proc net_if_get_first_by_type*(l2: ptr net_l2): ptr net_if {.
     importc: "net_if_get_first_by_type", header: "net_if.h".}
 
 when CONFIG_NET_L2_IEEE802154:
-  
-
-## *
   ##  @brief Get the first IEEE 802.15.4 network interface.
   ##
   ##  @return First IEEE 802.15.4 network interface or NULL if no such
@@ -885,18 +882,9 @@ type
 
 type
   net_if_mcast_monitor* {.importc: "net_if_mcast_monitor", header: "net_if.h", bycopy.} = object
-    node* {.importc: "node".}: sys_snode_t 
-
-## * Node information for the slist.
-    
-
-## * Network interface
-    iface* {.importc: "iface".}: ptr net_if 
-
-## * Multicast callback
-    cb* {.importc: "cb".}: net_if_mcast_callback_t
-
-
+    node* {.importc: "node".}: sys_snode_t ## * Node information for the slist.
+    iface* {.importc: "iface".}: ptr net_if_alias ## * Network interface
+    cb* {.importc: "cb".}: net_if_mcast_callback_t ## * Multicast callback
 
 
 ## *
@@ -931,7 +919,7 @@ proc net_if_mcast_mon_unregister*(mon: ptr net_if_mcast_monitor) {.
 ##  @param is_joined Is this multicast address joined (true) or not (false)
 ##
 
-proc net_if_mcast_monitor*(iface: ptr net_if; caddr: ptr In6Addr; is_joined: bool) {.
+proc net_if_mcast_monitor_check*(iface: ptr net_if_alias; caddr: ptr In6Addr; is_joined: bool) {.
     importc: "net_if_mcast_monitor", header: "net_if.h".}
 
 
@@ -954,9 +942,6 @@ proc net_if_ipv6_maddr_join*(caddr: ptr net_if_mcast_addr) {.
 ##
 
 proc net_if_ipv6_maddr_is_joined*(caddr: ptr net_if_mcast_addr): bool {.importc: "$1", header: hdr.}
-  NET_ASSERT(caddr)
-  return caddr.is_joined
-
 
 
 ## *
@@ -1033,9 +1018,7 @@ proc net_if_ipv6_prefix_rm*(iface: ptr net_if; caddr: ptr In6Addr; len: uint8): 
 ##  @param is_infinite Infinite status
 ##
 
-proc net_if_ipv6_prefix_set_lf*(prefix: ptr net_if_ipv6_prefix; is_infinite: bool) {.
-    inline.} =
-  prefix.is_infinite = is_infinite
+proc net_if_ipv6_prefix_set_lf*(prefix: ptr net_if_ipv6_prefix; is_infinite: bool) {.inline.} =
 
 
 
@@ -1082,15 +1065,7 @@ proc net_if_ipv6_addr_onlink*(iface: ptr ptr net_if; caddr: ptr In6Addr): bool {
 ##  @return pointer to the IPv6 address, or NULL if none
 ##
 
-when CONFIG_NET_NATIVE_IPV6:
-  proc net_if_router_ipv6*(router: ptr net_if_router): ptr In6Addr {.importc: "$1", header: hdr.}
-    return addr(router.address.In6Addr)
-
-else:
-  proc net_if_router_ipv6*(router: ptr net_if_router): ptr In6Addr {.importc: "$1", header: hdr.}
-    var caddr: In6Addr
-    ARG_UNUSED(router)
-    return addr(caddr)
+proc net_if_router_ipv6*(router: ptr net_if_router): ptr In6Addr {.importc: "$1", header: hdr.}
 
 
 
