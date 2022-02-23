@@ -19,6 +19,8 @@ import ../wrapper_utils
 import ../zdevice
 import znet_core
 
+const hdr = "<net/net_l2.h>"
+
 type
   net_l2_flags* {.size: sizeof(cint).} = enum ## * IP multicast supported
     NET_L2_MULTICAST = BIT(0),  ## * Do not joint solicited node multicast group
@@ -35,7 +37,7 @@ type
 ##
 
 type
-  net_l2* {.importc: "net_l2", header: "net_l2.h", bycopy.} = object
+  net_l2* {.importc: "net_l2", header: hdr, bycopy.} = object
 
     recv* {.importc: "recv".}: proc (iface: ptr net_if_alias; pkt: ptr net_pkt_alias): net_verdict ##\
       ##  This function is used by net core to get iface's L2 layer parsing
@@ -105,11 +107,11 @@ type
 
 # proc NET_L2_INIT*(name: untyped; _recv_fn: untyped; _send_fn: untyped;
 #                  _enable_fn: untyped; _get_flags_fn: untyped) {.
-#     importc: "NET_L2_INIT", header: "net_l2.h".}
+#     importc: "NET_L2_INIT", header: hdr.}
 # proc NET_L2_GET_DATA*(name: untyped; sfx: untyped) {.importc: "NET_L2_GET_DATA",
-#     header: "net_l2.h".}
+#     header: hdr.}
 # proc NET_L2_DATA_INIT*(name: untyped; sfx: untyped; ctx_type: untyped) {.
-#     importc: "NET_L2_DATA_INIT", header: "net_l2.h".}
+#     importc: "NET_L2_DATA_INIT", header: hdr.}
 
 proc net_l2_send*(send_fn: net_l2_send_t,
                   dev: ptr device,
