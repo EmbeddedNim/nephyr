@@ -49,6 +49,7 @@ const CONFIG_NAMES = [
   "NET_IPV6_ND",
   "NET_IPV6_NBR_CACHE",
   "NET_IPV6_FRAGMENT",
+  "NET_IF_IPV6_PREFIX_COUNT",
   # Net done
   "PM",
   "PM_DEVICE",
