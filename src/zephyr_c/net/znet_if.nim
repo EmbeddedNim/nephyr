@@ -15,10 +15,8 @@
 ##  @{
 ##
 
-when defined(CONFIG_NET_DHCPV4) and defined(CONFIG_NET_NATIVE_IPV4):
-  discard
-when defined(CONFIG_NET_IPV4_AUTO) and defined(CONFIG_NET_NATIVE_IPV4):
-  discard
+import znet_ip
+
 ## *
 ##  @brief Network Interface unicast IP addresses
 ##
