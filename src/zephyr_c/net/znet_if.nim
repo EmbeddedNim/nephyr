@@ -1167,11 +1167,7 @@ proc net_ipv6_set_hop_limit*(iface: ptr net_if; hop_limit: uint8) {.
 ##
 
 proc net_if_ipv6_set_base_reachable_time*(iface: ptr net_if; reachable_time: uint32) {.
-    inline.} =
-  when CONFIG_NET_NATIVE_IPV6:
-    if not iface.config.ip.ipv6:
-      return
-    iface.config.ip.ipv6.base_reachable_time = reachable_time
+    importc: "$1", header: hdr.} =
 
 
 
