@@ -29,11 +29,12 @@ type
     PERIPHERAL_TO_PERIPHERAL ## only supported in NXP EDMA
 
 
-## * Valid values for @a source_addr_adj and @a dest_addr_adj
-
 type
   dma_addr_adj* {.size: sizeof(cint).} = enum
-    DMA_ADDR_ADJ_INCREMENT, DMA_ADDR_ADJ_DECREMENT, DMA_ADDR_ADJ_NO_CHANGE
+    ## * Valid values for @a source_addr_adj and @a dest_addr_adj
+    DMA_ADDR_ADJ_INCREMENT,
+    DMA_ADDR_ADJ_DECREMENT,
+    DMA_ADDR_ADJ_NO_CHANGE
 
 
 ##  channel attributes
@@ -42,7 +43,6 @@ type
   dma_channel_filter* {.size: sizeof(cint).} = enum
     DMA_CHANNEL_NORMAL,       ##  normal DMA channel
     DMA_CHANNEL_PERIODIC      ##  can be triggerred by periodic sources
-
 
 ## *
 ##  @struct dma_block_config
