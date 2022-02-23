@@ -29,6 +29,8 @@ type
   net_pkt_alias* {.incompleteStruct, bycopy.} = distinct object
   net_offload_alias* {.incompleteStruct, bycopy.} = distinct object
 
+  net_nbr_alias* {.incompleteStruct, bycopy.} = distinct object
+
   net_verdict* {.size: sizeof(cint).} = enum
     NET_OK, ##\
       ## * Packet has been taken care of.

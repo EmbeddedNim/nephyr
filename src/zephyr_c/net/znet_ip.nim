@@ -16,9 +16,6 @@
 ##  @{
 ##
 
-## * @cond INTERNAL_HIDDEN
-##  Specifying VLAN tag here in order to avoid circular dependencies
-## 
 const hdr = "<net/net_ip.h>"
 
 var PF_UNSPEC* {.importc: "PF_UNSPEC", header: hdr.}: int
