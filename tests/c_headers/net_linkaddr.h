@@ -44,6 +44,7 @@ extern "C" {
  * into a uint8_t variable, so please do not introduce any values > 255 in
  * this enum.
  */
+/* packed */
 enum net_link_type {
 	/** Unknown link address type. */
 	NET_LINK_UNKNOWN = 0,
@@ -59,7 +60,7 @@ enum net_link_type {
 	NET_LINK_CANBUS_RAW,
 	/** 6loCAN link address. */
 	NET_LINK_CANBUS,
-} __packed;
+} ;
 
 /**
  *  @brief Hardware link address structure
