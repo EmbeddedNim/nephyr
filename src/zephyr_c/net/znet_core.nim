@@ -25,6 +25,9 @@
 ##  Network subsystem logging helpers
 
 type
+  net_if_alias* = distinct pointer
+  net_pkt_alias* = distinct pointer
+
   net_verdict* {.size: sizeof(cint).} = enum
     NET_OK, ##\
       ## * Packet has been taken care of.
