@@ -34,12 +34,14 @@
 
 import ../zkernel_fixes
 
+const hdr = "<net/net_timeout.h>"
+
 const
   NET_TIMEOUT_MAX_VALUE* = high(int32)
 
 
 type
-  net_timeout* {.importc: "net_timeout", header: "net_timeout.h", bycopy.} = object
+  net_timeout* {.importc: "net_timeout", header: hdr, bycopy.} = object
     ## * Generic struct for handling network timeouts.
     ##
     ##  Except for the linking node, all access to state from these objects must go
@@ -83,7 +85,7 @@ type
 ##
 
 proc net_timeout_set*(timeout: ptr net_timeout; lifetime: uint32; now: uint32) {.
-    importc: "net_timeout_set", header: "net_timeout.h".}
+    importc: "net_timeout_set", header: hdr.}
 
 
 ## * @brief Return the 64-bit system time at which the timeout will complete.
@@ -101,7 +103,7 @@ proc net_timeout_set*(timeout: ptr net_timeout; lifetime: uint32; now: uint32) {
 ##
 
 proc net_timeout_deadline*(timeout: ptr net_timeout; now: int64): int64 {.
-    importc: "net_timeout_deadline", header: "net_timeout.h".}
+    importc: "net_timeout_deadline", header: hdr.}
 
 
 ## * @brief Calculate the remaining time to the timeout in whole seconds.
@@ -123,7 +125,7 @@ proc net_timeout_deadline*(timeout: ptr net_timeout; now: int64): int64 {.
 ##
 
 proc net_timeout_remaining*(timeout: ptr net_timeout; now: uint32): uint32 {.
-    importc: "net_timeout_remaining", header: "net_timeout.h".}
+    importc: "net_timeout_remaining", header: hdr.}
 
 
 ## * @brief Update state to reflect elapsed time and get new delay.
@@ -146,7 +148,7 @@ proc net_timeout_remaining*(timeout: ptr net_timeout; now: uint32): uint32 {.
 ##
 
 proc net_timeout_evaluate*(timeout: ptr net_timeout; now: uint32): uint32 {.
-    importc: "net_timeout_evaluate", header: "net_timeout.h".}
+    importc: "net_timeout_evaluate", header: hdr.}
 
 
 ## *
