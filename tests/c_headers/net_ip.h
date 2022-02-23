@@ -364,10 +364,10 @@ struct net_addr {
 	};
 };
 
-#define IN6ADDR_ANY_INIT { { { 0, 0, 0, 0, 0, 0, 0, 0, 0, \
-				0, 0, 0, 0, 0, 0, 0 } } } {.importc: "$1", hrd: hdr.}
-#define IN6ADDR_LOOPBACK_INIT { { { 0, 0, 0, 0, 0, 0, 0, \
-				0, 0, 0, 0, 0, 0, 0, 0, 1 } } }
+// #define IN6ADDR_ANY_INIT { { { 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+				// 0, 0, 0, 0, 0, 0, 0 } } } {.importc: "$1", hrd: hdr.}
+// #define IN6ADDR_LOOPBACK_INIT { { { 0, 0, 0, 0, 0, 0, 0, \
+				// 0, 0, 0, 0, 0, 0, 0, 0, 1 } } }
 
 extern const struct in6_addr in6addr_any;
 extern const struct in6_addr in6addr_loopback;

@@ -15,6 +15,10 @@
 ##  @{
 ##
 
+when defined(CONFIG_NET_DHCPV4) and defined(CONFIG_NET_NATIVE_IPV4):
+  discard
+when defined(CONFIG_NET_IPV4_AUTO) and defined(CONFIG_NET_NATIVE_IPV4):
+  discard
 ## *
 ##  @brief Network Interface unicast IP addresses
 ##
@@ -119,9 +123,15 @@ when defined(CONFIG_NET_OFFLOAD):
 ## * @cond INTERNAL_HIDDEN
 
 when defined(CONFIG_NET_NATIVE_IPV6):
-  var NET_IF_MAX_IPV6_ADDR* {.importc: "NET_IF_MAX_IPV6_ADDR", header: "net_if.h".}: int
+  const
+    NET_IF_MAX_IPV6_ADDR* = CONFIG_NET_IF_UNICAST_IPV6_ADDR_COUNT
+    NET_IF_MAX_IPV6_MADDR* = CONFIG_NET_IF_MCAST_IPV6_ADDR_COUNT
+    NET_IF_MAX_IPV6_PREFIX* = CONFIG_NET_IF_IPV6_PREFIX_COUNT
 else:
-  var NET_IF_MAX_IPV6_ADDR* {.importc: "NET_IF_MAX_IPV6_ADDR", header: "net_if.h".}: int
+  const
+    NET_IF_MAX_IPV6_ADDR* = 0
+    NET_IF_MAX_IPV6_MADDR* = 0
+    NET_IF_MAX_IPV6_PREFIX* = 0
 ##  @endcond
 
 type
@@ -156,9 +166,13 @@ type
 ## * @cond INTERNAL_HIDDEN
 
 when defined(CONFIG_NET_NATIVE_IPV4):
-  var NET_IF_MAX_IPV4_ADDR* {.importc: "NET_IF_MAX_IPV4_ADDR", header: "net_if.h".}: int
+  const
+    NET_IF_MAX_IPV4_ADDR* = CONFIG_NET_IF_UNICAST_IPV4_ADDR_COUNT
+    NET_IF_MAX_IPV4_MADDR* = CONFIG_NET_IF_MCAST_IPV4_ADDR_COUNT
 else:
-  var NET_IF_MAX_IPV4_ADDR* {.importc: "NET_IF_MAX_IPV4_ADDR", header: "net_if.h".}: int
+  const
+    NET_IF_MAX_IPV4_ADDR* = 0
+    NET_IF_MAX_IPV4_MADDR* = 0
 ## * @endcond
 
 type
@@ -212,7 +226,9 @@ when defined(CONFIG_NET_IPV4_AUTO) and defined(CONFIG_NET_NATIVE_IPV4):
 ## * @cond INTERNAL_HIDDEN
 ##  We always need to have at least one IP config
 
-var NET_IF_MAX_CONFIGS* {.importc: "NET_IF_MAX_CONFIGS", header: "net_if.h".}: int
+const
+  NET_IF_MAX_CONFIGS* = 1
+
 ## * @endcond
 ## *
 ##  @brief Network interface IP address configuration.
