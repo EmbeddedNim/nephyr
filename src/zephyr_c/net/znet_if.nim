@@ -1167,7 +1167,7 @@ proc net_ipv6_set_hop_limit*(iface: ptr net_if; hop_limit: uint8) {.
 ##
 
 proc net_if_ipv6_set_base_reachable_time*(iface: ptr net_if; reachable_time: uint32) {.
-    importc: "$1", header: hdr.} =
+    importc: "$1", header: hdr.}
 
 
 
