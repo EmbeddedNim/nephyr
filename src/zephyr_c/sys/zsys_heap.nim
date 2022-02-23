@@ -43,8 +43,10 @@
 ##
 
 type
+  z_heap_alias = distinct object {.incompleteStruct, bycopy.}
+
   sys_heap* {.importc: "sys_heap", header: "sys_heap.h", bycopy.} = object
-    heap* {.importc: "heap".}: ptr z_heap
+    heap* {.importc: "heap".}: ptr z_heap_alias 
     init_mem* {.importc: "init_mem".}: pointer
     init_bytes* {.importc: "init_bytes".}: csize_t
 
@@ -54,6 +56,8 @@ type
     successful_allocs* {.importc: "successful_allocs".}: uint32
     total_frees* {.importc: "total_frees".}: uint32
     accumulated_in_use_bytes* {.importc: "accumulated_in_use_bytes".}: uint64
+
+
 
 
 ## * @brief Initialize sys_heap
@@ -67,6 +71,8 @@ type
 
 proc sys_heap_init*(heap: ptr sys_heap; mem: pointer; bytes: csize_t) {.
     importc: "sys_heap_init", header: "sys_heap.h".}
+
+
 ## * @brief Allocate memory from a sys_heap
 ##
 ##  Returns a pointer to a block of unused memory in the heap.  This
@@ -87,6 +93,8 @@ proc sys_heap_init*(heap: ptr sys_heap; mem: pointer; bytes: csize_t) {.
 
 proc sys_heap_alloc*(heap: ptr sys_heap; bytes: csize_t): pointer {.
     importc: "sys_heap_alloc", header: "sys_heap.h".}
+
+
 ## * @brief Allocate aligned memory from a sys_heap
 ##
 ##  Behaves in all ways like sys_heap_alloc(), except that the returned
@@ -103,6 +111,8 @@ proc sys_heap_alloc*(heap: ptr sys_heap; bytes: csize_t): pointer {.
 
 proc sys_heap_aligned_alloc*(heap: ptr sys_heap; align: csize_t; bytes: csize_t): pointer {.
     importc: "sys_heap_aligned_alloc", header: "sys_heap.h".}
+
+
 ## * @brief Free memory into a sys_heap
 ##
 ##  De-allocates a pointer to memory previously returned from
@@ -119,6 +129,8 @@ proc sys_heap_aligned_alloc*(heap: ptr sys_heap; align: csize_t; bytes: csize_t)
 
 proc sys_heap_free*(heap: ptr sys_heap; mem: pointer) {.importc: "sys_heap_free",
     header: "sys_heap.h".}
+
+
 ## * @brief Expand the size of an existing allocation
 ##
 ##  Returns a pointer to a new memory region with the same contents,
@@ -146,8 +158,12 @@ proc sys_heap_free*(heap: ptr sys_heap; mem: pointer) {.importc: "sys_heap_free"
 proc sys_heap_aligned_realloc*(heap: ptr sys_heap; `ptr`: pointer; align: csize_t;
                               bytes: csize_t): pointer {.
     importc: "sys_heap_aligned_realloc", header: "sys_heap.h".}
-proc sys_heap_realloc*(heap: untyped; `ptr`: untyped; bytes: untyped) {.
+
+proc sys_heap_realloc*(heap: ptr sys_heap; zptr: pointer; bytes: pointer) {.
     importc: "sys_heap_realloc", header: "sys_heap.h".}
+
+
+
 ## * @brief Validate heap integrity
 ##
 ##  Validates the internal integrity of a sys_heap.  Intended for unit
@@ -164,6 +180,8 @@ proc sys_heap_realloc*(heap: untyped; `ptr`: untyped; bytes: untyped) {.
 
 proc sys_heap_validate*(heap: ptr sys_heap): bool {.importc: "sys_heap_validate",
     header: "sys_heap.h".}
+
+
 ## * @brief sys_heap stress test rig
 ##
 ##  Test rig for heap allocation validation.  This will loop for @a
@@ -200,6 +218,8 @@ proc sys_heap_stress*(alloc_fn: proc (arg: pointer; bytes: csize_t): pointer;
                      scratch_bytes: csize_t; target_percent: cint;
                      result: ptr z_heap_stress_result) {.
     importc: "sys_heap_stress", header: "sys_heap.h".}
+
+
 ## * @brief Print heap internal structure information to the console
 ##
 ##  Print information on the heap structure such as its size, chunk buckets,
