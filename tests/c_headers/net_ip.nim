@@ -465,26 +465,12 @@ type
     optdata* {.importc: "optdata".}: UncheckedArray[uint8]
 
 
+proc net_addr_type2str*(addrType: net_addr_type): cstring {.importc: "$1", header: hdr.}
 
-proc net_addr_type2str*(`type`: net_addr_type): cstring =
-  case `type`
-  of NET_ADDR_AUTOCONF:
-    return "AUTO"
-  of NET_ADDR_DHCP:
-    return "DHCP"
-  of NET_ADDR_MANUAL:
-    return "MANUAL"
-  of NET_ADDR_OVERRIDABLE:
-    return "OVERRIDE"
-  of NET_ADDR_ANY:
-    discard
-  else:
-    discard
-  return "<unknown>"
 
 ##  IPv6 extension headers types
 
-var NET_IPV6_NEXTHDR_HBHO* {.importc: "NET_IPV6_NEXTHDR_HBHO", header: hdr.}: int
+var NET_IPV6_NEXTHDR_HBHO* {.importc: "NET_IPV6_NEXTHDR_HBHO", header: hdr.}: cint
 ## *
 ##  This 2 unions are here temporarily, as long as net_context.h will
 ##  be still public and not part of the core only.
@@ -499,9 +485,9 @@ type
     udp* {.importc: "udp".}: ptr net_udp_hdr
     tcp* {.importc: "tcp".}: ptr net_tcp_hdr
 
+var NET_UDPH_LEN* {.importc: "NET_UDPH_LEN", header: hdr.}: cint
 
-var NET_UDPH_LEN* {.importc: "NET_UDPH_LEN", header: hdr.}: int
-## * @endcond
+
 ## *
 ##  @brief Check if the IPv6 address is a loopback address (::1).
 ##
@@ -509,8 +495,8 @@ var NET_UDPH_LEN* {.importc: "NET_UDPH_LEN", header: hdr.}: int
 ##
 ##  @return True if address is a loopback address, False otherwise.
 ##
+proc net_ipv6_is_addr_loopback*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
-proc net_ipv6_is_addr_loopback*(`addr`: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if the IPv6 address is a multicast address.
@@ -519,13 +505,13 @@ proc net_ipv6_is_addr_loopback*(`addr`: ptr In6Addr): bool {.importc: "$1", head
 ##
 ##  @return True if address is multicast address, False otherwise.
 ##
+proc net_ipv6_is_addr_mcast*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
-proc net_ipv6_is_addr_mcast*(`addr`: ptr In6Addr): bool {.importc: "$1", header: hdr.}
+# TODO: FIXME
+# proc net_if_ipv6_addr_lookup*(inaddr: ptr In6Addr; iface: ptr ptr net_if): ptr net_if_addr {.
+    # importc: "net_if_ipv6_addr_lookup", header: hdr.}
 
-discard "forward decl of net_if"
-discard "forward decl of net_if_config"
-proc net_if_ipv6_addr_lookup*(`addr`: ptr In6Addr; iface: ptr ptr net_if): ptr net_if_addr {.
-    importc: "net_if_ipv6_addr_lookup", header: hdr.}
+
 ## *
 ##  @brief Check if IPv6 address is found in one of the network interfaces.
 ##
@@ -533,12 +519,13 @@ proc net_if_ipv6_addr_lookup*(`addr`: ptr In6Addr; iface: ptr ptr net_if): ptr n
 ##
 ##  @return True if address was found, False otherwise.
 ##
+proc net_ipv6_is_my_addr*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
-proc net_ipv6_is_my_addr*(`addr`: ptr In6Addr): bool =
-  return net_if_ipv6_addr_lookup(`addr`, nil) != nil
+# TODO: FIXME
+# proc net_if_ipv6_maddr_lookup*(inaddr: ptr In6Addr; iface: ptr ptr net_if): ptr net_if_mcast_addr {.
+    # importc: "net_if_ipv6_maddr_lookup", header: hdr.}
 
-proc net_if_ipv6_maddr_lookup*(`addr`: ptr In6Addr; iface: ptr ptr net_if): ptr net_if_mcast_addr {.
-    importc: "net_if_ipv6_maddr_lookup", header: hdr.}
+
 ## *
 ##  @brief Check if IPv6 multicast address is found in one of the
 ##  network interfaces.
@@ -548,8 +535,7 @@ proc net_if_ipv6_maddr_lookup*(`addr`: ptr In6Addr; iface: ptr ptr net_if): ptr 
 ##  @return True if address was found, False otherwise.
 ##
 
-proc net_ipv6_is_my_maddr*(maddr: ptr In6Addr): bool =
-  return net_if_ipv6_maddr_lookup(maddr, nil) != nil
+proc net_ipv6_is_my_maddr*(maddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if two IPv6 addresses are same when compared after prefix mask.
@@ -561,22 +547,8 @@ proc net_ipv6_is_my_maddr*(maddr: ptr In6Addr): bool =
 ##  @return True if IPv6 prefixes are the same, False otherwise.
 ##
 
-proc net_ipv6_is_prefix*(addr1: ptr uint8; addr2: ptr uint8; length: uint8): bool =
-  var bits: uint8
-  var bytes: uint8
-  var remain: uint8
-  var mask: uint8
-  if length > 128:
-    return false
-  if memcmp(addr1, addr2, bytes):
-    return false
-  if not remain:
-    ##  No remaining bits, the prefixes are the same as first
-    ##  bytes are the same.
-    ##
-    return true
-  mask = ((0xff shl (8 - remain)) xor 0xff) shl remain
-  return (addr1[bytes] and mask) == (addr2[bytes] and mask)
+proc net_ipv6_is_prefix*(addr1: ptr uint8; addr2: ptr uint8; length: uint8): bool {.
+    importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if the IPv4 address is a loopback address (127.0.0.0/8).
@@ -586,8 +558,7 @@ proc net_ipv6_is_prefix*(addr1: ptr uint8; addr2: ptr uint8; length: uint8): boo
 ##  @return True if address is a loopback address, False otherwise.
 ##
 
-proc net_ipv4_is_addr_loopback*(`addr`: ptr InAddr): bool =
-  return `addr`.s4_addr[0] == 127'u
+proc net_ipv4_is_addr_loopback*(inaddr: ptr InAddr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##   @brief Check if the IPv4 address is unspecified (all bits zero)
@@ -597,8 +568,7 @@ proc net_ipv4_is_addr_loopback*(`addr`: ptr InAddr): bool =
 ##   @return True if the address is unspecified, false otherwise.
 ##
 
-proc net_ipv4_is_addr_unspecified*(`addr`: ptr InAddr): bool =
-  return UNALIGNED_GET(addr(`addr`.s_addr)) == 0
+proc net_ipv4_is_addr_unspecified*(inaddr: ptr InAddr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if the IPv4 address is a multicast address.
@@ -608,8 +578,7 @@ proc net_ipv4_is_addr_unspecified*(`addr`: ptr InAddr): bool =
 ##  @return True if address is multicast address, False otherwise.
 ##
 
-proc net_ipv4_is_addr_mcast*(`addr`: ptr InAddr): bool =
-  return (ntohl(UNALIGNED_GET(addr(`addr`.s_addr))) and 0xF0000000) == 0xE0000000
+proc net_ipv4_is_addr_mcast*(inaddr: ptr InAddr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if the given IPv4 address is a link local address.
@@ -619,8 +588,7 @@ proc net_ipv4_is_addr_mcast*(`addr`: ptr InAddr): bool =
 ##  @return True if it is, false otherwise.
 ##
 
-proc net_ipv4_is_ll_addr*(`addr`: ptr InAddr): bool =
-  return (ntohl(UNALIGNED_GET(addr(`addr`.s_addr))) and 0xA9FE0000) == 0xA9FE0000
+proc net_ipv4_is_ll_addr*(inaddr: ptr InAddr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##   @def net_ipaddr_copy
@@ -632,8 +600,9 @@ proc net_ipv4_is_ll_addr*(`addr`: ptr InAddr): bool =
 ##   @return Destination address.
 ##
 
-proc net_ipaddr_copy*(dest: untyped; src: untyped) {.importc: "net_ipaddr_copy",
-    header: hdr.}
+proc net_ipaddr_copy*(dest: ptr InAddr; src: ptr InAddr) {.importc: "net_ipaddr_copy", header: hdr.}
+proc net_ipaddr_copy*(dest: ptr In6Addr; src: ptr In6Addr) {.importc: "net_ipaddr_copy", header: hdr.}
+
 ## *
 ##   @brief Compare two IPv4 addresses
 ##
@@ -643,8 +612,8 @@ proc net_ipaddr_copy*(dest: untyped; src: untyped) {.importc: "net_ipaddr_copy",
 ##   @return True if the addresses are the same, false otherwise.
 ##
 
-proc net_ipv4_addr_cmp*(addr1: ptr InAddr; addr2: ptr InAddr): bool =
-  return UNALIGNED_GET(addr(addr1.s_addr)) == UNALIGNED_GET(addr(addr2.s_addr))
+proc net_ipv4_addr_cmp*(addr1: ptr InAddr; addr2: ptr InAddr): bool {.importc: "$1", header: hdr.}
+
 
 ## *
 ##   @brief Compare two IPv6 addresses
@@ -655,8 +624,7 @@ proc net_ipv4_addr_cmp*(addr1: ptr InAddr; addr2: ptr InAddr): bool =
 ##   @return True if the addresses are the same, false otherwise.
 ##
 
-proc net_ipv6_addr_cmp*(addr1: ptr In6Addr; addr2: ptr In6Addr): bool =
-  return not memcmp(addr1, addr2, sizeof(In6Addr))
+proc net_ipv6_addr_cmp*(addr1: ptr In6Addr; addr2: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if the given IPv6 address is a link local address.
@@ -666,8 +634,7 @@ proc net_ipv6_addr_cmp*(addr1: ptr In6Addr; addr2: ptr In6Addr): bool =
 ##  @return True if it is, false otherwise.
 ##
 
-proc net_ipv6_is_ll_addr*(`addr`: ptr In6Addr): bool =
-  return UNALIGNED_GET(addr(`addr`.s6_addr16[0])) == htons(0xFE80)
+proc net_ipv6_is_ll_addr*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if the given IPv6 address is a unique local address.
@@ -677,8 +644,7 @@ proc net_ipv6_is_ll_addr*(`addr`: ptr In6Addr): bool =
 ##  @return True if it is, false otherwise.
 ##
 
-proc net_ipv6_is_ula_addr*(`addr`: ptr In6Addr): bool =
-  return `addr`.s6_addr[0] == 0xFD
+proc net_ipv6_is_ula_addr*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Return pointer to any (all bits zeros) IPv6 address.
@@ -688,6 +654,7 @@ proc net_ipv6_is_ula_addr*(`addr`: ptr In6Addr): bool =
 
 proc net_ipv6_unspecified_address*(): ptr In6Addr {.
     importc: "net_ipv6_unspecified_address", header: hdr.}
+
 ## *
 ##  @brief Return pointer to any (all bits zeros) IPv4 address.
 ##
@@ -696,6 +663,7 @@ proc net_ipv6_unspecified_address*(): ptr In6Addr {.
 
 proc net_ipv4_unspecified_address*(): ptr InAddr {.
     importc: "net_ipv4_unspecified_address", header: hdr.}
+
 ## *
 ##  @brief Return pointer to broadcast (all bits ones) IPv4 address.
 ##
@@ -704,9 +672,11 @@ proc net_ipv4_unspecified_address*(): ptr InAddr {.
 
 proc net_ipv4_broadcast_address*(): ptr InAddr {.
     importc: "net_ipv4_broadcast_address", header: hdr.}
-discard "forward decl of net_if"
-proc net_if_ipv4_addr_mask_cmp*(iface: ptr net_if; `addr`: ptr InAddr): bool {.
-    importc: "net_if_ipv4_addr_mask_cmp", header: hdr.}
+
+# TODO: FIXME
+# proc net_if_ipv4_addr_mask_cmp*(iface: ptr net_if; inaddr: ptr InAddr): bool {.
+    # importc: "net_if_ipv4_addr_mask_cmp", header: hdr.}
+
 ## *
 ##  @brief Check if the given address belongs to same subnet that
 ##  has been configured for the interface.
@@ -717,11 +687,14 @@ proc net_if_ipv4_addr_mask_cmp*(iface: ptr net_if; `addr`: ptr InAddr): bool {.
 ##  @return True if address is in same subnet, false otherwise.
 ##
 
-proc net_ipv4_addr_mask_cmp*(iface: ptr net_if; `addr`: ptr InAddr): bool =
-  return net_if_ipv4_addr_mask_cmp(iface, `addr`)
+# TODO: FIXME
+# proc net_ipv4_addr_mask_cmp*(iface: ptr net_if; inaddr: ptr InAddr): bool =
+  # return net_if_ipv4_addr_mask_cmp(iface, `addr`)
 
-proc net_if_ipv4_is_addr_bcast*(iface: ptr net_if; `addr`: ptr InAddr): bool {.
-    importc: "net_if_ipv4_is_addr_bcast", header: hdr.}
+# proc net_if_ipv4_is_addr_bcast*(iface: ptr net_if; inaddr: ptr InAddr): bool {.
+    # importc: "net_if_ipv4_is_addr_bcast", header: hdr.}
+
+
 ## *
 ##  @brief Check if the given IPv4 address is a broadcast address.
 ##
@@ -731,20 +704,11 @@ proc net_if_ipv4_is_addr_bcast*(iface: ptr net_if; `addr`: ptr InAddr): bool {.
 ##  @return True if address is a broadcast address, false otherwise.
 ##
 
-when defined(CONFIG_NET_NATIVE_IPV4):
-  proc net_ipv4_is_addr_bcast*(iface: ptr net_if; `addr`: ptr InAddr): bool =
-    if net_ipv4_addr_cmp(`addr`, net_ipv4_broadcast_address()):
-      return true
-    return net_if_ipv4_is_addr_bcast(iface, `addr`)
+# TODO: FIXME
+# proc net_ipv4_is_addr_bcast*(iface: ptr net_if; inaddr: ptr InAddr): bool {.importc: "$1", header: hdr.}
 
-else:
-  proc net_ipv4_is_addr_bcast*(iface: ptr net_if; `addr`: ptr InAddr): bool =
-    ARG_UNUSED(iface)
-    ARG_UNUSED(`addr`)
-    return false
+# proc net_if_ipv4_addr_lookup*(inaddr: ptr InAddr; iface: ptr ptr net_if): ptr net_if_addr {.  importc: "net_if_ipv4_addr_lookup", header: hdr.}
 
-proc net_if_ipv4_addr_lookup*(`addr`: ptr InAddr; iface: ptr ptr net_if): ptr net_if_addr {.
-    importc: "net_if_ipv4_addr_lookup", header: hdr.}
 ## *
 ##  @brief Check if the IPv4 address is assigned to any network interface
 ##  in the system.
@@ -755,12 +719,8 @@ proc net_if_ipv4_addr_lookup*(`addr`: ptr InAddr; iface: ptr ptr net_if): ptr ne
 ##  False otherwise.
 ##
 
-proc net_ipv4_is_my_addr*(`addr`: ptr InAddr): bool =
-  var ret: bool
-  ret = net_if_ipv4_addr_lookup(`addr`, nil) != nil
-  if not ret:
-    ret = net_ipv4_is_addr_bcast(nil, `addr`)
-  return ret
+proc net_ipv4_is_my_addr*(inaddr: ptr InAddr): bool {.importc: "$1", header: hdr.}
+
 
 ## *
 ##   @brief Check if the IPv6 address is unspecified (all bits zero)
@@ -770,11 +730,8 @@ proc net_ipv4_is_my_addr*(`addr`: ptr InAddr): bool =
 ##   @return True if the address is unspecified, false otherwise.
 ##
 
-proc net_ipv6_is_addr_unspecified*(`addr`: ptr In6Addr): bool =
-  return UNALIGNED_GET(addr(`addr`.s6_addr32[0])) == 0 and
-      UNALIGNED_GET(addr(`addr`.s6_addr32[1])) == 0 and
-      UNALIGNED_GET(addr(`addr`.s6_addr32[2])) == 0 and
-      UNALIGNED_GET(addr(`addr`.s6_addr32[3])) == 0
+proc net_ipv6_is_addr_unspecified*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
+
 
 ## *
 ##   @brief Check if the IPv6 address is solicited node multicast address
@@ -785,12 +742,8 @@ proc net_ipv6_is_addr_unspecified*(`addr`: ptr In6Addr): bool =
 ##   @return True if the address is solicited node address, false otherwise.
 ##
 
-proc net_ipv6_is_addr_solicited_node*(`addr`: ptr In6Addr): bool =
-  return UNALIGNED_GET(addr(`addr`.s6_addr32[0])) == htonl(0xff020000) and
-      UNALIGNED_GET(addr(`addr`.s6_addr32[1])) == 0x00000000 and
-      UNALIGNED_GET(addr(`addr`.s6_addr32[2])) == htonl(0x00000001) and
-      ((UNALIGNED_GET(addr(`addr`.s6_addr32[3])) and htonl(0xff000000)) ==
-      htonl(0xff000000))
+proc net_ipv6_is_addr_solicited_node*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
+
 
 ## *
 ##  @brief Check if the IPv6 address is a given scope multicast
@@ -803,8 +756,8 @@ proc net_ipv6_is_addr_solicited_node*(`addr`: ptr In6Addr): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_scope*(`addr`: ptr In6Addr; scope: cint): bool =
-  return (`addr`.s6_addr[0] == 0xff) and (`addr`.s6_addr[1] == scope)
+proc net_ipv6_is_addr_mcast_scope*(inaddr: ptr In6Addr; scope: cint): bool {.importc: "$1", header: hdr.}
+
 
 ## *
 ##  @brief Check if the IPv6 addresses have the same multicast scope (FFyx::).
@@ -816,9 +769,8 @@ proc net_ipv6_is_addr_mcast_scope*(`addr`: ptr In6Addr; scope: cint): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_same_mcast_scope*(addr_1: ptr In6Addr; addr_2: ptr In6Addr): bool =
-  return (addr_1.s6_addr[0] == 0xff) and (addr_2.s6_addr[0] == 0xff) and
-      (addr_1.s6_addr[1] == addr_2.s6_addr[1])
+proc net_ipv6_is_same_mcast_scope*(addr_1: ptr In6Addr; addr_2: ptr In6Addr): bool {.importc: "$1", header: hdr.}
+
 
 ## *
 ##  @brief Check if the IPv6 address is a global multicast address (FFxE::/16).
@@ -828,8 +780,8 @@ proc net_ipv6_is_same_mcast_scope*(addr_1: ptr In6Addr; addr_2: ptr In6Addr): bo
 ##  @return True if the address is global multicast address, false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_global*(`addr`: ptr In6Addr): bool =
-  return net_ipv6_is_addr_mcast_scope(`addr`, 0x0e)
+proc net_ipv6_is_addr_mcast_global*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
+
 
 ## *
 ##  @brief Check if the IPv6 address is a interface scope multicast
@@ -841,8 +793,7 @@ proc net_ipv6_is_addr_mcast_global*(`addr`: ptr In6Addr): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_iface*(`addr`: ptr In6Addr): bool =
-  return net_ipv6_is_addr_mcast_scope(`addr`, 0x01)
+proc net_ipv6_is_addr_mcast_iface*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if the IPv6 address is a link local scope multicast
@@ -854,8 +805,7 @@ proc net_ipv6_is_addr_mcast_iface*(`addr`: ptr In6Addr): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_link*(`addr`: ptr In6Addr): bool =
-  return net_ipv6_is_addr_mcast_scope(`addr`, 0x02)
+proc net_ipv6_is_addr_mcast_link*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if the IPv6 address is a mesh-local scope multicast
@@ -867,8 +817,7 @@ proc net_ipv6_is_addr_mcast_link*(`addr`: ptr In6Addr): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_mesh*(`addr`: ptr In6Addr): bool =
-  return net_ipv6_is_addr_mcast_scope(`addr`, 0x03)
+proc net_ipv6_is_addr_mcast_mesh*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if the IPv6 address is a site scope multicast
@@ -880,8 +829,7 @@ proc net_ipv6_is_addr_mcast_mesh*(`addr`: ptr In6Addr): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_site*(`addr`: ptr In6Addr): bool =
-  return net_ipv6_is_addr_mcast_scope(`addr`, 0x05)
+proc net_ipv6_is_addr_mcast_site*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if the IPv6 address is an organization scope multicast
@@ -893,8 +841,7 @@ proc net_ipv6_is_addr_mcast_site*(`addr`: ptr In6Addr): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_org*(`addr`: ptr In6Addr): bool =
-  return net_ipv6_is_addr_mcast_scope(`addr`, 0x08)
+proc net_ipv6_is_addr_mcast_org*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if the IPv6 address belongs to certain multicast group
@@ -907,13 +854,8 @@ proc net_ipv6_is_addr_mcast_org*(`addr`: ptr In6Addr): bool =
 ##  group, false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_group*(`addr`: ptr In6Addr; group: ptr In6Addr): bool =
-  return UNALIGNED_GET(addr(`addr`.s6_addr16[1])) == group.s6_addr16[1] and
-      UNALIGNED_GET(addr(`addr`.s6_addr16[2])) == group.s6_addr16[2] and
-      UNALIGNED_GET(addr(`addr`.s6_addr16[3])) == group.s6_addr16[3] and
-      UNALIGNED_GET(addr(`addr`.s6_addr32[1])) == group.s6_addr32[1] and
-      UNALIGNED_GET(addr(`addr`.s6_addr32[2])) == group.s6_addr32[1] and
-      UNALIGNED_GET(addr(`addr`.s6_addr32[3])) == group.s6_addr32[3]
+proc net_ipv6_is_addr_mcast_group*(inaddr: ptr In6Addr; group: ptr In6Addr): bool {.importc: "$1", header: hdr.}
+
 
 ## *
 ##  @brief Check if the IPv6 address belongs to the all nodes multicast group
@@ -924,9 +866,7 @@ proc net_ipv6_is_addr_mcast_group*(`addr`: ptr In6Addr; group: ptr In6Addr): boo
 ##  group, false otherwise
 ##
 
-proc net_ipv6_is_addr_mcast_all_nodes_group*(`addr`: ptr In6Addr): bool =
-  let all_nodes_mcast_group: In6Addr
-  return net_ipv6_is_addr_mcast_group(`addr`, addr(all_nodes_mcast_group))
+proc net_ipv6_is_addr_mcast_all_nodes_group*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if the IPv6 address is a interface scope all nodes multicast
@@ -938,9 +878,7 @@ proc net_ipv6_is_addr_mcast_all_nodes_group*(`addr`: ptr In6Addr): bool =
 ##  false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_iface_all_nodes*(`addr`: ptr In6Addr): bool =
-  return net_ipv6_is_addr_mcast_iface(`addr`) and
-      net_ipv6_is_addr_mcast_all_nodes_group(`addr`)
+proc net_ipv6_is_addr_mcast_iface_all_nodes*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if the IPv6 address is a link local scope all nodes multicast
@@ -952,9 +890,7 @@ proc net_ipv6_is_addr_mcast_iface_all_nodes*(`addr`: ptr In6Addr): bool =
 ##  address, false otherwise.
 ##
 
-proc net_ipv6_is_addr_mcast_link_all_nodes*(`addr`: ptr In6Addr): bool =
-  return net_ipv6_is_addr_mcast_link(`addr`) and
-      net_ipv6_is_addr_mcast_all_nodes_group(`addr`)
+proc net_ipv6_is_addr_mcast_link_all_nodes*(inaddr: ptr In6Addr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##   @brief Create solicited node IPv6 multicast address
@@ -964,18 +900,7 @@ proc net_ipv6_is_addr_mcast_link_all_nodes*(`addr`: ptr In6Addr): bool =
 ##   @param dst IPv6 address.
 ##
 
-proc net_ipv6_addr_create_solicited_node*(src: ptr In6Addr; dst: ptr In6Addr) =
-  dst.s6_addr[0] = 0xFF
-  dst.s6_addr[1] = 0x02
-  UNALIGNED_PUT(0, addr(dst.s6_addr16[1]))
-  UNALIGNED_PUT(0, addr(dst.s6_addr16[2]))
-  UNALIGNED_PUT(0, addr(dst.s6_addr16[3]))
-  UNALIGNED_PUT(0, addr(dst.s6_addr16[4]))
-  dst.s6_addr[10] = 0'u
-  dst.s6_addr[11] = 0x01
-  dst.s6_addr[12] = 0xFF
-  dst.s6_addr[13] = src.s6_addr[13]
-  UNALIGNED_PUT(UNALIGNED_GET(addr(src.s6_addr16[7])), addr(dst.s6_addr16[7]))
+proc net_ipv6_addr_create_solicited_node*(src: ptr In6Addr; dst: ptr In6Addr)  {.importc: "$1", header: hdr.}
 
 ## * @brief Construct an IPv6 address from eight 16-bit words.
 ##
@@ -990,17 +915,10 @@ proc net_ipv6_addr_create_solicited_node*(src: ptr In6Addr; dst: ptr In6Addr) =
 ##   @param addr7 16-bit word which is part of the address
 ##
 
-proc net_ipv6_addr_create*(`addr`: ptr In6Addr; addr0: uint16; addr1: uint16;
-                          addr2: uint16; addr3: uint16; addr4: uint16; addr5: uint16;
-                          addr6: uint16; addr7: uint16) =
-  UNALIGNED_PUT(htons(addr0), addr(`addr`.s6_addr16[0]))
-  UNALIGNED_PUT(htons(addr1), addr(`addr`.s6_addr16[1]))
-  UNALIGNED_PUT(htons(addr2), addr(`addr`.s6_addr16[2]))
-  UNALIGNED_PUT(htons(addr3), addr(`addr`.s6_addr16[3]))
-  UNALIGNED_PUT(htons(addr4), addr(`addr`.s6_addr16[4]))
-  UNALIGNED_PUT(htons(addr5), addr(`addr`.s6_addr16[5]))
-  UNALIGNED_PUT(htons(addr6), addr(`addr`.s6_addr16[6]))
-  UNALIGNED_PUT(htons(addr7), addr(`addr`.s6_addr16[7]))
+proc net_ipv6_addr_create*(inaddr: ptr In6Addr;
+                          addr0: uint16; addr1: uint16; addr2: uint16; addr3: uint16;
+                          addr4: uint16; addr5: uint16; addr6: uint16; addr7: uint16
+                          ) {.importc: "$1", header: hdr.}
 
 ## *
 ##   @brief Create link local allnodes multicast IPv6 address
@@ -1008,8 +926,7 @@ proc net_ipv6_addr_create*(`addr`: ptr In6Addr; addr0: uint16; addr1: uint16;
 ##   @param addr IPv6 address
 ##
 
-proc net_ipv6_addr_create_ll_allnodes_mcast*(`addr`: ptr In6Addr) =
-  net_ipv6_addr_create(`addr`, 0xff02, 0, 0, 0, 0, 0, 0, 0x0001)
+proc net_ipv6_addr_create_ll_allnodes_mcast*(inaddr: ptr In6Addr) {.importc: "$1", header: hdr.}
 
 ## *
 ##   @brief Create link local allrouters multicast IPv6 address
@@ -1017,8 +934,7 @@ proc net_ipv6_addr_create_ll_allnodes_mcast*(`addr`: ptr In6Addr) =
 ##   @param addr IPv6 address
 ##
 
-proc net_ipv6_addr_create_ll_allrouters_mcast*(`addr`: ptr In6Addr) =
-  net_ipv6_addr_create(`addr`, 0xff02, 0, 0, 0, 0, 0, 0, 0x0002)
+proc net_ipv6_addr_create_ll_allrouters_mcast*(inaddr: ptr In6Addr) {.importc: "$1", header: hdr.}
 
 ## *
 ##   @brief Create IPv6 address interface identifier
@@ -1027,38 +943,8 @@ proc net_ipv6_addr_create_ll_allrouters_mcast*(`addr`: ptr In6Addr) =
 ##   @param lladdr Link local address
 ##
 
-proc net_ipv6_addr_create_iid*(`addr`: ptr In6Addr; lladdr: ptr net_linkaddr) =
-  UNALIGNED_PUT(htonl(0xfe800000), addr(`addr`.s6_addr32[0]))
-  UNALIGNED_PUT(0, addr(`addr`.s6_addr32[1]))
-  case lladdr.len
-  of 2:                        ##  The generated IPv6 shall not toggle the
-      ##  Universal/Local bit. RFC 6282 ch 3.2.2
-      ##
-    if lladdr.`type` == NET_LINK_IEEE802154 or lladdr.`type` == NET_LINK_CANBUS:
-      UNALIGNED_PUT(0, addr(`addr`.s6_addr32[2]))
-      `addr`.s6_addr[11] = 0xff
-      `addr`.s6_addr[12] = 0xfe
-      `addr`.s6_addr[13] = 0'u
-      `addr`.s6_addr[14] = lladdr.`addr`[0]
-      `addr`.s6_addr[15] = lladdr.`addr`[1]
-  of 6:                        ##  We do not toggle the Universal/Local bit
-      ##  in Bluetooth. See RFC 7668 ch 3.2.2
-      ##
-    memcpy(addr(`addr`.s6_addr[8]), lladdr.`addr`, 3)
-    `addr`.s6_addr[11] = 0xff
-    `addr`.s6_addr[12] = 0xfe
-    memcpy(addr(`addr`.s6_addr[13]), lladdr.`addr` + 3, 3)
-    when defined(CONFIG_NET_L2_BT_ZEP1656):
-      ##  Workaround against older Linux kernel BT IPSP code.
-      ##  This will be removed eventually.
-      ##
-      if lladdr.`type` == NET_LINK_BLUETOOTH:
-        `addr`.s6_addr[8] = `addr`.s6_addr[8] xor 0x02
-    if lladdr.`type` == NET_LINK_ETHERNET:
-      `addr`.s6_addr[8] = `addr`.s6_addr[8] xor 0x02
-  of 8:
-    memcpy(addr(`addr`.s6_addr[8]), lladdr.`addr`, lladdr.len)
-    `addr`.s6_addr[8] = `addr`.s6_addr[8] xor 0x02
+# TODO: FIXME
+# proc net_ipv6_addr_create_iid*(inaddr: ptr In6Addr; lladdr: ptr net_linkaddr) {.importc: "$1", header: hdr.}
 
 ## *
 ##   @brief Check if given address is based on link layer address
@@ -1066,33 +952,8 @@ proc net_ipv6_addr_create_iid*(`addr`: ptr In6Addr; lladdr: ptr net_linkaddr) =
 ##   @return True if it is, False otherwise
 ##
 
-proc net_ipv6_addr_based_on_ll*(`addr`: ptr In6Addr; lladdr: ptr net_linkaddr): bool =
-  if not `addr` or not lladdr:
-    return false
-  case lladdr.len
-  of 2:
-    if not memcmp(addr(`addr`.s6_addr[14]), lladdr.`addr`, lladdr.len) and
-        `addr`.s6_addr[8] == 0'u and `addr`.s6_addr[9] == 0'u and
-        `addr`.s6_addr[10] == 0'u and `addr`.s6_addr[11] == 0xff and
-        `addr`.s6_addr[12] == 0xfe:
-      return true
-  of 6:
-    if lladdr.`type` == NET_LINK_ETHERNET:
-      if not memcmp(addr(`addr`.s6_addr[9]), addr(lladdr.`addr`[1]), 2) and
-          not memcmp(addr(`addr`.s6_addr[13]), addr(lladdr.`addr`[3]), 3) and
-          `addr`.s6_addr[11] == 0xff and `addr`.s6_addr[12] == 0xfe and
-          (`addr`.s6_addr[8] xor 0x02) == lladdr.`addr`[0]:
-        return true
-    elif lladdr.`type` == NET_LINK_BLUETOOTH:
-      if not memcmp(addr(`addr`.s6_addr[9]), addr(lladdr.`addr`[1]), 2) and
-          not memcmp(addr(`addr`.s6_addr[13]), addr(lladdr.`addr`[3]), 3) and
-          `addr`.s6_addr[11] == 0xff and `addr`.s6_addr[12] == 0xfe:
-        return true
-  of 8:
-    if not memcmp(addr(`addr`.s6_addr[9]), addr(lladdr.`addr`[1]), lladdr.len - 1) and
-        (`addr`.s6_addr[8] xor 0x02) == lladdr.`addr`[0]:
-      return true
-  return false
+# TODO: FIXME
+# proc net_ipv6_addr_based_on_ll*(inaddr: ptr In6Addr; lladdr: ptr net_linkaddr): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Get sockaddr_in6 from sockaddr. This is a helper so that
@@ -1103,8 +964,7 @@ proc net_ipv6_addr_based_on_ll*(`addr`: ptr In6Addr; lladdr: ptr net_linkaddr): 
 ##  @return Pointer to IPv6 socket address
 ##
 
-proc net_sin6*(`addr`: ptr sockaddr): ptr sockaddr_in6 =
-  return cast[ptr sockaddr_in6](`addr`)
+proc net_sin6*(inaddr: ptr SockAddr): ptr Sockaddr_in6 {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Get sockaddr_in from sockaddr. This is a helper so that
@@ -1115,8 +975,7 @@ proc net_sin6*(`addr`: ptr sockaddr): ptr sockaddr_in6 =
 ##  @return Pointer to IPv4 socket address
 ##
 
-proc net_sin*(`addr`: ptr sockaddr): ptr sockaddr_in =
-  return cast[ptr sockaddr_in](`addr`)
+proc net_sin*(inaddr: ptr SockAddr): ptr SockAddr_in {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Get sockaddr_in6_ptr from sockaddr_ptr. This is a helper so that
@@ -1126,9 +985,8 @@ proc net_sin*(`addr`: ptr sockaddr): ptr sockaddr_in =
 ##
 ##  @return Pointer to IPv6 socket address
 ##
-
-proc net_sin6_ptr*(`addr`: ptr sockaddr_ptr): ptr sockaddr_in6_ptr =
-  return cast[ptr sockaddr_in6_ptr](`addr`)
+# proc net_sin6_ptr*(inaddr: ptr sockaddr_ptr): ptr sockaddr_in6_ptr =
+  # return cast[ptr sockaddr_in6_ptr](`addr`)
 
 ## *
 ##  @brief Get sockaddr_in_ptr from sockaddr_ptr. This is a helper so that
@@ -1138,9 +996,8 @@ proc net_sin6_ptr*(`addr`: ptr sockaddr_ptr): ptr sockaddr_in6_ptr =
 ##
 ##  @return Pointer to IPv4 socket address
 ##
-
-proc net_sin_ptr*(`addr`: ptr sockaddr_ptr): ptr sockaddr_in_ptr =
-  return cast[ptr sockaddr_in_ptr](`addr`)
+# proc net_sin_ptr*(inaddr: ptr sockaddr_ptr): ptr sockaddr_in_ptr =
+  # return cast[ptr sockaddr_in_ptr](`addr`)
 
 ## *
 ##  @brief Get sockaddr_ll_ptr from sockaddr_ptr. This is a helper so that
@@ -1150,9 +1007,8 @@ proc net_sin_ptr*(`addr`: ptr sockaddr_ptr): ptr sockaddr_in_ptr =
 ##
 ##  @return Pointer to linklayer socket address
 ##
-
-proc net_sll_ptr*(`addr`: ptr sockaddr_ptr): ptr sockaddr_ll_ptr =
-  return cast[ptr sockaddr_ll_ptr](`addr`)
+# proc net_sll_ptr*(inaddr: ptr sockaddr_ptr): ptr sockaddr_ll_ptr =
+  # return cast[ptr sockaddr_ll_ptr](`addr`)
 
 ## *
 ##  @brief Get sockaddr_can_ptr from sockaddr_ptr. This is a helper so that
@@ -1162,9 +1018,8 @@ proc net_sll_ptr*(`addr`: ptr sockaddr_ptr): ptr sockaddr_ll_ptr =
 ##
 ##  @return Pointer to CAN socket address
 ##
-
-proc net_can_ptr*(`addr`: ptr sockaddr_ptr): ptr sockaddr_can_ptr =
-  return cast[ptr sockaddr_can_ptr](`addr`)
+# proc net_can_ptr*(inaddr: ptr sockaddr_ptr): ptr sockaddr_can_ptr =
+  # return cast[ptr sockaddr_can_ptr](`addr`)
 
 ## *
 ##  @brief Convert a string to IP address.
@@ -1180,8 +1035,12 @@ proc net_can_ptr*(`addr`: ptr sockaddr_ptr): ptr sockaddr_can_ptr =
 ##  @return 0 if ok, < 0 if error
 ##
 
-proc net_addr_pton*(family: sa_family_t; src: cstring; dst: pointer): cint {.syscall,
+proc net_addr_pton*(family: TSa_Family;
+                    src: cstring;
+                    dst: pointer | ptr InAddr | ptr In6Addr
+                    ): cint {.
     importc: "net_addr_pton", header: hdr.}
+
 ## *
 ##  @brief Convert IP address to string form.
 ##
@@ -1194,8 +1053,12 @@ proc net_addr_pton*(family: sa_family_t; src: cstring; dst: pointer): cint {.sys
 ##  @return dst pointer if ok, NULL if error
 ##
 
-proc net_addr_ntop*(family: sa_family_t; src: pointer; dst: cstring; size: csize_t): cstring {.
-    syscall, importc: "net_addr_ntop", header: hdr.}
+proc net_addr_ntop*(family: TSa_Family;
+                    src: pointer | ptr InAddr | ptr In6Addr;
+                    dst: cstring; size: csize_t
+                    ): cstring {.
+    importc: "net_addr_ntop", header: hdr.}
+
 ## *
 ##  @brief Parse a string that contains either IPv4 or IPv6 address
 ##  and optional port, and store the information in user supplied
@@ -1218,8 +1081,9 @@ proc net_addr_ntop*(family: sa_family_t; src: pointer; dst: cstring; size: csize
 ##  @return True if parsing could be done, false otherwise.
 ##
 
-proc net_ipaddr_parse*(str: cstring; str_len: csize_t; `addr`: ptr sockaddr): bool {.
+proc net_ipaddr_parse*(str: cstring; str_len: csize_t; inaddr: ptr SockAddr): bool {.
     importc: "net_ipaddr_parse", header: hdr.}
+
 ## *
 ##  @brief Compare TCP sequence numbers.
 ##
@@ -1232,8 +1096,7 @@ proc net_ipaddr_parse*(str: cstring; str_len: csize_t; `addr`: ptr sockaddr): bo
 ##  @return < 0 if seq1 < seq2, 0 if seq1 == seq2, > 0 if seq > seq2
 ##
 
-proc net_tcp_seq_cmp*(seq1: uint32; seq2: uint32): int32 =
-  return (int32)(seq1 - seq2)
+proc net_tcp_seq_cmp*(seq1: uint32; seq2: uint32): int32 {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check that one TCP sequence number is greater.
@@ -1246,8 +1109,7 @@ proc net_tcp_seq_cmp*(seq1: uint32; seq2: uint32): int32 =
 ##  @return True if seq > seq2
 ##
 
-proc net_tcp_seq_greater*(seq1: uint32; seq2: uint32): bool =
-  return net_tcp_seq_cmp(seq1, seq2) > 0
+proc net_tcp_seq_greater*(seq1: uint32; seq2: uint32): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Convert a string of hex values to array of bytes.
@@ -1263,6 +1125,7 @@ proc net_tcp_seq_greater*(seq1: uint32; seq2: uint32): bool =
 
 proc net_bytes_from_str*(buf: ptr uint8; buf_len: cint; src: cstring): cint {.
     importc: "net_bytes_from_str", header: hdr.}
+
 ## *
 ##  @brief Convert Tx network packet priority to traffic class so we can place
 ##  the packet into correct Tx queue.
@@ -1274,6 +1137,7 @@ proc net_bytes_from_str*(buf: ptr uint8; buf_len: cint; src: cstring): cint {.
 
 proc net_tx_priority2tc*(prio: net_priority): cint {.importc: "net_tx_priority2tc",
     header: hdr.}
+
 ## *
 ##  @brief Convert Rx network packet priority to traffic class so we can place
 ##  the packet into correct Rx queue.
@@ -1285,6 +1149,7 @@ proc net_tx_priority2tc*(prio: net_priority): cint {.importc: "net_tx_priority2t
 
 proc net_rx_priority2tc*(prio: net_priority): cint {.importc: "net_rx_priority2tc",
     header: hdr.}
+
 ## *
 ##  @brief Convert network packet VLAN priority to network packet priority so we
 ##  can place the packet into correct queue.
@@ -1294,13 +1159,7 @@ proc net_rx_priority2tc*(prio: net_priority): cint {.importc: "net_rx_priority2t
 ##  @return Network priority
 ##
 
-proc net_vlan2priority*(priority: uint8): net_priority =
-  ##  Map according to IEEE 802.1Q
-  let vlan2priority: UncheckedArray[uint8]
-  if priority >= ARRAY_SIZE(vlan2priority):
-    ##  Use Best Effort as the default priority
-    return NET_PRIORITY_BE
-  return cast[net_priority](vlan2priority[priority])
+proc net_vlan2priority*(priority: uint8): net_priority {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Convert network packet priority to network packet VLAN priority.
@@ -1310,9 +1169,7 @@ proc net_vlan2priority*(priority: uint8): net_priority =
 ##  @return VLAN priority (PCP)
 ##
 
-proc net_priority2vlan*(priority: net_priority): uint8 =
-  ##  The conversion works both ways
-  return cast[uint8](net_vlan2priority(priority))
+proc net_priority2vlan*(priority: net_priority): uint8 {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Return network address family value as a string. This is only usable
@@ -1323,8 +1180,9 @@ proc net_priority2vlan*(priority: net_priority): uint8 =
 ##  @return Network address family as a string, or NULL if family is unknown.
 ##
 
-proc net_family2str*(family: sa_family_t): cstring {.importc: "net_family2str",
+proc net_family2str*(family: TSa_Family): cstring {.importc: "net_family2str",
     header: hdr.}
+
 ## *
 ##  @}
 ##
