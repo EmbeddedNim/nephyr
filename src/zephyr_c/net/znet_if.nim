@@ -69,282 +69,129 @@ const
 
 type
   net_if_flag* {.size: sizeof(cint).} = enum 
-
-## * Interface is up/ready to receive and transmit
-    NET_IF_UP,                
-
-## * Interface is pointopoint
-    NET_IF_POINTOPOINT,       
-
-## * Interface is in promiscuous mode
-    NET_IF_PROMISC, 
-
-## * Do not start the interface immediately after initialization.
+    NET_IF_UP,                ## * Interface is up/ready to receive and transmit
+    NET_IF_POINTOPOINT,       ## * Interface is pointopoint
+    NET_IF_PROMISC, ## * Interface is in promiscuous mode
+    NET_IF_NO_AUTO_START, ## *\
+                   ## Do not start the interface immediately after initialization.
                    ##  This requires that either the device driver or some other entity
                    ##  will need to manually take the interface up when needed.
                    ##  For example for Ethernet this will happen when the driver calls
                    ##  the net_eth_carrier_on() function.
                    ##
-    NET_IF_NO_AUTO_START,     
-
-## * Power management specific: interface is being suspended
-    NET_IF_SUSPENDED, 
-
-## * Flag defines if received multicasts of other interface are
+    NET_IF_SUSPENDED, ## * Power management specific: interface is being suspended
+    NET_IF_FORWARD_MULTICASTS, ## * Flag defines if received multicasts of other interface are
                      ##  forwarded on this interface. This activates multicast
                      ##  routing / forwarding for this interface.
                      ##
-    NET_IF_FORWARD_MULTICASTS, 
-
-## * Interface supports IPv4
-    NET_IF_IPV4,              
-
-## * Interface supports IPv6
-    NET_IF_IPV6,              
-
-## * @cond INTERNAL_HIDDEN
-                ##  Total number of flags - must be at the end of the enum
-    NET_IF_NUM_FLAGS          
+    NET_IF_IPV4,              ## * Interface supports IPv4
+    NET_IF_IPV6,              ## * Interface supports IPv6
+    NET_IF_NUM_FLAGS          ##  Total number of flags - must be at the end of the enum
 
 ## * @endcond
 
 
 type
   net_if_addr* {.importc: "net_if_addr", header: "net_if.h", bycopy.} = object
-    address* {.importc: "address".}: NetAddr 
-
-## * IP address
-
+    address* {.importc: "address".}: NetAddr ## * IP address
     when CONFIG_NET_NATIVE_IPV6:
       lifetime* {.importc: "lifetime", header: "net_if.h".}: net_timeout
-
     when CONFIG_NET_IPV6_DAD and CONFIG_NET_NATIVE_IPV6:
-      
-
-## * Duplicate address detection (DAD) timer
-      dad_node* {.importc: "dad_node", header: "net_if.h".}: sys_snode_t
+      dad_node* {.importc: "dad_node", header: "net_if.h".}: sys_snode_t ## * Duplicate address detection (DAD) timer
       dad_start* {.importc: "dad_start", header: "net_if.h".}: uint32
-
-    addr_type* {.importc: "addr_type".}: net_addr_type 
-
-## * How the IP address was set
-    addr_state* {.importc: "addr_state".}: net_addr_state 
-
-## * What is the current state of the address
-
+    addr_type* {.importc: "addr_type".}: net_addr_type ## * How the IP address was set
+    addr_state* {.importc: "addr_state".}: net_addr_state ## * What is the current state of the address
     when CONFIG_NET_IPV6_DAD and CONFIG_NET_NATIVE_IPV6:
-      
-
-## * How many times we have done DAD
-      dad_count* {.importc: "dad_count", header: "net_if.h".}: uint8
-
-    is_infinite* {.importc: "is_infinite", bitsize: 1.}: uint8 
-
-## * Is the IP address valid forever
-    is_used* {.importc: "is_used", bitsize: 1.}: uint8 
-
-## * Is this IP address used or not
-    is_mesh_local* {.importc: "is_mesh_local", bitsize: 1.}: uint8 
-
-## * Is this IP address usage limited to the subnet (mesh) or not
+      dad_count* {.importc: "dad_count", header: "net_if.h".}: uint8 ## * How many times we have done DAD
+    is_infinite* {.importc: "is_infinite", bitsize: 1.}: uint8 ## * Is the IP address valid forever
+    is_used* {.importc: "is_used", bitsize: 1.}: uint8 ## * Is this IP address used or not
+    is_mesh_local* {.importc: "is_mesh_local", bitsize: 1.}: uint8 ## * Is this IP address usage limited to the subnet (mesh) or not
     unused {.importc: "_unused", bitsize: 5.}: uint8
 
 
   net_if_mcast_addr* {.importc: "net_if_mcast_addr", header: "net_if.h", bycopy.} = object
-    
-
-## *
     ##  @brief Network Interface multicast IP addresses
     ##
     ##  Stores the multicast IP addresses assigned to this network interface.
     ##
-    address* {.importc: "address".}: NetAddr 
-
-## * IP address
-    
-
-## * Is this multicast IP address used or not
-    is_used* {.importc: "is_used", bitsize: 1.}: uint8 
-
-## * Did we join to this group
-    is_joined* {.importc: "is_joined", bitsize: 1.}: uint8
+    address* {.importc: "address".}: NetAddr ## * IP address
+    is_used* {.importc: "is_used", bitsize: 1.}: uint8 ## * Is this multicast IP address used or not
+    is_joined* {.importc: "is_joined", bitsize: 1.}: uint8 ## * Did we join to this group
     unused {.importc: "_unused", bitsize: 6.}: uint8
 
-
   net_if_ipv6_prefix* {.importc: "net_if_ipv6_prefix", header: "net_if.h", bycopy.} = object
-    
-
-## *
     ##  @brief Network Interface IPv6 prefixes
     ##
     ##  Stores the multicast IP addresses assigned to this network interface.
     ##
-    lifetime* {.importc: "lifetime".}: net_timeout 
-
-## * Prefix lifetime
-    
-
-## * IPv6 prefix
-    prefix* {.importc: "prefix".}: In6Addr 
-
-## * Backpointer to network interface where this prefix is used
-    iface* {.importc: "iface".}: ptr net_if 
-
-## * Prefix length
-    len* {.importc: "len".}: uint8 
-
-## * Is the IP prefix valid forever
-    is_infinite* {.importc: "is_infinite", bitsize: 1.}: uint8 
-
-## * Is this prefix used or not
-    is_used* {.importc: "is_used", bitsize: 1.}: uint8
+    lifetime* {.importc: "lifetime".}: net_timeout ## * Prefix lifetime
+    prefix* {.importc: "prefix".}: In6Addr ## * IPv6 prefix
+    iface* {.importc: "iface".}: ptr net_if_alias ## * Backpointer to network interface where this prefix is used
+    len* {.importc: "len".}: uint8 ## * Prefix length
+    is_infinite* {.importc: "is_infinite", bitsize: 1.}: uint8 ## * Is the IP prefix valid forever
+    is_used* {.importc: "is_used", bitsize: 1.}: uint8 ## * Is this prefix used or not
     unused {.importc: "_unused", bitsize: 6.}: uint8
 
 
-
   net_if_router* {.importc: "net_if_router", header: "net_if.h", bycopy.} = object
-    
-
-## *
     ##  @brief Information about routers in the system.
     ##
     ##  Stores the router information.
     ##
-    node* {.importc: "node".}: sys_snode_t 
-
-## * Slist lifetime timer node
-    
-
-## * IP address
-    address* {.importc: "address".}: NetAddr 
-
-## * Network interface the router is connected to
-    iface* {.importc: "iface".}: ptr net_if 
-
-## * Router life timer start
-    life_start* {.importc: "life_start".}: uint32 
-
-## * Router lifetime
-    lifetime* {.importc: "lifetime".}: uint16 
-
-## * Is this router used or not
-    is_used* {.importc: "is_used", bitsize: 1.}: uint8 
-
-## * Is default router
-    is_default* {.importc: "is_default", bitsize: 1.}: uint8 
-
-## * Is the router valid forever
-    is_infinite* {.importc: "is_infinite", bitsize: 1.}: uint8
+    node* {.importc: "node".}: sys_snode_t ## * Slist lifetime timer node
+    address* {.importc: "address".}: NetAddr ## * IP address
+    iface* {.importc: "iface".}: ptr net_if_alias ## * Network interface the router is connected to
+    life_start* {.importc: "life_start".}: uint32 ## * Router life timer start
+    lifetime* {.importc: "lifetime".}: uint16 ## * Router lifetime
+    is_used* {.importc: "is_used", bitsize: 1.}: uint8 ## * Is this router used or not
+    is_default* {.importc: "is_default", bitsize: 1.}: uint8 ## * Is default router
+    is_infinite* {.importc: "is_infinite", bitsize: 1.}: uint8 ## * Is the router valid forever
     unused* {.importc: "_unused", bitsize: 5.}: uint8
 
 
   net_if_ipv6* {.importc: "net_if_ipv6", header: "net_if.h", bycopy.} = object
-    unicast* {.importc: "unicast".}: array[NET_IF_MAX_IPV6_ADDR, net_if_addr] 
+    unicast* {.importc: "unicast".}: array[NET_IF_MAX_IPV6_ADDR, net_if_addr] ## * Unicast IP addresses
+    mcast* {.importc: "mcast".}: array[NET_IF_MAX_IPV6_MADDR, net_if_mcast_addr] ## * Multicast IP addresses
 
-## * Unicast IP
-                                                                         ## addresses
-    
-
-## * Multicast IP addresses
-    mcast* {.importc: "mcast".}: array[NET_IF_MAX_IPV6_MADDR, net_if_mcast_addr] 
-
-## *
-                                                                            ## Prefixes
-    prefix* {.importc: "prefix".}: array[NET_IF_MAX_IPV6_PREFIX, net_if_ipv6_prefix] ##
-                                                                                
-
-## *
-                                                                                ## Default
-                                                                                ## reachable
-                                                                                ## time
-                                                                                ## (RFC
-                                                                                ## 4861,
-                                                                                ## page
-                                                                                ## 52)
-    base_reachable_time* {.importc: "base_reachable_time".}: uint32 
-
-## * Reachable time (RFC 4861, page 20)
-    reachable_time* {.importc: "reachable_time".}: uint32 
-
-## * Retransmit timer (RFC 4861, page 52)
-    retrans_timer* {.importc: "retrans_timer".}: uint32
+    prefix* {.importc: "prefix".}: array[NET_IF_MAX_IPV6_PREFIX, net_if_ipv6_prefix] ## Prefixes
+    base_reachable_time* {.importc: "base_reachable_time".}: uint32 ## Default reachable time (RFC 4861, page 52)
+    reachable_time* {.importc: "reachable_time".}: uint32 ## * Reachable time (RFC 4861, page 20)
+    retrans_timer* {.importc: "retrans_timer".}: uint32 ## * Retransmit timer (RFC 4861, page 52)
     when CONFIG_NET_IPV6_ND and CONFIG_NET_NATIVE_IPV6:
-      
-
-## * Router solicitation timer node
-      rs_node* {.importc: "rs_node", header: "net_if.h".}: sys_snode_t
-      ##  RS start time
-      rs_start* {.importc: "rs_start", header: "net_if.h".}: uint32
-      
-
-## * RS count
-      rs_count* {.importc: "rs_count", header: "net_if.h".}: uint8
-    hop_limit* {.importc: "hop_limit".}: uint8 
-
-## * IPv6 hop limit
-
-
+      rs_node* {.importc: "rs_node", header: "net_if.h".}: sys_snode_t ## * Router solicitation timer node
+      rs_start* {.importc: "rs_start", header: "net_if.h".}: uint32 ##  RS start time
+      rs_count* {.importc: "rs_count", header: "net_if.h".}: uint8 ## * RS count
+    hop_limit* {.importc: "hop_limit".}: uint8 ## * IPv6 hop limit
+  
   net_if_ipv4* {.importc: "net_if_ipv4", header: "net_if.h", bycopy.} = object
-    unicast* {.importc: "unicast".}: array[NET_IF_MAX_IPV4_ADDR, net_if_addr] 
-
-## * Unicast IP
-                                                                         ## addresses
-    
-
-## * Multicast IP addresses
-    mcast* {.importc: "mcast".}: array[NET_IF_MAX_IPV4_MADDR, net_if_mcast_addr] 
-
-## *
-                                                                            ## Gateway
-    gw* {.importc: "gw".}: InAddr 
-
-## * Netmask
-    netmask* {.importc: "netmask".}: InAddr 
-
-## * IPv4 time-to-live
-    ttl* {.importc: "ttl".}: uint8
-
-
+    unicast* {.importc: "unicast".}: array[NET_IF_MAX_IPV4_ADDR, net_if_addr] ## * Unicast IP addresses
+    mcast* {.importc: "mcast".}: array[NET_IF_MAX_IPV4_MADDR, net_if_mcast_addr] ## * Multicast IP addresses
+    gw* {.importc: "gw".}: InAddr ## Gateway
+    netmask* {.importc: "netmask".}: InAddr ## * Netmask
+    ttl* {.importc: "ttl".}: uint8 ## * IPv4 time-to-live
 
   net_if_ip* {.importc: "net_if_ip", header: "net_if.h", bycopy.} = object
-    
-
-## *
     ##  @brief Network interface IP address configuration.
-    ##
     when CONFIG_NET_NATIVE_IPV6:
       ipv6* {.importc: "ipv6", header: "net_if.h".}: ptr net_if_ipv6
     when CONFIG_NET_NATIVE_IPV4:
       ipv4* {.importc: "ipv4", header: "net_if.h".}: ptr net_if_ipv4
 
-
-
   net_if_config* {.importc: "net_if_config", header: "net_if.h", bycopy.} = object
-    
-
-## *
     ##  @brief IP and other configuration related data for network interface.
-    ##
-    ip* {.importc: "ip".}: net_if_ip 
+    ip* {.importc: "ip".}: net_if_ip ## * IP address configuration setting
 
-## * IP address configuration setting
     when CONFIG_NET_DHCPV4 and CONFIG_NET_NATIVE_IPV4:
       dhcpv4* {.importc: "dhcpv4", header: "net_if.h".}: net_if_dhcpv4
     when CONFIG_NET_IPV4_AUTO and CONFIG_NET_NATIVE_IPV4:
       ipv4auto* {.importc: "ipv4auto", header: "net_if.h".}: net_if_ipv4_autoconf
     when CONFIG_NET_L2_VIRTUAL:
-      
-
-## *
-      ##  This list keeps track of the virtual network interfaces
-      ##  that are attached to this network interface.
-      ##
-      virtual_interfaces* {.importc: "virtual_interfaces", header: "net_if.h".}: sys_slist_t
+      virtual_interfaces* {.importc: "virtual_interfaces", header: "net_if.h".}: sys_slist_t ##\
+        ##  This list keeps track of the virtual network interfaces
+        ##  that are attached to this network interface.
+        ##
 
   net_traffic_class* {.importc: "net_traffic_class", header: "net_if.h", bycopy.} = object
-    
-
-## *
     ##  @brief Network traffic class.
     ##
     ##  Traffic classes are used when sending or receiving data that is classified
@@ -352,23 +199,14 @@ type
     ##  and it will be sent or received first. Each network packet that is
     ##  transmitted or received goes through a fifo to a thread that will transmit
     ##  it.
-    ##
-    fifo* {.importc: "fifo".}: k_fifo 
-
-## * Fifo for handling this Tx or Rx packet
+    fifo* {.importc: "fifo".}: k_fifo ## * Fifo for handling this Tx or Rx packet
     
 
-## * Traffic class handler thread
-    handler* {.importc: "handler".}: k_thread 
-
-## * Stack for this handler
-    stack* {.importc: "stack".}: ptr k_thread_stack_t
+    handler* {.importc: "handler".}: k_thread ## * Traffic class handler thread
+    stack* {.importc: "stack".}: ptr k_thread_stack_t ## * Stack for this handler
 
 
   net_if_dev* {.importc: "net_if_dev", header: "net_if.h", bycopy.} = object
-    
-
-## *
     ##  @brief Network Interface Device structure
     ##
     ##  Used to handle a network interface on top of a device driver instance.
@@ -381,73 +219,46 @@ type
     ##  Because of the strong relationship between a device driver and such
     ##  network interface, each net_if_dev should be instantiated by
     ##
-    dev* {.importc: "dev".}: ptr device 
-
-## * The actually device driver instance the net_if is related to
+    dev* {.importc: "dev".}: ptr device ## * The actually device driver instance the net_if is related to
     
 
-## * Interface's L2 layer
-    l2* {.importc: "l2".}: ptr net_l2 
+    l2* {.importc: "l2".}: ptr net_l2 ## * Interface's L2 layer
 
-## * Interface's private L2 data pointer
-    l2_data* {.importc: "l2_data".}: pointer 
+    l2_data* {.importc: "l2_data".}: pointer ## * Interface's private L2 data pointer
 
-## * The hardware link address
-    link_addr* {.importc: "link_addr".}: net_linkaddr
+    link_addr* {.importc: "link_addr".}: net_linkaddr ## * The hardware link address
     when CONFIG_NET_OFFLOAD:
-      
-
-## * TCP/IP Offload functions.
+      ## * TCP/IP Offload functions.
       ##  If non-NULL, then the TCP/IP stack is located
       ##  in the communication chip that is accessed via this
       ##  network interface.
       ##
       offload* {.importc: "offload", header: "net_if.h".}: ptr net_offload
-    mtu* {.importc: "mtu".}: uint16 
-
-## * The hardware MTU
+    mtu* {.importc: "mtu".}: uint16 ## * The hardware MTU
     when CONFIG_NET_SOCKETS_OFFLOAD:
-      
-
-## * Indicate whether interface is offloaded at socket level.
-      offloaded* {.importc: "offloaded", header: "net_if.h".}: bool
-
+      offloaded* {.importc: "offloaded", header: "net_if.h".}: bool ## * Indicate whether interface is offloaded at socket level.
 
 
   net_if* {.importc: "net_if", header: "net_if.h", bycopy.} = object
-    
-
-## *
     ##  @brief Network Interface structure
     ##
     ##  Used to handle a network interface on top of a net_if_dev instance.
     ##  There can be many net_if instance against the same net_if_dev instance.
     ##
     ##
-    if_dev* {.importc: "if_dev".}: ptr net_if_dev 
+    if_dev* {.importc: "if_dev".}: ptr net_if_dev ## * The net_if_dev instance the net_if is related to
 
-## * The net_if_dev instance the net_if is related to
     when CONFIG_NET_STATISTICS_PER_INTERFACE:
-      
-
-## * Network statistics related to this network interface
-      stats* {.importc: "stats", header: "net_if.h".}: net_stats
-    config* {.importc: "config".}: net_if_config 
-
-## * Network interface instance configuration
+      stats* {.importc: "stats", header: "net_if.h".}: net_stats ## * Network statistics related to this network interface
+    config* {.importc: "config".}: net_if_config ## * Network interface instance configuration
     when CONFIG_NET_POWER_MANAGEMENT:
-      
-
-## * Keep track of packets pending in traffic queues. This is
+      tx_pending* {.importc: "tx_pending", header: "net_if.h".}: cint ##\
+      ## * Keep track of packets pending in traffic queues. This is
       ##  needed to avoid putting network device driver to sleep if
       ##  there are packets waiting to be sent.
       ##
-      tx_pending* {.importc: "tx_pending", header: "net_if.h".}: cint
 
-  net_if_link_callback_t* = proc (iface: ptr net_if; dst: ptr net_linkaddr; status: cint)
-    
-
-## *
+  net_if_link_callback_t* = proc (iface: ptr net_if; dst: ptr net_linkaddr; status: cint) ##\
     ##  @typedef net_if_link_callback_t
     ##  @brief Define callback that is called after a network packet
     ##         has been sent.
@@ -457,9 +268,6 @@ type
     ##
 
   net_if_link_cb* {.importc: "net_if_link_cb", header: "net_if.h", bycopy.} = object
-    
-
-## *
     ##  @brief Link callback handler struct.
     ##
     ##  Stores the link callback information. Caller must make sure that
@@ -467,90 +275,38 @@ type
     ##  registration. Typically this means that the variable cannot be
     ##  allocated from stack.
     ##
-    node* {.importc: "node".}: sys_snode_t 
-
-## * Node information for the slist.
-    
-
-## * Link callback
-    cb* {.importc: "cb".}: net_if_link_callback_t
-
+    node* {.importc: "node".}: sys_snode_t ## * Node information for the slist.
+    cb* {.importc: "cb".}: net_if_link_callback_t ## * Link callback
 
 when CONFIG_NET_DHCPV4 and CONFIG_NET_NATIVE_IPV4:
   type
     net_if_dhcpv4* {.importc: "net_if_dhcpv4", header: "net_if.h", bycopy.} = object
-      node* {.importc: "node".}: sys_snode_t 
-
-## * Used for timer lists
-      
-
-## * Timer start
-      timer_start* {.importc: "timer_start".}: int64 
-
-## * Time for INIT, DISCOVER, REQUESTING, RENEWAL
-      request_time* {.importc: "request_time".}: uint32
+      node* {.importc: "node".}: sys_snode_t ## * Used for timer lists
+      timer_start* {.importc: "timer_start".}: int64 ## * Timer start
+      request_time* {.importc: "request_time".}: uint32 ## * Time for INIT, DISCOVER, REQUESTING, RENEWAL
       xid* {.importc: "xid".}: uint32 
-
-## * IP address Lease time
-      lease_time* {.importc: "lease_time".}: uint32 
-
-## * IP address Renewal time
-      renewal_time* {.importc: "renewal_time".}: uint32 
-
-## * IP address Rebinding time
-      rebinding_time* {.importc: "rebinding_time".}: uint32 
-
-## * Server ID
-      server_id* {.importc: "server_id".}: InAddr 
-
-## * Requested IP addr
-      requested_ip* {.importc: "requested_ip".}: InAddr 
-
-## *
-                                                     ##   DHCPv4 client state in the process of network
-                                                     ##   address allocation.
-                                                     ##
-      state* {.importc: "state".}: net_dhcpv4_state 
-
-## * Number of attempts made for REQUEST and RENEWAL messages
-      attempts* {.importc: "attempts".}: uint8
+      lease_time* {.importc: "lease_time".}: uint32 ## * IP address Lease time
+      renewal_time* {.importc: "renewal_time".}: uint32 ## * IP address Renewal time
+      rebinding_time* {.importc: "rebinding_time".}: uint32 ## * IP address Rebinding time
+      server_id* {.importc: "server_id".}: InAddr ## * Server ID
+      requested_ip* {.importc: "requested_ip".}: InAddr ## * Requested IP addr
+      state* {.importc: "state".}: net_dhcpv4_state ##   DHCPv4 client state in the process of network address allocation.
+      attempts* {.importc: "attempts".}: uint8 ## * Number of attempts made for REQUEST and RENEWAL messages
 
 when CONFIG_NET_IPV4_AUTO and CONFIG_NET_NATIVE_IPV4:
   type
     net_if_ipv4_autoconf* {.importc: "net_if_ipv4_autoconf", header: "net_if.h",
                            bycopy.} = object
-      node* {.importc: "node".}: sys_snode_t 
-
-## * Used for timer lists
-      
-
-## * Backpointer to correct network interface
-      iface* {.importc: "iface".}: ptr net_if 
-
-## * Timer start
-      timer_start* {.importc: "timer_start".}: int64 
-
-## * Time for INIT, DISCOVER, REQUESTING, RENEWAL
-      timer_timeout* {.importc: "timer_timeout".}: uint32 
-
-## * Current IP addr
-      current_ip* {.importc: "current_ip".}: InAddr 
-
-## * Requested IP addr
-      requested_ip* {.importc: "requested_ip".}: InAddr 
-
-## * IPV4 Autoconf state in the process of network address allocation.
-                                                     ##
-      state* {.importc: "state".}: net_ipv4_autoconf_state 
-
-## * Number of sent probe requests
-      probe_cnt* {.importc: "probe_cnt".}: uint8 
-
-## * Number of sent announcements
-      announce_cnt* {.importc: "announce_cnt".}: uint8 
-
-## * Incoming conflict count
-      conflict_cnt* {.importc: "conflict_cnt".}: uint8
+      node* {.importc: "node".}: sys_snode_t ## * Used for timer lists
+      iface* {.importc: "iface".}: ptr net_if_alias ## * Backpointer to correct network interface
+      timer_start* {.importc: "timer_start".}: int64 ## * Timer start
+      timer_timeout* {.importc: "timer_timeout".}: uint32 ## * Time for INIT, DISCOVER, REQUESTING, RENEWAL
+      current_ip* {.importc: "current_ip".}: InAddr ## * Current IP addr
+      requested_ip* {.importc: "requested_ip".}: InAddr ## * Requested IP addr
+      state* {.importc: "state".}: net_ipv4_autoconf_state ## * IPV4 Autoconf state in the process of network address allocation.
+      probe_cnt* {.importc: "probe_cnt".}: uint8 ## * Number of sent probe requests
+      announce_cnt* {.importc: "announce_cnt".}: uint8 ## * Number of sent announcements
+      conflict_cnt* {.importc: "conflict_cnt".}: uint8 ## * Incoming conflict count
 
 
 

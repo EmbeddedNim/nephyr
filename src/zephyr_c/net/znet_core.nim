@@ -25,9 +25,9 @@
 ##  Network subsystem logging helpers
 
 type
-  net_if_alias* = distinct object {.incompleteStruct.}
-  net_pkt_alias* = distinct object {.incompleteStruct.}
-  net_offload_alias* = distinct object {.incompleteStruct.}
+  net_if_alias* {.incompleteStruct, bycopy.} = distinct object
+  net_pkt_alias* {.incompleteStruct, bycopy.} = distinct object
+  net_offload_alias* {.incompleteStruct, bycopy.} = distinct object
 
   net_verdict* {.size: sizeof(cint).} = enum
     NET_OK, ##\
