@@ -15,6 +15,9 @@
 ##  @{
 ##
 
+import ../zkernel_fixes
+import ../zconfs
+
 import znet_ip
 
 ## *
@@ -81,7 +84,7 @@ type
     is_infinite* {.importc: "is_infinite", bitsize: 1.}: uint8 ## * Is the IP address valid forever
     is_used* {.importc: "is_used", bitsize: 1.}: uint8 ## * Is this IP address used or not
     is_mesh_local* {.importc: "is_mesh_local", bitsize: 1.}: uint8 ## * Is this IP address usage limited to the subnet (mesh) or not
-    unused* {.importc: "_unused", bitsize: 5.}: uint8
+    unused {.importc: "_unused", bitsize: 5.}: uint8
 
 
   net_if_mcast_addr* {.importc: "net_if_mcast_addr", header: "net_if.h", bycopy.} = object
@@ -94,7 +97,7 @@ type
     ## * Is this multicast IP address used or not
     is_used* {.importc: "is_used", bitsize: 1.}: uint8 ## * Did we join to this group
     is_joined* {.importc: "is_joined", bitsize: 1.}: uint8
-    _unused* {.importc: "_unused", bitsize: 6.}: uint8
+    unused {.importc: "_unused", bitsize: 6.}: uint8
 
 
   net_if_ipv6_prefix* {.importc: "net_if_ipv6_prefix", header: "net_if.h", bycopy.} = object
@@ -105,12 +108,12 @@ type
     ##
     lifetime* {.importc: "lifetime".}: net_timeout ## * Prefix lifetime
     ## * IPv6 prefix
-    prefix* {.importc: "prefix".}: in6_addr ## * Backpointer to network interface where this prefix is used
+    prefix* {.importc: "prefix".}: In6Addr ## * Backpointer to network interface where this prefix is used
     iface* {.importc: "iface".}: ptr net_if ## * Prefix length
     len* {.importc: "len".}: uint8 ## * Is the IP prefix valid forever
     is_infinite* {.importc: "is_infinite", bitsize: 1.}: uint8 ## * Is this prefix used or not
     is_used* {.importc: "is_used", bitsize: 1.}: uint8
-    _unused* {.importc: "_unused", bitsize: 6.}: uint8
+    unused {.importc: "_unused", bitsize: 6.}: uint8
 
 
 
