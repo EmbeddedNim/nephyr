@@ -95,14 +95,14 @@ type
   net_if_addr* {.importc: "net_if_addr", header: hdr, bycopy.} = object
     address* {.importc: "address".}: NetAddr ## * IP address
     when CONFIG_NET_NATIVE_IPV6:
-      lifetime* {.importc: "lifetime", header: hdr.}: net_timeout
+      lifetime* {.importc: "lifetime".}: net_timeout
     when CONFIG_NET_IPV6_DAD and CONFIG_NET_NATIVE_IPV6:
-      dad_node* {.importc: "dad_node", header: hdr.}: sys_snode_t ## * Duplicate address detection (DAD) timer
-      dad_start* {.importc: "dad_start", header: hdr.}: uint32
+      dad_node* {.importc: "dad_node".}: sys_snode_t ## * Duplicate address detection (DAD) timer
+      dad_start* {.importc: "dad_start".}: uint32
     addr_type* {.importc: "addr_type".}: net_addr_type ## * How the IP address was set
     addr_state* {.importc: "addr_state".}: net_addr_state ## * What is the current state of the address
     when CONFIG_NET_IPV6_DAD and CONFIG_NET_NATIVE_IPV6:
-      dad_count* {.importc: "dad_count", header: hdr.}: uint8 ## * How many times we have done DAD
+      dad_count* {.importc: "dad_count".}: uint8 ## * How many times we have done DAD
     is_infinite* {.importc: "is_infinite", bitsize: 1.}: uint8 ## * Is the IP address valid forever
     is_used* {.importc: "is_used", bitsize: 1.}: uint8 ## * Is this IP address used or not
     is_mesh_local* {.importc: "is_mesh_local", bitsize: 1.}: uint8 ## * Is this IP address usage limited to the subnet (mesh) or not
@@ -158,9 +158,9 @@ type
     reachable_time* {.importc: "reachable_time".}: uint32 ## * Reachable time (RFC 4861, page 20)
     retrans_timer* {.importc: "retrans_timer".}: uint32 ## * Retransmit timer (RFC 4861, page 52)
     when CONFIG_NET_IPV6_ND and CONFIG_NET_NATIVE_IPV6:
-      rs_node* {.importc: "rs_node", header: hdr.}: sys_snode_t ## * Router solicitation timer node
-      rs_start* {.importc: "rs_start", header: hdr.}: uint32 ##  RS start time
-      rs_count* {.importc: "rs_count", header: hdr.}: uint8 ## * RS count
+      rs_node* {.importc: "rs_node".}: sys_snode_t ## * Router solicitation timer node
+      rs_start* {.importc: "rs_start".}: uint32 ##  RS start time
+      rs_count* {.importc: "rs_count".}: uint8 ## * RS count
     hop_limit* {.importc: "hop_limit".}: uint8 ## * IPv6 hop limit
   
   net_if_ipv4* {.importc: "net_if_ipv4", header: hdr, bycopy.} = object
@@ -173,20 +173,20 @@ type
   net_if_ip* {.importc: "net_if_ip", header: hdr, bycopy.} = object
     ##  @brief Network interface IP address configuration.
     when CONFIG_NET_NATIVE_IPV6:
-      ipv6* {.importc: "ipv6", header: hdr.}: ptr net_if_ipv6
+      ipv6* {.importc: "ipv6".}: ptr net_if_ipv6
     when CONFIG_NET_NATIVE_IPV4:
-      ipv4* {.importc: "ipv4", header: hdr.}: ptr net_if_ipv4
+      ipv4* {.importc: "ipv4".}: ptr net_if_ipv4
 
   net_if_config* {.importc: "net_if_config", header: hdr, bycopy.} = object
     ##  @brief IP and other configuration related data for network interface.
     ip* {.importc: "ip".}: net_if_ip ## * IP address configuration setting
 
     when CONFIG_NET_DHCPV4 and CONFIG_NET_NATIVE_IPV4:
-      dhcpv4* {.importc: "dhcpv4", header: hdr.}: net_if_dhcpv4
+      dhcpv4* {.importc: "dhcpv4".}: net_if_dhcpv4
     when CONFIG_NET_IPV4_AUTO and CONFIG_NET_NATIVE_IPV4:
-      ipv4auto* {.importc: "ipv4auto", header: hdr.}: net_if_ipv4_autoconf
+      ipv4auto* {.importc: "ipv4auto".}: net_if_ipv4_autoconf
     when CONFIG_NET_L2_VIRTUAL:
-      virtual_interfaces* {.importc: "virtual_interfaces", header: hdr.}: sys_slist_t ##\
+      virtual_interfaces* {.importc: "virtual_interfaces".}: sys_slist_t ##\
         ##  This list keeps track of the virtual network interfaces
         ##  that are attached to this network interface.
         ##
@@ -233,10 +233,10 @@ type
       ##  in the communication chip that is accessed via this
       ##  network interface.
       ##
-      offload* {.importc: "offload", header: hdr.}: ptr net_offload
+      offload* {.importc: "offload".}: ptr net_offload
     mtu* {.importc: "mtu".}: uint16 ## * The hardware MTU
     when CONFIG_NET_SOCKETS_OFFLOAD:
-      offloaded* {.importc: "offloaded", header: hdr.}: bool ## * Indicate whether interface is offloaded at socket level.
+      offloaded* {.importc: "offloaded".}: bool ## * Indicate whether interface is offloaded at socket level.
 
 
   net_if* {.importc: "net_if", header: hdr, bycopy.} = object
@@ -249,10 +249,10 @@ type
     if_dev* {.importc: "if_dev".}: ptr net_if_dev ## * The net_if_dev instance the net_if is related to
 
     when CONFIG_NET_STATISTICS_PER_INTERFACE:
-      stats* {.importc: "stats", header: hdr.}: net_stats ## * Network statistics related to this network interface
+      stats* {.importc: "stats".}: net_stats ## * Network statistics related to this network interface
     config* {.importc: "config".}: net_if_config ## * Network interface instance configuration
     when CONFIG_NET_POWER_MANAGEMENT:
-      tx_pending* {.importc: "tx_pending", header: hdr.}: cint ##\
+      tx_pending* {.importc: "tx_pending".}: cint ##\
       ## * Keep track of packets pending in traffic queues. This is
       ##  needed to avoid putting network device driver to sleep if
       ##  there are packets waiting to be sent.
