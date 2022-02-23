@@ -90,7 +90,7 @@ type
     ##
     ##  Stores the multicast IP addresses assigned to this network interface.
     ##
-    address* {.importc: "address".}: net_addr ## * IP address
+    address* {.importc: "address".}: NetAddr ## * IP address
     ## * Is this multicast IP address used or not
     is_used* {.importc: "is_used", bitsize: 1.}: uint8 ## * Did we join to this group
     is_joined* {.importc: "is_joined", bitsize: 1.}: uint8
@@ -122,7 +122,7 @@ type
     ##
     node* {.importc: "node".}: sys_snode_t ## * Slist lifetime timer node
     ## * IP address
-    address* {.importc: "address".}: net_addr ## * Network interface the router is connected to
+    address* {.importc: "address".}: NetAddr ## * Network interface the router is connected to
     iface* {.importc: "iface".}: ptr net_if ## * Router life timer start
     life_start* {.importc: "life_start".}: uint32 ## * Router lifetime
     lifetime* {.importc: "lifetime".}: uint16 ## * Is this router used or not
