@@ -92,24 +92,24 @@ type
 
 
 type
-  net_if_addr* {.importc: "net_if_addr", header: "net_if.h", bycopy.} = object
+  net_if_addr* {.importc: "net_if_addr", header: hdr, bycopy.} = object
     address* {.importc: "address".}: NetAddr ## * IP address
     when CONFIG_NET_NATIVE_IPV6:
-      lifetime* {.importc: "lifetime", header: "net_if.h".}: net_timeout
+      lifetime* {.importc: "lifetime", header: hdr.}: net_timeout
     when CONFIG_NET_IPV6_DAD and CONFIG_NET_NATIVE_IPV6:
-      dad_node* {.importc: "dad_node", header: "net_if.h".}: sys_snode_t ## * Duplicate address detection (DAD) timer
-      dad_start* {.importc: "dad_start", header: "net_if.h".}: uint32
+      dad_node* {.importc: "dad_node", header: hdr.}: sys_snode_t ## * Duplicate address detection (DAD) timer
+      dad_start* {.importc: "dad_start", header: hdr.}: uint32
     addr_type* {.importc: "addr_type".}: net_addr_type ## * How the IP address was set
     addr_state* {.importc: "addr_state".}: net_addr_state ## * What is the current state of the address
     when CONFIG_NET_IPV6_DAD and CONFIG_NET_NATIVE_IPV6:
-      dad_count* {.importc: "dad_count", header: "net_if.h".}: uint8 ## * How many times we have done DAD
+      dad_count* {.importc: "dad_count", header: hdr.}: uint8 ## * How many times we have done DAD
     is_infinite* {.importc: "is_infinite", bitsize: 1.}: uint8 ## * Is the IP address valid forever
     is_used* {.importc: "is_used", bitsize: 1.}: uint8 ## * Is this IP address used or not
     is_mesh_local* {.importc: "is_mesh_local", bitsize: 1.}: uint8 ## * Is this IP address usage limited to the subnet (mesh) or not
     unused {.importc: "_unused", bitsize: 5.}: uint8
 
 
-  net_if_mcast_addr* {.importc: "net_if_mcast_addr", header: "net_if.h", bycopy.} = object
+  net_if_mcast_addr* {.importc: "net_if_mcast_addr", header: hdr, bycopy.} = object
     ##  @brief Network Interface multicast IP addresses
     ##
     ##  Stores the multicast IP addresses assigned to this network interface.
@@ -119,7 +119,7 @@ type
     is_joined* {.importc: "is_joined", bitsize: 1.}: uint8 ## * Did we join to this group
     unused {.importc: "_unused", bitsize: 6.}: uint8
 
-  net_if_ipv6_prefix* {.importc: "net_if_ipv6_prefix", header: "net_if.h", bycopy.} = object
+  net_if_ipv6_prefix* {.importc: "net_if_ipv6_prefix", header: hdr, bycopy.} = object
     ##  @brief Network Interface IPv6 prefixes
     ##
     ##  Stores the multicast IP addresses assigned to this network interface.
@@ -133,7 +133,7 @@ type
     unused {.importc: "_unused", bitsize: 6.}: uint8
 
 
-  net_if_router* {.importc: "net_if_router", header: "net_if.h", bycopy.} = object
+  net_if_router* {.importc: "net_if_router", header: hdr, bycopy.} = object
     ##  @brief Information about routers in the system.
     ##
     ##  Stores the router information.
@@ -149,7 +149,7 @@ type
     unused* {.importc: "_unused", bitsize: 5.}: uint8
 
 
-  net_if_ipv6* {.importc: "net_if_ipv6", header: "net_if.h", bycopy.} = object
+  net_if_ipv6* {.importc: "net_if_ipv6", header: hdr, bycopy.} = object
     unicast* {.importc: "unicast".}: array[NET_IF_MAX_IPV6_ADDR, net_if_addr] ## * Unicast IP addresses
     mcast* {.importc: "mcast".}: array[NET_IF_MAX_IPV6_MADDR, net_if_mcast_addr] ## * Multicast IP addresses
 
@@ -158,40 +158,40 @@ type
     reachable_time* {.importc: "reachable_time".}: uint32 ## * Reachable time (RFC 4861, page 20)
     retrans_timer* {.importc: "retrans_timer".}: uint32 ## * Retransmit timer (RFC 4861, page 52)
     when CONFIG_NET_IPV6_ND and CONFIG_NET_NATIVE_IPV6:
-      rs_node* {.importc: "rs_node", header: "net_if.h".}: sys_snode_t ## * Router solicitation timer node
-      rs_start* {.importc: "rs_start", header: "net_if.h".}: uint32 ##  RS start time
-      rs_count* {.importc: "rs_count", header: "net_if.h".}: uint8 ## * RS count
+      rs_node* {.importc: "rs_node", header: hdr.}: sys_snode_t ## * Router solicitation timer node
+      rs_start* {.importc: "rs_start", header: hdr.}: uint32 ##  RS start time
+      rs_count* {.importc: "rs_count", header: hdr.}: uint8 ## * RS count
     hop_limit* {.importc: "hop_limit".}: uint8 ## * IPv6 hop limit
   
-  net_if_ipv4* {.importc: "net_if_ipv4", header: "net_if.h", bycopy.} = object
+  net_if_ipv4* {.importc: "net_if_ipv4", header: hdr, bycopy.} = object
     unicast* {.importc: "unicast".}: array[NET_IF_MAX_IPV4_ADDR, net_if_addr] ## * Unicast IP addresses
     mcast* {.importc: "mcast".}: array[NET_IF_MAX_IPV4_MADDR, net_if_mcast_addr] ## * Multicast IP addresses
     gw* {.importc: "gw".}: InAddr ## Gateway
     netmask* {.importc: "netmask".}: InAddr ## * Netmask
     ttl* {.importc: "ttl".}: uint8 ## * IPv4 time-to-live
 
-  net_if_ip* {.importc: "net_if_ip", header: "net_if.h", bycopy.} = object
+  net_if_ip* {.importc: "net_if_ip", header: hdr, bycopy.} = object
     ##  @brief Network interface IP address configuration.
     when CONFIG_NET_NATIVE_IPV6:
-      ipv6* {.importc: "ipv6", header: "net_if.h".}: ptr net_if_ipv6
+      ipv6* {.importc: "ipv6", header: hdr.}: ptr net_if_ipv6
     when CONFIG_NET_NATIVE_IPV4:
-      ipv4* {.importc: "ipv4", header: "net_if.h".}: ptr net_if_ipv4
+      ipv4* {.importc: "ipv4", header: hdr.}: ptr net_if_ipv4
 
-  net_if_config* {.importc: "net_if_config", header: "net_if.h", bycopy.} = object
+  net_if_config* {.importc: "net_if_config", header: hdr, bycopy.} = object
     ##  @brief IP and other configuration related data for network interface.
     ip* {.importc: "ip".}: net_if_ip ## * IP address configuration setting
 
     when CONFIG_NET_DHCPV4 and CONFIG_NET_NATIVE_IPV4:
-      dhcpv4* {.importc: "dhcpv4", header: "net_if.h".}: net_if_dhcpv4
+      dhcpv4* {.importc: "dhcpv4", header: hdr.}: net_if_dhcpv4
     when CONFIG_NET_IPV4_AUTO and CONFIG_NET_NATIVE_IPV4:
-      ipv4auto* {.importc: "ipv4auto", header: "net_if.h".}: net_if_ipv4_autoconf
+      ipv4auto* {.importc: "ipv4auto", header: hdr.}: net_if_ipv4_autoconf
     when CONFIG_NET_L2_VIRTUAL:
-      virtual_interfaces* {.importc: "virtual_interfaces", header: "net_if.h".}: sys_slist_t ##\
+      virtual_interfaces* {.importc: "virtual_interfaces", header: hdr.}: sys_slist_t ##\
         ##  This list keeps track of the virtual network interfaces
         ##  that are attached to this network interface.
         ##
 
-  net_traffic_class* {.importc: "net_traffic_class", header: "net_if.h", bycopy.} = object
+  net_traffic_class* {.importc: "net_traffic_class", header: hdr, bycopy.} = object
     ##  @brief Network traffic class.
     ##
     ##  Traffic classes are used when sending or receiving data that is classified
@@ -206,7 +206,7 @@ type
     stack* {.importc: "stack".}: ptr k_thread_stack_t ## * Stack for this handler
 
 
-  net_if_dev* {.importc: "net_if_dev", header: "net_if.h", bycopy.} = object
+  net_if_dev* {.importc: "net_if_dev", header: hdr, bycopy.} = object
     ##  @brief Network Interface Device structure
     ##
     ##  Used to handle a network interface on top of a device driver instance.
@@ -233,13 +233,13 @@ type
       ##  in the communication chip that is accessed via this
       ##  network interface.
       ##
-      offload* {.importc: "offload", header: "net_if.h".}: ptr net_offload
+      offload* {.importc: "offload", header: hdr.}: ptr net_offload
     mtu* {.importc: "mtu".}: uint16 ## * The hardware MTU
     when CONFIG_NET_SOCKETS_OFFLOAD:
-      offloaded* {.importc: "offloaded", header: "net_if.h".}: bool ## * Indicate whether interface is offloaded at socket level.
+      offloaded* {.importc: "offloaded", header: hdr.}: bool ## * Indicate whether interface is offloaded at socket level.
 
 
-  net_if* {.importc: "net_if", header: "net_if.h", bycopy.} = object
+  net_if* {.importc: "net_if", header: hdr, bycopy.} = object
     ##  @brief Network Interface structure
     ##
     ##  Used to handle a network interface on top of a net_if_dev instance.
@@ -249,10 +249,10 @@ type
     if_dev* {.importc: "if_dev".}: ptr net_if_dev ## * The net_if_dev instance the net_if is related to
 
     when CONFIG_NET_STATISTICS_PER_INTERFACE:
-      stats* {.importc: "stats", header: "net_if.h".}: net_stats ## * Network statistics related to this network interface
+      stats* {.importc: "stats", header: hdr.}: net_stats ## * Network statistics related to this network interface
     config* {.importc: "config".}: net_if_config ## * Network interface instance configuration
     when CONFIG_NET_POWER_MANAGEMENT:
-      tx_pending* {.importc: "tx_pending", header: "net_if.h".}: cint ##\
+      tx_pending* {.importc: "tx_pending", header: hdr.}: cint ##\
       ## * Keep track of packets pending in traffic queues. This is
       ##  needed to avoid putting network device driver to sleep if
       ##  there are packets waiting to be sent.
@@ -267,7 +267,7 @@ type
     ##  @param status Send status, 0 is ok, < 0 error.
     ##
 
-  net_if_link_cb* {.importc: "net_if_link_cb", header: "net_if.h", bycopy.} = object
+  net_if_link_cb* {.importc: "net_if_link_cb", header: hdr, bycopy.} = object
     ##  @brief Link callback handler struct.
     ##
     ##  Stores the link callback information. Caller must make sure that
@@ -280,7 +280,7 @@ type
 
 when CONFIG_NET_DHCPV4 and CONFIG_NET_NATIVE_IPV4:
   type
-    net_if_dhcpv4* {.importc: "net_if_dhcpv4", header: "net_if.h", bycopy.} = object
+    net_if_dhcpv4* {.importc: "net_if_dhcpv4", header: hdr, bycopy.} = object
       node* {.importc: "node".}: sys_snode_t ## * Used for timer lists
       timer_start* {.importc: "timer_start".}: int64 ## * Timer start
       request_time* {.importc: "request_time".}: uint32 ## * Time for INIT, DISCOVER, REQUESTING, RENEWAL
@@ -295,7 +295,7 @@ when CONFIG_NET_DHCPV4 and CONFIG_NET_NATIVE_IPV4:
 
 when CONFIG_NET_IPV4_AUTO and CONFIG_NET_NATIVE_IPV4:
   type
-    net_if_ipv4_autoconf* {.importc: "net_if_ipv4_autoconf", header: "net_if.h",
+    net_if_ipv4_autoconf* {.importc: "net_if_ipv4_autoconf", header: hdr,
                            bycopy.} = object
       node* {.importc: "node".}: sys_snode_t ## * Used for timer lists
       iface* {.importc: "iface".}: ptr net_if_alias ## * Backpointer to correct network interface
@@ -369,7 +369,7 @@ proc net_if_flag_is_set*(iface: ptr net_if; value: net_if_flag): bool {.importc:
 ##
 
 proc net_if_send_data*(iface: ptr net_if; pkt: ptr net_pkt_alias): net_verdict {.
-    importc: "net_if_send_data", header: "net_if.h".}
+    importc: "net_if_send_data", header: hdr.}
 
 
 
@@ -395,7 +395,7 @@ proc net_if_l2*(iface: ptr net_if): ptr net_l2 {.importc: "$1", header: hdr.}
 ##
 
 proc net_if_recv_data*(iface: ptr net_if; pkt: ptr net_pkt_alias): net_verdict {.
-    importc: "net_if_recv_data", header: "net_if.h".}
+    importc: "net_if_recv_data", header: hdr.}
 
 
 
@@ -431,7 +431,7 @@ proc net_if_get_device*(iface: ptr net_if): ptr device {.importc: "$1", header: 
 ##
 
 proc net_if_queue_tx*(iface: ptr net_if; pkt: ptr net_pkt_alias) {.
-    importc: "net_if_queue_tx", header: "net_if.h".}
+    importc: "net_if_queue_tx", header: hdr.}
 
 
 
@@ -501,7 +501,7 @@ proc net_if_get_config*(iface: ptr net_if): ptr net_if_config {.importc: "$1", h
 ##  @param iface Pointer to a network interface structure
 ##
 
-proc net_if_start_dad*(iface: ptr net_if) {.importc: "net_if_start_dad", header: "net_if.h".}
+proc net_if_start_dad*(iface: ptr net_if) {.importc: "net_if_start_dad", header: hdr.}
 
 
 
@@ -512,7 +512,7 @@ proc net_if_start_dad*(iface: ptr net_if) {.importc: "net_if_start_dad", header:
 ##
 
 proc net_if_start_rs*(iface: ptr net_if) {.importc: "net_if_start_rs",
-                                       header: "net_if.h".}
+                                       header: hdr.}
 
 
 ## *
@@ -521,7 +521,7 @@ proc net_if_start_rs*(iface: ptr net_if) {.importc: "net_if_start_rs",
 ##  @param iface Pointer to a network interface structure
 ##
 
-proc net_if_stop_rs*(iface: ptr net_if) {.importc: "net_if_stop_rs", header: "net_if.h".}
+proc net_if_stop_rs*(iface: ptr net_if) {.importc: "net_if_stop_rs", header: hdr.}
 
 
 
@@ -532,7 +532,7 @@ proc net_if_set_link_addr_unlocked*(iface: ptr net_if; caddr: ptr uint8; len: ui
 
 proc net_if_set_link_addr_locked*(iface: ptr net_if; caddr: ptr uint8; len: uint8;
                                  ctype: net_link_type): cint {.
-    importc: "net_if_set_link_addr_locked", header: "net_if.h".}
+    importc: "net_if_set_link_addr_locked", header: hdr.}
 
 
 ## * @endcond
@@ -598,7 +598,7 @@ proc net_if_addr_set_lf*(ifaddr: ptr net_if_addr; is_infinite: bool) {.importc: 
 ##
 
 proc net_if_get_by_link_addr*(ll_addr: ptr net_linkaddr): ptr net_if {.
-    importc: "net_if_get_by_link_addr", header: "net_if.h".}
+    importc: "net_if_get_by_link_addr", header: hdr.}
 
 
 
@@ -611,7 +611,7 @@ proc net_if_get_by_link_addr*(ll_addr: ptr net_linkaddr): ptr net_if {.
 ##
 
 proc net_if_lookup_by_dev*(dev: ptr device): ptr net_if {.
-    importc: "net_if_lookup_by_dev", header: "net_if.h".}
+    importc: "net_if_lookup_by_dev", header: hdr.}
 
 
 
@@ -634,7 +634,7 @@ proc net_if_config_get*(iface: ptr net_if): ptr net_if_config {.importc: "$1", h
 ##
 
 proc net_if_router_rm*(router: ptr net_if_router) {.importc: "net_if_router_rm",
-    header: "net_if.h".}
+    header: hdr.}
 
 
 
@@ -645,7 +645,7 @@ proc net_if_router_rm*(router: ptr net_if_router) {.importc: "net_if_router_rm",
 ##
 
 proc net_if_get_default*(): ptr net_if {.importc: "net_if_get_default",
-                                     header: "net_if.h".}
+                                     header: hdr.}
 
 
 
@@ -659,7 +659,7 @@ proc net_if_get_default*(): ptr net_if {.importc: "net_if_get_default",
 ##
 
 proc net_if_get_first_by_type*(l2: ptr net_l2): ptr net_if {.
-    importc: "net_if_get_first_by_type", header: "net_if.h".}
+    importc: "net_if_get_first_by_type", header: hdr.}
 
 when CONFIG_NET_L2_IEEE802154:
   ##  @brief Get the first IEEE 802.15.4 network interface.
@@ -683,7 +683,7 @@ when CONFIG_NET_L2_IEEE802154:
 ##
 
 proc net_if_config_ipv6_get*(iface: ptr net_if; ipv6: ptr ptr net_if_ipv6): cint {.
-    importc: "net_if_config_ipv6_get", header: "net_if.h".}
+    importc: "net_if_config_ipv6_get", header: hdr.}
 
 
 
@@ -696,7 +696,7 @@ proc net_if_config_ipv6_get*(iface: ptr net_if; ipv6: ptr ptr net_if_ipv6): cint
 ##
 
 proc net_if_config_ipv6_put*(iface: ptr net_if): cint {.
-    importc: "net_if_config_ipv6_put", header: "net_if.h".}
+    importc: "net_if_config_ipv6_put", header: hdr.}
 
 
 
@@ -710,7 +710,7 @@ proc net_if_config_ipv6_put*(iface: ptr net_if): cint {.
 ##
 
 proc net_if_ipv6_addr_lookup*(caddr: ptr In6Addr; iface: ptr ptr net_if): ptr net_if_addr {.
-    importc: "net_if_ipv6_addr_lookup", header: "net_if.h".}
+    importc: "net_if_ipv6_addr_lookup", header: hdr.}
 
 
 
@@ -724,7 +724,7 @@ proc net_if_ipv6_addr_lookup*(caddr: ptr In6Addr; iface: ptr ptr net_if): ptr ne
 ##
 
 proc net_if_ipv6_addr_lookup_by_iface*(iface: ptr net_if; caddr: ptr In6Addr): ptr net_if_addr {.
-    importc: "net_if_ipv6_addr_lookup_by_iface", header: "net_if.h".}
+    importc: "net_if_ipv6_addr_lookup_by_iface", header: hdr.}
 
 
 
@@ -738,7 +738,7 @@ proc net_if_ipv6_addr_lookup_by_iface*(iface: ptr net_if; caddr: ptr In6Addr): p
 ##
 
 proc net_if_ipv6_addr_lookup_by_index*(caddr: ptr In6Addr): cint {.
-    importc: "net_if_ipv6_addr_lookup_by_index", header: "net_if.h".}
+    importc: "net_if_ipv6_addr_lookup_by_index", header: hdr.}
 
 
 
@@ -755,7 +755,7 @@ proc net_if_ipv6_addr_lookup_by_index*(caddr: ptr In6Addr): cint {.
 
 proc net_if_ipv6_addr_add*(iface: ptr net_if; caddr: ptr In6Addr;
                           addr_type: net_addr_type; vlifetime: uint32): ptr net_if_addr {.
-    importc: "net_if_ipv6_addr_add", header: "net_if.h".}
+    importc: "net_if_ipv6_addr_add", header: hdr.}
 
 
 
@@ -772,7 +772,7 @@ proc net_if_ipv6_addr_add*(iface: ptr net_if; caddr: ptr In6Addr;
 
 proc net_if_ipv6_addr_add_by_index*(index: cint; caddr: ptr In6Addr;
                                    addr_type: net_addr_type; vlifetime: uint32): bool {.
-    syscall, importc: "net_if_ipv6_addr_add_by_index", header: "net_if.h".}
+    syscall, importc: "net_if_ipv6_addr_add_by_index", header: hdr.}
 
 
 ## *
@@ -783,7 +783,7 @@ proc net_if_ipv6_addr_add_by_index*(index: cint; caddr: ptr In6Addr;
 ##
 
 proc net_if_ipv6_addr_update_lifetime*(ifaddr: ptr net_if_addr; vlifetime: uint32) {.
-    importc: "net_if_ipv6_addr_update_lifetime", header: "net_if.h".}
+    importc: "net_if_ipv6_addr_update_lifetime", header: hdr.}
 
 
 ## *
@@ -796,7 +796,7 @@ proc net_if_ipv6_addr_update_lifetime*(ifaddr: ptr net_if_addr; vlifetime: uint3
 ##
 
 proc net_if_ipv6_addr_rm*(iface: ptr net_if; caddr: ptr In6Addr): bool {.
-    importc: "net_if_ipv6_addr_rm", header: "net_if.h".}
+    importc: "net_if_ipv6_addr_rm", header: hdr.}
 
 
 ## *
@@ -809,7 +809,7 @@ proc net_if_ipv6_addr_rm*(iface: ptr net_if; caddr: ptr In6Addr): bool {.
 ##
 
 proc net_if_ipv6_addr_rm_by_index*(index: cint; caddr: ptr In6Addr): bool {.syscall,
-    importc: "net_if_ipv6_addr_rm_by_index", header: "net_if.h".}
+    importc: "net_if_ipv6_addr_rm_by_index", header: hdr.}
 
 
 ## *
@@ -822,7 +822,7 @@ proc net_if_ipv6_addr_rm_by_index*(index: cint; caddr: ptr In6Addr): bool {.sysc
 ##
 
 proc net_if_ipv6_maddr_add*(iface: ptr net_if; caddr: ptr In6Addr): ptr net_if_mcast_addr {.
-    importc: "net_if_ipv6_maddr_add", header: "net_if.h".}
+    importc: "net_if_ipv6_maddr_add", header: hdr.}
 
 
 ## *
@@ -835,7 +835,7 @@ proc net_if_ipv6_maddr_add*(iface: ptr net_if; caddr: ptr In6Addr): ptr net_if_m
 ##
 
 proc net_if_ipv6_maddr_rm*(iface: ptr net_if; caddr: ptr In6Addr): bool {.
-    importc: "net_if_ipv6_maddr_rm", header: "net_if.h".}
+    importc: "net_if_ipv6_maddr_rm", header: hdr.}
 
 
 ## *
@@ -850,7 +850,7 @@ proc net_if_ipv6_maddr_rm*(iface: ptr net_if; caddr: ptr In6Addr): bool {.
 ##
 
 proc net_if_ipv6_maddr_lookup*(caddr: ptr In6Addr; iface: ptr ptr net_if): ptr net_if_mcast_addr {.
-    importc: "net_if_ipv6_maddr_lookup", header: "net_if.h".}
+    importc: "net_if_ipv6_maddr_lookup", header: hdr.}
 
 
 ## *
@@ -881,7 +881,7 @@ type
 ##
 
 type
-  net_if_mcast_monitor* {.importc: "net_if_mcast_monitor", header: "net_if.h", bycopy.} = object
+  net_if_mcast_monitor* {.importc: "net_if_mcast_monitor", header: hdr, bycopy.} = object
     node* {.importc: "node".}: sys_snode_t ## * Node information for the slist.
     iface* {.importc: "iface".}: ptr net_if_alias ## * Network interface
     cb* {.importc: "cb".}: net_if_mcast_callback_t ## * Multicast callback
@@ -898,7 +898,7 @@ type
 
 proc net_if_mcast_mon_register*(mon: ptr net_if_mcast_monitor; iface: ptr net_if;
                                cb: net_if_mcast_callback_t) {.
-    importc: "net_if_mcast_mon_register", header: "net_if.h".}
+    importc: "net_if_mcast_mon_register", header: hdr.}
 
 
 ## *
@@ -908,7 +908,7 @@ proc net_if_mcast_mon_register*(mon: ptr net_if_mcast_monitor; iface: ptr net_if
 ##
 
 proc net_if_mcast_mon_unregister*(mon: ptr net_if_mcast_monitor) {.
-    importc: "net_if_mcast_mon_unregister", header: "net_if.h".}
+    importc: "net_if_mcast_mon_unregister", header: hdr.}
 
 
 ## *
@@ -920,7 +920,7 @@ proc net_if_mcast_mon_unregister*(mon: ptr net_if_mcast_monitor) {.
 ##
 
 proc net_if_mcast_monitor_check*(iface: ptr net_if_alias; caddr: ptr In6Addr; is_joined: bool) {.
-    importc: "net_if_mcast_monitor", header: "net_if.h".}
+    importc: "net_if_mcast_monitor", header: hdr.}
 
 
 ## *
@@ -930,7 +930,7 @@ proc net_if_mcast_monitor_check*(iface: ptr net_if_alias; caddr: ptr In6Addr; is
 ##
 
 proc net_if_ipv6_maddr_join*(caddr: ptr net_if_mcast_addr) {.
-    importc: "net_if_ipv6_maddr_join", header: "net_if.h".}
+    importc: "net_if_ipv6_maddr_join", header: hdr.}
 
 
 ## *
@@ -951,7 +951,7 @@ proc net_if_ipv6_maddr_is_joined*(caddr: ptr net_if_mcast_addr): bool {.importc:
 ##
 
 proc net_if_ipv6_maddr_leave*(caddr: ptr net_if_mcast_addr) {.
-    importc: "net_if_ipv6_maddr_leave", header: "net_if.h".}
+    importc: "net_if_ipv6_maddr_leave", header: hdr.}
 
 
 ## *
@@ -964,7 +964,7 @@ proc net_if_ipv6_maddr_leave*(caddr: ptr net_if_mcast_addr) {.
 ##
 
 proc net_if_ipv6_prefix_get*(iface: ptr net_if; caddr: ptr In6Addr): ptr net_if_ipv6_prefix {.
-    importc: "net_if_ipv6_prefix_get", header: "net_if.h".}
+    importc: "net_if_ipv6_prefix_get", header: hdr.}
 
 
 ## *
@@ -978,7 +978,7 @@ proc net_if_ipv6_prefix_get*(iface: ptr net_if; caddr: ptr In6Addr): ptr net_if_
 ##
 
 proc net_if_ipv6_prefix_lookup*(iface: ptr net_if; caddr: ptr In6Addr; len: uint8): ptr net_if_ipv6_prefix {.
-    importc: "net_if_ipv6_prefix_lookup", header: "net_if.h".}
+    importc: "net_if_ipv6_prefix_lookup", header: hdr.}
 
 
 ## *
@@ -994,7 +994,7 @@ proc net_if_ipv6_prefix_lookup*(iface: ptr net_if; caddr: ptr In6Addr; len: uint
 
 proc net_if_ipv6_prefix_add*(iface: ptr net_if; prefix: ptr In6Addr; len: uint8;
                             lifetime: uint32): ptr net_if_ipv6_prefix {.
-    importc: "net_if_ipv6_prefix_add", header: "net_if.h".}
+    importc: "net_if_ipv6_prefix_add", header: hdr.}
 
 
 ## *
@@ -1008,7 +1008,7 @@ proc net_if_ipv6_prefix_add*(iface: ptr net_if; prefix: ptr In6Addr; len: uint8;
 ##
 
 proc net_if_ipv6_prefix_rm*(iface: ptr net_if; caddr: ptr In6Addr; len: uint8): bool {.
-    importc: "net_if_ipv6_prefix_rm", header: "net_if.h".}
+    importc: "net_if_ipv6_prefix_rm", header: hdr.}
 
 
 ## *
@@ -1030,7 +1030,7 @@ proc net_if_ipv6_prefix_set_lf*(prefix: ptr net_if_ipv6_prefix; is_infinite: boo
 ##
 
 proc net_if_ipv6_prefix_set_timer*(prefix: ptr net_if_ipv6_prefix; lifetime: uint32) {.
-    importc: "net_if_ipv6_prefix_set_timer", header: "net_if.h".}
+    importc: "net_if_ipv6_prefix_set_timer", header: hdr.}
 
 
 ## *
@@ -1040,7 +1040,7 @@ proc net_if_ipv6_prefix_set_timer*(prefix: ptr net_if_ipv6_prefix; lifetime: uin
 ##
 
 proc net_if_ipv6_prefix_unset_timer*(prefix: ptr net_if_ipv6_prefix) {.
-    importc: "net_if_ipv6_prefix_unset_timer", header: "net_if.h".}
+    importc: "net_if_ipv6_prefix_unset_timer", header: hdr.}
 
 
 ## *
@@ -1055,7 +1055,7 @@ proc net_if_ipv6_prefix_unset_timer*(prefix: ptr net_if_ipv6_prefix) {.
 ##
 
 proc net_if_ipv6_addr_onlink*(iface: ptr ptr net_if; caddr: ptr In6Addr): bool {.
-    importc: "net_if_ipv6_addr_onlink", header: "net_if.h".}
+    importc: "net_if_ipv6_addr_onlink", header: hdr.}
 
 
 ## *
@@ -1080,7 +1080,7 @@ proc net_if_router_ipv6*(router: ptr net_if_router): ptr In6Addr {.importc: "$1"
 ##
 
 proc net_if_ipv6_router_lookup*(iface: ptr net_if; caddr: ptr In6Addr): ptr net_if_router {.
-    importc: "net_if_ipv6_router_lookup", header: "net_if.h".}
+    importc: "net_if_ipv6_router_lookup", header: hdr.}
 
 
 ## *
@@ -1094,7 +1094,7 @@ proc net_if_ipv6_router_lookup*(iface: ptr net_if; caddr: ptr In6Addr): ptr net_
 ##
 
 proc net_if_ipv6_router_find_default*(iface: ptr net_if; caddr: ptr In6Addr): ptr net_if_router {.
-    importc: "net_if_ipv6_router_find_default", header: "net_if.h".}
+    importc: "net_if_ipv6_router_find_default", header: hdr.}
 
 
 ## *
@@ -1105,7 +1105,7 @@ proc net_if_ipv6_router_find_default*(iface: ptr net_if; caddr: ptr In6Addr): pt
 ##
 
 proc net_if_ipv6_router_update_lifetime*(router: ptr net_if_router; lifetime: uint16) {.
-    importc: "net_if_ipv6_router_update_lifetime", header: "net_if.h".}
+    importc: "net_if_ipv6_router_update_lifetime", header: hdr.}
 
 
 ## *
@@ -1120,7 +1120,7 @@ proc net_if_ipv6_router_update_lifetime*(router: ptr net_if_router; lifetime: ui
 
 proc net_if_ipv6_router_add*(iface: ptr net_if; caddr: ptr In6Addr;
                             router_lifetime: uint16): ptr net_if_router {.
-    importc: "net_if_ipv6_router_add", header: "net_if.h".}
+    importc: "net_if_ipv6_router_add", header: hdr.}
 
 
 ## *
@@ -1132,7 +1132,7 @@ proc net_if_ipv6_router_add*(iface: ptr net_if; caddr: ptr In6Addr;
 ##
 
 proc net_if_ipv6_router_rm*(router: ptr net_if_router): bool {.
-    importc: "net_if_ipv6_router_rm", header: "net_if.h".}
+    importc: "net_if_ipv6_router_rm", header: hdr.}
 
 
 ## *
@@ -1145,7 +1145,7 @@ proc net_if_ipv6_router_rm*(router: ptr net_if_router): bool {.
 ##
 
 proc net_if_ipv6_get_hop_limit*(iface: ptr net_if): uint8 {.
-    importc: "net_if_ipv6_get_hop_limit", header: "net_if.h".}
+    importc: "net_if_ipv6_get_hop_limit", header: hdr.}
 
 
 ## *
@@ -1156,7 +1156,7 @@ proc net_if_ipv6_get_hop_limit*(iface: ptr net_if): uint8 {.
 ##
 
 proc net_ipv6_set_hop_limit*(iface: ptr net_if; hop_limit: uint8) {.
-    importc: "net_ipv6_set_hop_limit", header: "net_if.h".}
+    importc: "net_ipv6_set_hop_limit", header: hdr.}
 
 
 ## *
@@ -1196,7 +1196,7 @@ proc net_if_ipv6_get_reachable_time*(iface: ptr net_if): uint32 {.importc: "$1",
 ##
 
 proc net_if_ipv6_calc_reachable_time*(ipv6: ptr net_if_ipv6): uint32 {.
-    importc: "net_if_ipv6_calc_reachable_time", header: "net_if.h".}
+    importc: "net_if_ipv6_calc_reachable_time", header: hdr.}
 
 
 ## *
@@ -1246,7 +1246,7 @@ proc net_if_ipv6_get_retrans_timer*(iface: ptr net_if): uint32 {.importc: "$1", 
 ##
 
 proc net_if_ipv6_select_src_addr*(iface: ptr net_if; dst: ptr In6Addr): ptr In6Addr {.
-      importc: "net_if_ipv6_select_src_addr", header: "net_if.h".}
+      importc: "net_if_ipv6_select_src_addr", header: hdr.}
 
 
 
@@ -1261,7 +1261,7 @@ proc net_if_ipv6_select_src_addr*(iface: ptr net_if; dst: ptr In6Addr): ptr In6A
 ##
 
 proc net_if_ipv6_select_src_iface*(dst: ptr In6Addr): ptr net_if {.
-    importc: "net_if_ipv6_select_src_iface", header: "net_if.h".}
+    importc: "net_if_ipv6_select_src_iface", header: hdr.}
 
 
 
@@ -1276,7 +1276,7 @@ proc net_if_ipv6_select_src_iface*(dst: ptr In6Addr): ptr net_if {.
 ##
 
 proc net_if_ipv6_get_ll*(iface: ptr net_if; addr_state: net_addr_state): ptr In6Addr {.
-    importc: "net_if_ipv6_get_ll", header: "net_if.h".}
+    importc: "net_if_ipv6_get_ll", header: hdr.}
 
 
 ## *
@@ -1290,7 +1290,7 @@ proc net_if_ipv6_get_ll*(iface: ptr net_if; addr_state: net_addr_state): ptr In6
 ##
 
 proc net_if_ipv6_get_ll_addr*(state: net_addr_state; iface: ptr ptr net_if): ptr In6Addr {.
-    importc: "net_if_ipv6_get_ll_addr", header: "net_if.h".}
+    importc: "net_if_ipv6_get_ll_addr", header: hdr.}
 
 
 ## *
@@ -1302,7 +1302,7 @@ proc net_if_ipv6_get_ll_addr*(state: net_addr_state; iface: ptr ptr net_if): ptr
 ##
 
 proc net_if_ipv6_dad_failed*(iface: ptr net_if; caddr: ptr In6Addr) {.
-    importc: "net_if_ipv6_dad_failed", header: "net_if.h".}
+    importc: "net_if_ipv6_dad_failed", header: hdr.}
 
 
 ## *
@@ -1318,7 +1318,7 @@ proc net_if_ipv6_dad_failed*(iface: ptr net_if; caddr: ptr In6Addr) {.
 ##
 
 proc net_if_ipv6_get_global_addr*(state: net_addr_state; iface: ptr ptr net_if): ptr In6Addr {.
-    importc: "net_if_ipv6_get_global_addr", header: "net_if.h".}
+    importc: "net_if_ipv6_get_global_addr", header: hdr.}
 
 
 ## *
@@ -1333,7 +1333,7 @@ proc net_if_ipv6_get_global_addr*(state: net_addr_state; iface: ptr ptr net_if):
 ##
 
 proc net_if_config_ipv4_get*(iface: ptr net_if; ipv4: ptr ptr net_if_ipv4): cint {.
-    importc: "net_if_config_ipv4_get", header: "net_if.h".}
+    importc: "net_if_config_ipv4_get", header: hdr.}
 
 
 ## *
@@ -1345,7 +1345,7 @@ proc net_if_config_ipv4_get*(iface: ptr net_if; ipv4: ptr ptr net_if_ipv4): cint
 ##
 
 proc net_if_config_ipv4_put*(iface: ptr net_if): cint {.
-    importc: "net_if_config_ipv4_put", header: "net_if.h".}
+    importc: "net_if_config_ipv4_put", header: hdr.}
 
 
 ## *
@@ -1357,7 +1357,7 @@ proc net_if_config_ipv4_put*(iface: ptr net_if): cint {.
 ##
 
 proc net_if_ipv4_get_ttl*(iface: ptr net_if): uint8 {.importc: "net_if_ipv4_get_ttl",
-    header: "net_if.h".}
+    header: hdr.}
 
 
 ## *
@@ -1368,7 +1368,7 @@ proc net_if_ipv4_get_ttl*(iface: ptr net_if): uint8 {.importc: "net_if_ipv4_get_
 ##
 
 proc net_if_ipv4_set_ttl*(iface: ptr net_if; ttl: uint8) {.
-    importc: "net_if_ipv4_set_ttl", header: "net_if.h".}
+    importc: "net_if_ipv4_set_ttl", header: hdr.}
 
 
 ## *
@@ -1381,7 +1381,7 @@ proc net_if_ipv4_set_ttl*(iface: ptr net_if; ttl: uint8) {.
 ##
 
 proc net_if_ipv4_addr_lookup*(caddr: ptr InAddr; iface: ptr ptr net_if): ptr net_if_addr {.
-    importc: "net_if_ipv4_addr_lookup", header: "net_if.h".}
+    importc: "net_if_ipv4_addr_lookup", header: hdr.}
 
 
 
@@ -1398,7 +1398,7 @@ proc net_if_ipv4_addr_lookup*(caddr: ptr InAddr; iface: ptr ptr net_if): ptr net
 
 proc net_if_ipv4_addr_add*(iface: ptr net_if; caddr: ptr InAddr;
                           addr_type: net_addr_type; vlifetime: uint32): ptr net_if_addr {.
-    importc: "net_if_ipv4_addr_add", header: "net_if.h".}
+    importc: "net_if_ipv4_addr_add", header: hdr.}
 
 
 
@@ -1412,7 +1412,7 @@ proc net_if_ipv4_addr_add*(iface: ptr net_if; caddr: ptr InAddr;
 ##
 
 proc net_if_ipv4_addr_rm*(iface: ptr net_if; caddr: ptr InAddr): bool {.
-    importc: "net_if_ipv4_addr_rm", header: "net_if.h".}
+    importc: "net_if_ipv4_addr_rm", header: hdr.}
 
 
 
@@ -1426,7 +1426,7 @@ proc net_if_ipv4_addr_rm*(iface: ptr net_if; caddr: ptr InAddr): bool {.
 ##
 
 proc net_if_ipv4_addr_lookup_by_index*(caddr: ptr InAddr): cint {.syscall,
-    importc: "net_if_ipv4_addr_lookup_by_index", header: "net_if.h".}
+    importc: "net_if_ipv4_addr_lookup_by_index", header: hdr.}
 
 
 
@@ -1443,7 +1443,7 @@ proc net_if_ipv4_addr_lookup_by_index*(caddr: ptr InAddr): cint {.syscall,
 
 proc net_if_ipv4_addr_add_by_index*(index: cint; caddr: ptr InAddr;
                                    addr_type: net_addr_type; vlifetime: uint32): bool {.
-    syscall, importc: "net_if_ipv4_addr_add_by_index", header: "net_if.h".}
+    syscall, importc: "net_if_ipv4_addr_add_by_index", header: hdr.}
 
 
 
@@ -1457,7 +1457,7 @@ proc net_if_ipv4_addr_add_by_index*(index: cint; caddr: ptr InAddr;
 ##
 
 proc net_if_ipv4_addr_rm_by_index*(index: cint; caddr: ptr InAddr): bool {.syscall,
-    importc: "net_if_ipv4_addr_rm_by_index", header: "net_if.h".}
+    importc: "net_if_ipv4_addr_rm_by_index", header: hdr.}
 
 
 
@@ -1471,7 +1471,7 @@ proc net_if_ipv4_addr_rm_by_index*(index: cint; caddr: ptr InAddr): bool {.sysca
 ##
 
 proc net_if_ipv4_maddr_add*(iface: ptr net_if; caddr: ptr InAddr): ptr net_if_mcast_addr {.
-    importc: "net_if_ipv4_maddr_add", header: "net_if.h".}
+    importc: "net_if_ipv4_maddr_add", header: hdr.}
 
 
 ## *
@@ -1484,7 +1484,7 @@ proc net_if_ipv4_maddr_add*(iface: ptr net_if; caddr: ptr InAddr): ptr net_if_mc
 ##
 
 proc net_if_ipv4_maddr_rm*(iface: ptr net_if; caddr: ptr InAddr): bool {.
-    importc: "net_if_ipv4_maddr_rm", header: "net_if.h".}
+    importc: "net_if_ipv4_maddr_rm", header: hdr.}
 
 
 ## *
@@ -1499,7 +1499,7 @@ proc net_if_ipv4_maddr_rm*(iface: ptr net_if; caddr: ptr InAddr): bool {.
 ##
 
 proc net_if_ipv4_maddr_lookup*(caddr: ptr InAddr; iface: ptr ptr net_if): ptr net_if_mcast_addr {.
-    importc: "net_if_ipv4_maddr_lookup", header: "net_if.h".}
+    importc: "net_if_ipv4_maddr_lookup", header: hdr.}
 
 
 ## *
@@ -1509,7 +1509,7 @@ proc net_if_ipv4_maddr_lookup*(caddr: ptr InAddr; iface: ptr ptr net_if): ptr ne
 ##
 
 proc net_if_ipv4_maddr_join*(caddr: ptr net_if_mcast_addr) {.
-    importc: "net_if_ipv4_maddr_join", header: "net_if.h".}
+    importc: "net_if_ipv4_maddr_join", header: hdr.}
 
 
 ## *
@@ -1530,7 +1530,7 @@ proc net_if_ipv4_maddr_is_joined*(caddr: ptr net_if_mcast_addr): bool {.importc:
 ##
 
 proc net_if_ipv4_maddr_leave*(caddr: ptr net_if_mcast_addr) {.
-    importc: "net_if_ipv4_maddr_leave", header: "net_if.h".}
+    importc: "net_if_ipv4_maddr_leave", header: hdr.}
 
 
 ## *
@@ -1555,7 +1555,7 @@ proc net_if_router_ipv4*(router: ptr net_if_router): ptr InAddr {.importc: "$1",
 ##
 
 proc net_if_ipv4_router_lookup*(iface: ptr net_if; caddr: ptr InAddr): ptr net_if_router {.
-    importc: "net_if_ipv4_router_lookup", header: "net_if.h".}
+    importc: "net_if_ipv4_router_lookup", header: hdr.}
 
 
 ## *
@@ -1569,7 +1569,7 @@ proc net_if_ipv4_router_lookup*(iface: ptr net_if; caddr: ptr InAddr): ptr net_i
 ##
 
 proc net_if_ipv4_router_find_default*(iface: ptr net_if; caddr: ptr InAddr): ptr net_if_router {.
-    importc: "net_if_ipv4_router_find_default", header: "net_if.h".}
+    importc: "net_if_ipv4_router_find_default", header: hdr.}
 
 
 ## *
@@ -1585,7 +1585,7 @@ proc net_if_ipv4_router_find_default*(iface: ptr net_if; caddr: ptr InAddr): ptr
 
 proc net_if_ipv4_router_add*(iface: ptr net_if; caddr: ptr InAddr; is_default: bool;
                             router_lifetime: uint16): ptr net_if_router {.
-    importc: "net_if_ipv4_router_add", header: "net_if.h".}
+    importc: "net_if_ipv4_router_add", header: hdr.}
 
 
 ## *
@@ -1597,7 +1597,7 @@ proc net_if_ipv4_router_add*(iface: ptr net_if; caddr: ptr InAddr; is_default: b
 ##
 
 proc net_if_ipv4_router_rm*(router: ptr net_if_router): bool {.
-    importc: "net_if_ipv4_router_rm", header: "net_if.h".}
+    importc: "net_if_ipv4_router_rm", header: hdr.}
 
 
 ## *
@@ -1610,7 +1610,7 @@ proc net_if_ipv4_router_rm*(router: ptr net_if_router): bool {.
 ##
 
 proc net_if_ipv4_addr_mask_cmp*(iface: ptr net_if; caddr: ptr InAddr): bool {.
-    importc: "net_if_ipv4_addr_mask_cmp", header: "net_if.h".}
+    importc: "net_if_ipv4_addr_mask_cmp", header: hdr.}
 
 
 ## *
@@ -1623,7 +1623,7 @@ proc net_if_ipv4_addr_mask_cmp*(iface: ptr net_if; caddr: ptr InAddr): bool {.
 ##
 
 proc net_if_ipv4_is_addr_bcast*(iface: ptr net_if; caddr: ptr InAddr): bool {.
-    importc: "net_if_ipv4_is_addr_bcast", header: "net_if.h".}
+    importc: "net_if_ipv4_is_addr_bcast", header: hdr.}
 
 
 ## *
@@ -1637,7 +1637,7 @@ proc net_if_ipv4_is_addr_bcast*(iface: ptr net_if; caddr: ptr InAddr): bool {.
 ##
 
 proc net_if_ipv4_select_src_iface*(dst: ptr InAddr): ptr net_if {.
-      importc: "net_if_ipv4_select_src_iface", header: "net_if.h".}
+      importc: "net_if_ipv4_select_src_iface", header: hdr.}
 
 
 
@@ -1654,7 +1654,7 @@ proc net_if_ipv4_select_src_iface*(dst: ptr InAddr): ptr net_if {.
 ##
 
 proc net_if_ipv4_select_src_addr*(iface: ptr net_if; dst: ptr InAddr): ptr InAddr {.
-      importc: "net_if_ipv4_select_src_addr", header: "net_if.h".}
+      importc: "net_if_ipv4_select_src_addr", header: hdr.}
 
 
 
@@ -1669,7 +1669,7 @@ proc net_if_ipv4_select_src_addr*(iface: ptr net_if; dst: ptr InAddr): ptr InAdd
 ##
 
 proc net_if_ipv4_get_ll*(iface: ptr net_if; addr_state: net_addr_state): ptr InAddr {.
-    importc: "net_if_ipv4_get_ll", header: "net_if.h".}
+    importc: "net_if_ipv4_get_ll", header: hdr.}
 
 
 ## *
@@ -1683,7 +1683,7 @@ proc net_if_ipv4_get_ll*(iface: ptr net_if; addr_state: net_addr_state): ptr InA
 ##
 
 proc net_if_ipv4_get_global_addr*(iface: ptr net_if; addr_state: net_addr_state): ptr InAddr {.
-    importc: "net_if_ipv4_get_global_addr", header: "net_if.h".}
+    importc: "net_if_ipv4_get_global_addr", header: hdr.}
 
 
 ## *
@@ -1694,7 +1694,7 @@ proc net_if_ipv4_get_global_addr*(iface: ptr net_if; addr_state: net_addr_state)
 ##
 
 proc net_if_ipv4_set_netmask*(iface: ptr net_if; netmask: ptr InAddr) {.
-    importc: "net_if_ipv4_set_netmask", header: "net_if.h".}
+    importc: "net_if_ipv4_set_netmask", header: hdr.}
 
 
 ## *
@@ -1707,7 +1707,7 @@ proc net_if_ipv4_set_netmask*(iface: ptr net_if; netmask: ptr InAddr) {.
 ##
 
 proc net_if_ipv4_set_netmask_by_index*(index: cint; netmask: ptr InAddr): bool {.
-    syscall, importc: "net_if_ipv4_set_netmask_by_index", header: "net_if.h".}
+    syscall, importc: "net_if_ipv4_set_netmask_by_index", header: hdr.}
 
 
 ## *
@@ -1718,7 +1718,7 @@ proc net_if_ipv4_set_netmask_by_index*(index: cint; netmask: ptr InAddr): bool {
 ##
 
 proc net_if_ipv4_set_gw*(iface: ptr net_if; gw: ptr InAddr) {.
-    importc: "net_if_ipv4_set_gw", header: "net_if.h".}
+    importc: "net_if_ipv4_set_gw", header: hdr.}
 
 
 ## *
@@ -1731,7 +1731,7 @@ proc net_if_ipv4_set_gw*(iface: ptr net_if; gw: ptr InAddr) {.
 ##
 
 proc net_if_ipv4_set_gw_by_index*(index: cint; gw: ptr InAddr): bool {.syscall,
-    importc: "net_if_ipv4_set_gw_by_index", header: "net_if.h".}
+    importc: "net_if_ipv4_set_gw_by_index", header: hdr.}
 
 
 ## *
@@ -1746,7 +1746,7 @@ proc net_if_ipv4_set_gw_by_index*(index: cint; gw: ptr InAddr): bool {.syscall,
 ##
 
 proc net_if_select_src_iface*(dst: ptr SockAddr): ptr net_if {.
-    importc: "net_if_select_src_iface", header: "net_if.h".}
+    importc: "net_if_select_src_iface", header: hdr.}
 
 
 
@@ -1759,7 +1759,7 @@ proc net_if_select_src_iface*(dst: ptr SockAddr): ptr net_if {.
 ##
 
 proc net_if_register_link_cb*(link: ptr net_if_link_cb; cb: net_if_link_callback_t) {.
-    importc: "net_if_register_link_cb", header: "net_if.h".}
+    importc: "net_if_register_link_cb", header: hdr.}
 
 
 ## *
@@ -1769,7 +1769,7 @@ proc net_if_register_link_cb*(link: ptr net_if_link_cb; cb: net_if_link_callback
 ##
 
 proc net_if_unregister_link_cb*(link: ptr net_if_link_cb) {.
-    importc: "net_if_unregister_link_cb", header: "net_if.h".}
+    importc: "net_if_unregister_link_cb", header: hdr.}
 
 
 ## *
@@ -1781,7 +1781,7 @@ proc net_if_unregister_link_cb*(link: ptr net_if_link_cb) {.
 ##
 
 proc net_if_call_link_cb*(iface: ptr net_if; lladdr: ptr net_linkaddr; status: cint) {.
-    importc: "net_if_call_link_cb", header: "net_if.h".}
+    importc: "net_if_call_link_cb", header: hdr.}
 
 
 ## *
@@ -1795,7 +1795,7 @@ proc net_if_call_link_cb*(iface: ptr net_if; lladdr: ptr net_linkaddr; status: c
 ##
 
 proc net_if_need_calc_rx_checksum*(iface: ptr net_if): bool {.
-    importc: "net_if_need_calc_rx_checksum", header: "net_if.h".}
+    importc: "net_if_need_calc_rx_checksum", header: hdr.}
 
 
 ## *
@@ -1810,7 +1810,7 @@ proc net_if_need_calc_rx_checksum*(iface: ptr net_if): bool {.
 ##
 
 proc net_if_need_calc_tx_checksum*(iface: ptr net_if): bool {.
-    importc: "net_if_need_calc_tx_checksum", header: "net_if.h".}
+    importc: "net_if_need_calc_tx_checksum", header: hdr.}
 
 
 ## *
@@ -1825,7 +1825,7 @@ proc net_if_need_calc_tx_checksum*(iface: ptr net_if): bool {.
 ##
 
 proc net_if_get_by_index*(index: cint): ptr net_if {.syscall,
-    importc: "net_if_get_by_index", header: "net_if.h".}
+    importc: "net_if_get_by_index", header: hdr.}
 
 
 ## *
@@ -1837,7 +1837,7 @@ proc net_if_get_by_index*(index: cint): ptr net_if {.syscall,
 ##
 
 proc net_if_get_by_iface*(iface: ptr net_if): cint {.importc: "net_if_get_by_iface",
-    header: "net_if.h".}
+    header: hdr.}
 
 
 ## *
@@ -1862,7 +1862,7 @@ type
 ##
 
 proc net_if_foreach*(cb: net_if_cb_t; user_data: pointer) {.
-    importc: "net_if_foreach", header: "net_if.h".}
+    importc: "net_if_foreach", header: hdr.}
 
 
 ## *
@@ -1873,7 +1873,7 @@ proc net_if_foreach*(cb: net_if_cb_t; user_data: pointer) {.
 ##  @return 0 on success
 ##
 
-proc net_if_up*(iface: ptr net_if): cint {.importc: "net_if_up", header: "net_if.h".}
+proc net_if_up*(iface: ptr net_if): cint {.importc: "net_if_up", header: hdr.}
 
 
 ## *
@@ -1896,7 +1896,7 @@ proc net_if_is_up*(iface: ptr net_if): bool {.importc: "$1", header: hdr.}
 ##  @return 0 on success
 ##
 
-proc net_if_down*(iface: ptr net_if): cint {.importc: "net_if_down", header: "net_if.h".}
+proc net_if_down*(iface: ptr net_if): cint {.importc: "net_if_down", header: hdr.}
 
 when CONFIG_NET_PKT_TIMESTAMP and CONFIG_NET_NATIVE:
   ## *
@@ -1917,7 +1917,7 @@ when CONFIG_NET_PKT_TIMESTAMP and CONFIG_NET_NATIVE:
   ##  allocated from stack.
   ##
   type
-    net_if_timestamp_cb* {.importc: "net_if_timestamp_cb", header: "net_if.h", bycopy.} = object
+    net_if_timestamp_cb* {.importc: "net_if_timestamp_cb", header: hdr, bycopy.} = object
       node* {.importc: "node".}: sys_snode_t ## * Node information for the slist.
       pkt* {.importc: "pkt".}: ptr net_pkt ## * Packet for which the callback is needed. A NULL value means all packets.
       iface* {.importc: "iface".}: ptr net_if ## * Net interface for which the callback is needed.  A NULL value means all interfaces.
@@ -1937,7 +1937,7 @@ when CONFIG_NET_PKT_TIMESTAMP and CONFIG_NET_NATIVE:
   proc net_if_register_timestamp_cb*(handle: ptr net_if_timestamp_cb;
                                     pkt: ptr net_pkt; iface: ptr net_if;
                                     cb: net_if_timestamp_callback_t) {.
-      importc: "net_if_register_timestamp_cb", header: "net_if.h".}
+      importc: "net_if_register_timestamp_cb", header: hdr.}
   
 
   ##  @brief Unregister a timestamp callback.
@@ -1945,7 +1945,7 @@ when CONFIG_NET_PKT_TIMESTAMP and CONFIG_NET_NATIVE:
   ##  @param handle Caller specified handler for the callback.
   ##
   proc net_if_unregister_timestamp_cb*(handle: ptr net_if_timestamp_cb) {.
-      importc: "net_if_unregister_timestamp_cb", header: "net_if.h".}
+      importc: "net_if_unregister_timestamp_cb", header: hdr.}
   
 
   ##  @brief Call a timestamp callback function.
@@ -1953,14 +1953,14 @@ when CONFIG_NET_PKT_TIMESTAMP and CONFIG_NET_NATIVE:
   ##  @param pkt Network buffer.
   ##
   proc net_if_call_timestamp_cb*(pkt: ptr net_pkt) {.
-      importc: "net_if_call_timestamp_cb", header: "net_if.h".}
+      importc: "net_if_call_timestamp_cb", header: hdr.}
   ##
   ##  @brief Add timestamped TX buffer to be handled
   ##
   ##  @param pkt Timestamped buffer
   ##
   proc net_if_add_tx_timestamp*(pkt: ptr net_pkt) {.
-      importc: "net_if_add_tx_timestamp", header: "net_if.h".}
+      importc: "net_if_add_tx_timestamp", header: hdr.}
 
 
 ## *
@@ -1974,7 +1974,7 @@ when CONFIG_NET_PKT_TIMESTAMP and CONFIG_NET_NATIVE:
 ##
 
 proc net_if_set_promisc*(iface: ptr net_if): cint {.importc: "net_if_set_promisc",
-    header: "net_if.h".}
+    header: hdr.}
 
 
 ## *
@@ -1984,7 +1984,7 @@ proc net_if_set_promisc*(iface: ptr net_if): cint {.importc: "net_if_set_promisc
 ##
 
 proc net_if_unset_promisc*(iface: ptr net_if) {.importc: "net_if_unset_promisc",
-    header: "net_if.h".}
+    header: hdr.}
 
 
 ## *
@@ -1997,7 +1997,7 @@ proc net_if_unset_promisc*(iface: ptr net_if) {.importc: "net_if_unset_promisc",
 ##
 
 proc net_if_is_promisc*(iface: ptr net_if): bool {.importc: "net_if_is_promisc",
-    header: "net_if.h".}
+    header: hdr.}
 
 
 ## *
@@ -2020,7 +2020,7 @@ when CONFIG_NET_POWER_MANAGEMENT:
   ##  @return 0 on success, or -EALREADY/-EBUSY as possible errors.
   ##
   proc net_if_suspend*(iface: ptr net_if): cint {.importc: "net_if_suspend",
-      header: "net_if.h".}
+      header: hdr.}
   
 
   ##  @brief Resume a network interface from a power management perspective
@@ -2030,7 +2030,7 @@ when CONFIG_NET_POWER_MANAGEMENT:
   ##  @return 0 on success, or -EALREADY as a possible error.
   ##
   proc net_if_resume*(iface: ptr net_if): cint {.importc: "net_if_resume",
-      header: "net_if.h".}
+      header: hdr.}
   
   ##  @brief Check if the network interface is suspended or not.
   ##
@@ -2039,10 +2039,10 @@ when CONFIG_NET_POWER_MANAGEMENT:
   ##  @return True if interface is suspended, False otherwise.
   ##
   proc net_if_is_suspended*(iface: ptr net_if): bool {.
-      importc: "net_if_is_suspended", header: "net_if.h".}
+      importc: "net_if_is_suspended", header: hdr.}
 
 
 type
-  net_if_api* {.importc: "net_if_api", header: "net_if.h", bycopy.} = object
+  net_if_api* {.importc: "net_if_api", header: hdr, bycopy.} = object
     init* {.importc: "init".}: proc (iface: ptr net_if)
 
