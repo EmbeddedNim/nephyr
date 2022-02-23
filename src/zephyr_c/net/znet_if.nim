@@ -29,27 +29,29 @@ import posix
 ##  Stores the unicast IP addresses assigned to this network interface.
 ##
 
-# when defined(CONFIG_NET_NATIVE_IPV6):
-#   const
-#     NET_IF_MAX_IPV6_ADDR* = CONFIG_NET_IF_UNICAST_IPV6_ADDR_COUNT
-#     NET_IF_MAX_IPV6_MADDR* = CONFIG_NET_IF_MCAST_IPV6_ADDR_COUNT
-#     NET_IF_MAX_IPV6_PREFIX* = CONFIG_NET_IF_IPV6_PREFIX_COUNT
-# else:
-#   const
-#     NET_IF_MAX_IPV6_ADDR* = 0
-#     NET_IF_MAX_IPV6_MADDR* = 0
-#     NET_IF_MAX_IPV6_PREFIX* = 0
-# when defined(CONFIG_NET_NATIVE_IPV4):
-#   const
-#     NET_IF_MAX_IPV4_ADDR* = CONFIG_NET_IF_UNICAST_IPV4_ADDR_COUNT
-#     NET_IF_MAX_IPV4_MADDR* = CONFIG_NET_IF_MCAST_IPV4_ADDR_COUNT
-# else:
-#   const
-#     NET_IF_MAX_IPV4_ADDR* = 0
-#     NET_IF_MAX_IPV4_MADDR* = 0
-# const
-#   NET_IF_MAX_CONFIGS* = 1
-# # * @endcond
+when CONFIG_NET_NATIVE_IPV6:
+  const
+    NET_IF_MAX_IPV6_ADDR* = CONFIG_NET_IF_UNICAST_IPV6_ADDR_COUNT
+    NET_IF_MAX_IPV6_MADDR* = CONFIG_NET_IF_MCAST_IPV6_ADDR_COUNT
+    NET_IF_MAX_IPV6_PREFIX* = CONFIG_NET_IF_IPV6_PREFIX_COUNT
+else:
+  const
+    NET_IF_MAX_IPV6_ADDR* = 0
+    NET_IF_MAX_IPV6_MADDR* = 0
+    NET_IF_MAX_IPV6_PREFIX* = 0
+
+when CONFIG_NET_NATIVE_IPV4:
+  const
+    NET_IF_MAX_IPV4_ADDR* = CONFIG_NET_IF_UNICAST_IPV4_ADDR_COUNT
+    NET_IF_MAX_IPV4_MADDR* = CONFIG_NET_IF_MCAST_IPV4_ADDR_COUNT
+else:
+  const
+    NET_IF_MAX_IPV4_ADDR* = 0
+    NET_IF_MAX_IPV4_MADDR* = 0
+
+const
+  NET_IF_MAX_CONFIGS* = 1
+
 
 type
   net_if_flag* {.size: sizeof(cint).} = enum ## * Interface is up/ready to receive and transmit
