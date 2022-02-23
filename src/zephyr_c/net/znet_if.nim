@@ -17,6 +17,9 @@
 
 import ../zkernel_fixes
 import ../zconfs
+import ../zdevice
+import ../kernel/zk_fifo
+import ../zkernel
 
 import znet_ip
 import znet_timeout
@@ -79,10 +82,10 @@ type
   net_if_addr* {.importc: "net_if_addr", header: "net_if.h", bycopy.} = object
     address* {.importc: "address".}: NetAddr ## * IP address
 
-    when defined(CONFIG_NET_NATIVE_IPV6):
+    when CONFIG_NET_NATIVE_IPV6:
       lifetime* {.importc: "lifetime", header: "net_if.h".}: net_timeout
 
-    when defined(CONFIG_NET_IPV6_DAD) and defined(CONFIG_NET_NATIVE_IPV6):
+    when CONFIG_NET_IPV6_DAD and CONFIG_NET_NATIVE_IPV6:
       ## * Duplicate address detection (DAD) timer
       dad_node* {.importc: "dad_node", header: "net_if.h".}: sys_snode_t
       dad_start* {.importc: "dad_start", header: "net_if.h".}: uint32
@@ -90,7 +93,7 @@ type
     addr_type* {.importc: "addr_type".}: net_addr_type ## * How the IP address was set
     addr_state* {.importc: "addr_state".}: net_addr_state ## * What is the current state of the address
 
-    when defined(CONFIG_NET_IPV6_DAD) and defined(CONFIG_NET_NATIVE_IPV6):
+    when CONFIG_NET_IPV6_DAD and CONFIG_NET_NATIVE_IPV6:
       ## * How many times we have done DAD
       dad_count* {.importc: "dad_count", header: "net_if.h".}: uint8
 
@@ -166,7 +169,7 @@ type
     base_reachable_time* {.importc: "base_reachable_time".}: uint32 ## * Reachable time (RFC 4861, page 20)
     reachable_time* {.importc: "reachable_time".}: uint32 ## * Retransmit timer (RFC 4861, page 52)
     retrans_timer* {.importc: "retrans_timer".}: uint32
-    when defined(CONFIG_NET_IPV6_ND) and defined(CONFIG_NET_NATIVE_IPV6):
+    when CONFIG_NET_IPV6_ND and CONFIG_NET_NATIVE_IPV6:
       ## * Router solicitation timer node
       rs_node* {.importc: "rs_node", header: "net_if.h".}: sys_snode_t
       ##  RS start time
@@ -182,8 +185,8 @@ type
     ## * Multicast IP addresses
     mcast* {.importc: "mcast".}: array[NET_IF_MAX_IPV4_MADDR, net_if_mcast_addr] ## *
                                                                             ## Gateway
-    gw* {.importc: "gw".}: in_addr ## * Netmask
-    netmask* {.importc: "netmask".}: in_addr ## * IPv4 time-to-live
+    gw* {.importc: "gw".}: InAddr ## * Netmask
+    netmask* {.importc: "netmask".}: InAddr ## * IPv4 time-to-live
     ttl* {.importc: "ttl".}: uint8
 
 
@@ -192,9 +195,9 @@ type
     ## *
     ##  @brief Network interface IP address configuration.
     ##
-    when defined(CONFIG_NET_NATIVE_IPV6):
+    when CONFIG_NET_NATIVE_IPV6:
       ipv6* {.importc: "ipv6", header: "net_if.h".}: ptr net_if_ipv6
-    when defined(CONFIG_NET_NATIVE_IPV4):
+    when CONFIG_NET_NATIVE_IPV4:
       ipv4* {.importc: "ipv4", header: "net_if.h".}: ptr net_if_ipv4
 
 
@@ -204,11 +207,11 @@ type
     ##  @brief IP and other configuration related data for network interface.
     ##
     ip* {.importc: "ip".}: net_if_ip ## * IP address configuration setting
-    when defined(CONFIG_NET_DHCPV4) and defined(CONFIG_NET_NATIVE_IPV4):
+    when CONFIG_NET_DHCPV4 and CONFIG_NET_NATIVE_IPV4:
       dhcpv4* {.importc: "dhcpv4", header: "net_if.h".}: net_if_dhcpv4
-    when defined(CONFIG_NET_IPV4_AUTO) and defined(CONFIG_NET_NATIVE_IPV4):
+    when CONFIG_NET_IPV4_AUTO and CONFIG_NET_NATIVE_IPV4:
       ipv4auto* {.importc: "ipv4auto", header: "net_if.h".}: net_if_ipv4_autoconf
-    when defined(CONFIG_NET_L2_VIRTUAL):
+    when CONFIG_NET_L2_VIRTUAL:
       ## *
       ##  This list keeps track of the virtual network interfaces
       ##  that are attached to this network interface.
@@ -250,7 +253,7 @@ type
     l2* {.importc: "l2".}: ptr net_l2 ## * Interface's private L2 data pointer
     l2_data* {.importc: "l2_data".}: pointer ## * The hardware link address
     link_addr* {.importc: "link_addr".}: net_linkaddr
-    when defined(CONFIG_NET_OFFLOAD):
+    when CONFIG_NET_OFFLOAD:
       ## * TCP/IP Offload functions.
       ##  If non-NULL, then the TCP/IP stack is located
       ##  in the communication chip that is accessed via this
@@ -258,7 +261,7 @@ type
       ##
       offload* {.importc: "offload", header: "net_if.h".}: ptr net_offload
     mtu* {.importc: "mtu".}: uint16 ## * The hardware MTU
-    when defined(CONFIG_NET_SOCKETS_OFFLOAD):
+    when CONFIG_NET_SOCKETS_OFFLOAD:
       ## * Indicate whether interface is offloaded at socket level.
       offloaded* {.importc: "offloaded", header: "net_if.h".}: bool
 
@@ -273,11 +276,11 @@ type
     ##
     ##
     if_dev* {.importc: "if_dev".}: ptr net_if_dev ## * The net_if_dev instance the net_if is related to
-    when defined(CONFIG_NET_STATISTICS_PER_INTERFACE):
+    when CONFIG_NET_STATISTICS_PER_INTERFACE:
       ## * Network statistics related to this network interface
       stats* {.importc: "stats", header: "net_if.h".}: net_stats
     config* {.importc: "config".}: net_if_config ## * Network interface instance configuration
-    when defined(CONFIG_NET_POWER_MANAGEMENT):
+    when CONFIG_NET_POWER_MANAGEMENT:
       ## * Keep track of packets pending in traffic queues. This is
       ##  needed to avoid putting network device driver to sleep if
       ##  there are packets waiting to be sent.
@@ -285,7 +288,7 @@ type
       tx_pending* {.importc: "tx_pending", header: "net_if.h".}: cint
 
 type
-  when defined(CONFIG_NET_DHCPV4) and defined(CONFIG_NET_NATIVE_IPV4):
+  when CONFIG_NET_DHCPV4) and defined(CONFIG_NET_NATIVE_IPV4:
     net_if_dhcpv4* {.importc: "net_if_dhcpv4", header: "net_if.h", bycopy.} = object
       node* {.importc: "node".}: sys_snode_t ## * Used for timer lists
       ## * Timer start
@@ -303,7 +306,7 @@ type
       state* {.importc: "state".}: net_dhcpv4_state ## * Number of attempts made for REQUEST and RENEWAL messages
       attempts* {.importc: "attempts".}: uint8
 
-  when defined(CONFIG_NET_IPV4_AUTO) and defined(CONFIG_NET_NATIVE_IPV4):
+  when CONFIG_NET_IPV4_AUTO) and defined(CONFIG_NET_NATIVE_IPV4:
     net_if_ipv4_autoconf* {.importc: "net_if_ipv4_autoconf", header: "net_if.h",
                            bycopy.} = object
       node* {.importc: "node".}: sys_snode_t ## * Used for timer lists
@@ -444,7 +447,7 @@ proc net_if_queue_tx*(iface: ptr net_if; pkt: ptr net_pkt) {.
 ##
 
 proc net_if_is_ip_offloaded*(iface: ptr net_if): bool {.inline.} =
-  when defined(CONFIG_NET_OFFLOAD):
+  when CONFIG_NET_OFFLOAD:
     return iface.if_dev.offload != nil
   else:
     ARG_UNUSED(iface)
@@ -459,7 +462,7 @@ proc net_if_is_ip_offloaded*(iface: ptr net_if): bool {.inline.} =
 ##
 
 proc net_if_offload*(iface: ptr net_if): ptr net_offload {.inline.} =
-  when defined(CONFIG_NET_OFFLOAD):
+  when CONFIG_NET_OFFLOAD:
     return iface.if_dev.offload
   else:
     ARG_UNUSED(iface)
@@ -474,7 +477,7 @@ proc net_if_offload*(iface: ptr net_if): ptr net_offload {.inline.} =
 ##
 
 proc net_if_is_socket_offloaded*(iface: ptr net_if): bool {.inline.} =
-  when defined(CONFIG_NET_SOCKETS_OFFLOAD):
+  when CONFIG_NET_SOCKETS_OFFLOAD:
     return iface.if_dev.offloaded
   else:
     ARG_UNUSED(iface)
@@ -508,7 +511,7 @@ proc net_if_get_config*(iface: ptr net_if): ptr net_if_config {.inline.} =
 ##  @param iface Pointer to a network interface structure
 ##
 
-when defined(CONFIG_NET_IPV6_DAD) and defined(CONFIG_NET_NATIVE_IPV6):
+when CONFIG_NET_IPV6_DAD) and defined(CONFIG_NET_NATIVE_IPV6:
   proc net_if_start_dad*(iface: ptr net_if) {.importc: "net_if_start_dad",
       header: "net_if.h".}
 else:
@@ -529,7 +532,7 @@ proc net_if_start_rs*(iface: ptr net_if) {.importc: "net_if_start_rs",
 ##  @param iface Pointer to a network interface structure
 ##
 
-when defined(CONFIG_NET_IPV6_ND) and defined(CONFIG_NET_NATIVE_IPV6):
+when CONFIG_NET_IPV6_ND) and defined(CONFIG_NET_NATIVE_IPV6:
   proc net_if_stop_rs*(iface: ptr net_if) {.importc: "net_if_stop_rs",
                                         header: "net_if.h".}
 else:
@@ -566,7 +569,7 @@ proc net_if_set_link_addr_locked*(iface: ptr net_if; `addr`: ptr uint8; len: uin
 
 proc net_if_set_link_addr*(iface: ptr net_if; `addr`: ptr uint8; len: uint8;
                           `type`: net_link_type): cint {.inline.} =
-  when defined(CONFIG_NET_RAW_MODE):
+  when CONFIG_NET_RAW_MODE:
     return net_if_set_link_addr_unlocked(iface, `addr`, len, `type`)
   else:
     return net_if_set_link_addr_locked(iface, `addr`, len, `type`)
@@ -664,7 +667,7 @@ proc net_if_get_default*(): ptr net_if {.importc: "net_if_get_default",
 
 proc net_if_get_first_by_type*(l2: ptr net_l2): ptr net_if {.
     importc: "net_if_get_first_by_type", header: "net_if.h".}
-when defined(CONFIG_NET_L2_IEEE802154):
+when CONFIG_NET_L2_IEEE802154:
   ## *
   ##  @brief Get the first IEEE 802.15.4 network interface.
   ##
@@ -1012,7 +1015,7 @@ proc net_if_ipv6_addr_onlink*(iface: ptr ptr net_if; `addr`: ptr in6_addr): bool
 ##  @return pointer to the IPv6 address, or NULL if none
 ##
 
-when defined(CONFIG_NET_NATIVE_IPV6):
+when CONFIG_NET_NATIVE_IPV6:
   proc net_if_router_ipv6*(router: ptr net_if_router): ptr in6_addr {.inline.} =
     return addr(router.address.in6_addr)
 
@@ -1107,7 +1110,7 @@ proc net_ipv6_set_hop_limit*(iface: ptr net_if; hop_limit: uint8) {.
 
 proc net_if_ipv6_set_base_reachable_time*(iface: ptr net_if; reachable_time: uint32) {.
     inline.} =
-  when defined(CONFIG_NET_NATIVE_IPV6):
+  when CONFIG_NET_NATIVE_IPV6:
     if not iface.config.ip.ipv6:
       return
     iface.config.ip.ipv6.base_reachable_time = reachable_time
@@ -1121,7 +1124,7 @@ proc net_if_ipv6_set_base_reachable_time*(iface: ptr net_if; reachable_time: uin
 ##
 
 proc net_if_ipv6_get_reachable_time*(iface: ptr net_if): uint32 {.inline.} =
-  when defined(CONFIG_NET_NATIVE_IPV6):
+  when CONFIG_NET_NATIVE_IPV6:
     if not iface.config.ip.ipv6:
       return 0
     return iface.config.ip.ipv6.reachable_time
@@ -1146,7 +1149,7 @@ proc net_if_ipv6_calc_reachable_time*(ipv6: ptr net_if_ipv6): uint32 {.
 ##
 
 proc net_if_ipv6_set_reachable_time*(ipv6: ptr net_if_ipv6) {.inline.} =
-  when defined(CONFIG_NET_NATIVE_IPV6):
+  when CONFIG_NET_NATIVE_IPV6:
     ipv6.reachable_time = net_if_ipv6_calc_reachable_time(ipv6)
 
 ## *
@@ -1157,7 +1160,7 @@ proc net_if_ipv6_set_reachable_time*(ipv6: ptr net_if_ipv6) {.inline.} =
 ##
 
 proc net_if_ipv6_set_retrans_timer*(iface: ptr net_if; retrans_timer: uint32) {.inline.} =
-  when defined(CONFIG_NET_NATIVE_IPV6):
+  when CONFIG_NET_NATIVE_IPV6:
     if not iface.config.ip.ipv6:
       return
     iface.config.ip.ipv6.retrans_timer = retrans_timer
@@ -1171,7 +1174,7 @@ proc net_if_ipv6_set_retrans_timer*(iface: ptr net_if; retrans_timer: uint32) {.
 ##
 
 proc net_if_ipv6_get_retrans_timer*(iface: ptr net_if): uint32 {.inline.} =
-  when defined(CONFIG_NET_NATIVE_IPV6):
+  when CONFIG_NET_NATIVE_IPV6:
     if not iface.config.ip.ipv6:
       return 0
     return iface.config.ip.ipv6.retrans_timer
@@ -1190,7 +1193,7 @@ proc net_if_ipv6_get_retrans_timer*(iface: ptr net_if): uint32 {.inline.} =
 ##  could be found.
 ##
 
-when defined(CONFIG_NET_NATIVE_IPV6):
+when CONFIG_NET_NATIVE_IPV6:
   proc net_if_ipv6_select_src_addr*(iface: ptr net_if; dst: ptr in6_addr): ptr in6_addr {.
       importc: "net_if_ipv6_select_src_addr", header: "net_if.h".}
 else:
@@ -1210,7 +1213,7 @@ else:
 ##  could be found.
 ##
 
-when defined(CONFIG_NET_NATIVE_IPV6):
+when CONFIG_NET_NATIVE_IPV6:
   proc net_if_ipv6_select_src_iface*(dst: ptr in6_addr): ptr net_if {.
       importc: "net_if_ipv6_select_src_iface", header: "net_if.h".}
 else:
@@ -1450,7 +1453,7 @@ proc net_if_ipv4_maddr_leave*(`addr`: ptr net_if_mcast_addr) {.
 ##  @return pointer to the IPv4 address, or NULL if none
 ##
 
-when defined(CONFIG_NET_NATIVE_IPV4):
+when CONFIG_NET_NATIVE_IPV4:
   proc net_if_router_ipv4*(router: ptr net_if_router): ptr in_addr {.inline.} =
     return addr(router.address.in_addr)
 
@@ -1540,7 +1543,7 @@ proc net_if_ipv4_is_addr_bcast*(iface: ptr net_if; `addr`: ptr in_addr): bool {.
 ##  could be found.
 ##
 
-when defined(CONFIG_NET_NATIVE_IPV4):
+when CONFIG_NET_NATIVE_IPV4:
   proc net_if_ipv4_select_src_iface*(dst: ptr in_addr): ptr net_if {.
       importc: "net_if_ipv4_select_src_iface", header: "net_if.h".}
 else:
@@ -1560,7 +1563,7 @@ else:
 ##  could be found.
 ##
 
-when defined(CONFIG_NET_NATIVE_IPV4):
+when CONFIG_NET_NATIVE_IPV4:
   proc net_if_ipv4_select_src_addr*(iface: ptr net_if; dst: ptr in_addr): ptr in_addr {.
       importc: "net_if_ipv4_select_src_addr", header: "net_if.h".}
 else:
@@ -1801,7 +1804,7 @@ proc net_if_is_up*(iface: ptr net_if): bool {.inline.} =
 ##
 
 proc net_if_down*(iface: ptr net_if): cint {.importc: "net_if_down", header: "net_if.h".}
-when defined(CONFIG_NET_PKT_TIMESTAMP) and defined(CONFIG_NET_NATIVE):
+when CONFIG_NET_PKT_TIMESTAMP) and defined(CONFIG_NET_NATIVE:
   ## *
   ##  @typedef net_if_timestamp_callback_t
   ##  @brief Define callback that is called after a network packet
@@ -1908,13 +1911,13 @@ proc net_if_is_promisc*(iface: ptr net_if): bool {.importc: "net_if_is_promisc",
 ##
 
 proc net_if_are_pending_tx_packets*(iface: ptr net_if): bool {.inline.} =
-  when defined(CONFIG_NET_POWER_MANAGEMENT):
+  when CONFIG_NET_POWER_MANAGEMENT:
     return not not iface.tx_pending
   else:
     ARG_UNUSED(iface)
     return false
 
-when defined(CONFIG_NET_POWER_MANAGEMENT):
+when CONFIG_NET_POWER_MANAGEMENT:
   ## *
   ##  @brief Suspend a network interface from a power management perspective
   ##
@@ -1949,7 +1952,7 @@ type
     init* {.importc: "init".}: proc (iface: ptr net_if)
 
 
-##  #if defined(CONFIG_NET_DHCPV4) && defined(CONFIG_NET_NATIVE_IPV4)
+##  #if CONFIG_NET_DHCPV4) && defined(CONFIG_NET_NATIVE_IPV4
 ##  #define NET_IF_DHCPV4_INIT .dhcpv4.state = NET_DHCPV4_DISABLED,
 ##  #else
 ##  #define NET_IF_DHCPV4_INIT
