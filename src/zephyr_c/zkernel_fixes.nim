@@ -55,8 +55,6 @@ type
   sys_dnode_t* {.importc: "$1", header: "<kernel.h>",
                  bycopy, incompleteStruct.} = dnode
 
-  sys_heap * {.importc: "struct $1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
-
   k_spinlock * {.importc: "struct $1", header: "<spinlock.h>", bycopy, incompleteStruct.} = object
 
   k_priv_timeout * {.importc: "struct _timeout", header: "<kernel.h>", bycopy, incompleteStruct.} = object

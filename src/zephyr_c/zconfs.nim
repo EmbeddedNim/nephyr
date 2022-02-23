@@ -20,6 +20,7 @@ const CONFIG_NAMES = [
   "MEM_SLAB_TRACE_MAX_UTILIZATION",
   "MPU",
   "MULTITHREADING",
+  "MEM_SLAB_TRACE_MAX_UTILIZATION",
   # Net options
   "NETWORKING",
   # Net generic
