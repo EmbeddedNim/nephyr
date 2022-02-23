@@ -2,6 +2,7 @@
 import ../zconfs
 import ../zkernel_fixes
 import ../sys/zsys_heap
+import ../zsys_clock
 
 type
   k_mem_slab* {.importc: "k_mem_slab", header: "kernel.h", incompleteStruct, bycopy.} = object
