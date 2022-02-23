@@ -180,23 +180,6 @@ var K_INHERIT_PERMS* {.importc: "K_INHERIT_PERMS", header: "kernel.h".}: int
 var K_CALLBACK_STATE* {.importc: "K_CALLBACK_STATE", header: "kernel.h".}: int
 
 
-when CONFIG_X86:
-  ##  x86 Bitmask definitions for threads user options
-  when CONFIG_FPU_SHARING and CONFIG_X86_SSE:
-    ## *
-    ##  @brief FP and SSE registers are managed by context switch on x86
-    ##
-    ##  @details
-    ##  This option indicates that the thread uses the x86 CPU's floating point
-    ##  and SSE registers. This instructs the kernel to take additional steps to
-    ##  save and restore the contents of these registers when scheduling
-    ##  the thread. No effect if @kconfig{CONFIG_X86_SSE} is not enabled.
-    ##
-    var K_SSE_REGS* {.importc: "K_SSE_REGS", header: "kernel.h".}: int
-##  end - thread options
-
-
-
 ## *
 ##  @brief Create a thread.
 ##
