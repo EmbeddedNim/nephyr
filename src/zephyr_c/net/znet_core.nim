@@ -25,8 +25,9 @@
 ##  Network subsystem logging helpers
 
 type
-  net_if_alias* = distinct pointer
-  net_pkt_alias* = distinct pointer
+  net_if_alias* = distinct object {.incompleteStruct.}
+  net_pkt_alias* = distinct object {.incompleteStruct.}
+  net_offload_alias* = distinct object {.incompleteStruct.}
 
   net_verdict* {.size: sizeof(cint).} = enum
     NET_OK, ##\

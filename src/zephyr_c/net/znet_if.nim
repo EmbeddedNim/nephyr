@@ -24,9 +24,12 @@ import ../zkernel
 import znet_core
 import znet_ip
 import znet_l2
+import znet_linkaddr
 import znet_timeout
 
 import posix
+
+const hdr = "<net/net_if.h>"
 
 ## *
 ##  @brief Network Interface unicast IP addresses
@@ -324,8 +327,8 @@ when CONFIG_NET_DHCPV4 and CONFIG_NET_NATIVE_IPV4:
       lease_time* {.importc: "lease_time".}: uint32 ## * IP address Renewal time
       renewal_time* {.importc: "renewal_time".}: uint32 ## * IP address Rebinding time
       rebinding_time* {.importc: "rebinding_time".}: uint32 ## * Server ID
-      server_id* {.importc: "server_id".}: in_addr ## * Requested IP addr
-      requested_ip* {.importc: "requested_ip".}: in_addr ## *
+      server_id* {.importc: "server_id".}: InAddr ## * Requested IP addr
+      requested_ip* {.importc: "requested_ip".}: InAddr ## *
                                                      ##   DHCPv4 client state in the process of network
                                                      ##   address allocation.
                                                      ##
@@ -341,8 +344,8 @@ when CONFIG_NET_IPV4_AUTO and CONFIG_NET_NATIVE_IPV4:
       iface* {.importc: "iface".}: ptr net_if ## * Timer start
       timer_start* {.importc: "timer_start".}: int64 ## * Time for INIT, DISCOVER, REQUESTING, RENEWAL
       timer_timeout* {.importc: "timer_timeout".}: uint32 ## * Current IP addr
-      current_ip* {.importc: "current_ip".}: in_addr ## * Requested IP addr
-      requested_ip* {.importc: "requested_ip".}: in_addr ## * IPV4 Autoconf state in the process of network address allocation.
+      current_ip* {.importc: "current_ip".}: InAddr ## * Requested IP addr
+      requested_ip* {.importc: "requested_ip".}: InAddr ## * IPV4 Autoconf state in the process of network address allocation.
                                                      ##
       state* {.importc: "state".}: net_ipv4_autoconf_state ## * Number of sent probe requests
       probe_cnt* {.importc: "probe_cnt".}: uint8 ## * Number of sent announcements
@@ -357,9 +360,7 @@ when CONFIG_NET_IPV4_AUTO and CONFIG_NET_NATIVE_IPV4:
 ##  @param value Flag value
 ##
 
-proc net_if_flag_set*(iface: ptr net_if; value: net_if_flag) {.inline.} =
-  NET_ASSERT(iface)
-  atomic_set_bit(iface.if_dev.flags, value)
+proc net_if_flag_set*(iface: ptr net_if; value: net_if_flag) {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Test and set a value in network interface flags
@@ -370,9 +371,7 @@ proc net_if_flag_set*(iface: ptr net_if; value: net_if_flag) {.inline.} =
 ##  @return true if the bit was set, false if it wasn't.
 ##
 
-proc net_if_flag_test_and_set*(iface: ptr net_if; value: net_if_flag): bool {.inline.} =
-  NET_ASSERT(iface)
-  return atomic_test_and_set_bit(iface.if_dev.flags, value)
+proc net_if_flag_test_and_set*(iface: ptr net_if; value: net_if_flag): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Clear a value in network interface flags
@@ -381,9 +380,7 @@ proc net_if_flag_test_and_set*(iface: ptr net_if; value: net_if_flag): bool {.in
 ##  @param value Flag value
 ##
 
-proc net_if_flag_clear*(iface: ptr net_if; value: net_if_flag) {.inline.} =
-  NET_ASSERT(iface)
-  atomic_clear_bit(iface.if_dev.flags, value)
+proc net_if_flag_clear*(iface: ptr net_if; value: net_if_flag) {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Check if a value in network interface flags is set
@@ -394,10 +391,7 @@ proc net_if_flag_clear*(iface: ptr net_if; value: net_if_flag) {.inline.} =
 ##  @return True if the value is set, false otherwise
 ##
 
-proc net_if_flag_is_set*(iface: ptr net_if; value: net_if_flag): bool {.inline.} =
-  if iface == nil:
-    return false
-  return atomic_test_bit(iface.if_dev.flags, value)
+proc net_if_flag_is_set*(iface: ptr net_if; value: net_if_flag): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Send a packet through a net iface
@@ -408,8 +402,9 @@ proc net_if_flag_is_set*(iface: ptr net_if; value: net_if_flag): bool {.inline.}
 ##  return verdict about the packet
 ##
 
-proc net_if_send_data*(iface: ptr net_if; pkt: ptr net_pkt): net_verdict {.
+proc net_if_send_data*(iface: ptr net_if; pkt: ptr net_pkt_alias): net_verdict {.
     importc: "net_if_send_data", header: "net_if.h".}
+
 ## *
 ##  @brief Get a pointer to the interface L2
 ##
@@ -418,10 +413,7 @@ proc net_if_send_data*(iface: ptr net_if; pkt: ptr net_pkt): net_verdict {.
 ##  @return a pointer to the iface L2
 ##
 
-proc net_if_l2*(iface: ptr net_if): ptr net_l2 {.inline.} =
-  if not iface or not iface.if_dev:
-    return nil
-  return iface.if_dev.l2
+proc net_if_l2*(iface: ptr net_if): ptr net_l2 {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Input a packet through a net iface
@@ -432,8 +424,9 @@ proc net_if_l2*(iface: ptr net_if): ptr net_l2 {.inline.} =
 ##  @return verdict about the packet
 ##
 
-proc net_if_recv_data*(iface: ptr net_if; pkt: ptr net_pkt): net_verdict {.
+proc net_if_recv_data*(iface: ptr net_if; pkt: ptr net_pkt_alias): net_verdict {.
     importc: "net_if_recv_data", header: "net_if.h".}
+
 ## *
 ##  @brief Get a pointer to the interface L2 private data
 ##
@@ -442,8 +435,7 @@ proc net_if_recv_data*(iface: ptr net_if; pkt: ptr net_pkt): net_verdict {.
 ##  @return a pointer to the iface L2 data
 ##
 
-proc net_if_l2_data*(iface: ptr net_if): pointer {.inline.} =
-  return iface.if_dev.l2_data
+proc net_if_l2_data*(iface: ptr net_if): pointer {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Get an network interface's device
@@ -453,8 +445,7 @@ proc net_if_l2_data*(iface: ptr net_if): pointer {.inline.} =
 ##  @return a pointer to the device driver instance
 ##
 
-proc net_if_get_device*(iface: ptr net_if): ptr device {.inline.} =
-  return iface.if_dev.dev
+proc net_if_get_device*(iface: ptr net_if): ptr device {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Queue a packet to the net interface TX queue
@@ -463,8 +454,9 @@ proc net_if_get_device*(iface: ptr net_if): ptr device {.inline.} =
 ##  @param pkt Pointer to a net packet to queue
 ##
 
-proc net_if_queue_tx*(iface: ptr net_if; pkt: ptr net_pkt) {.
+proc net_if_queue_tx*(iface: ptr net_if; pkt: ptr net_pkt_alias) {.
     importc: "net_if_queue_tx", header: "net_if.h".}
+
 ## *
 ##  @brief Return the IP offload status
 ##
@@ -473,12 +465,7 @@ proc net_if_queue_tx*(iface: ptr net_if; pkt: ptr net_pkt) {.
 ##  @return True if IP offlining is active, false otherwise.
 ##
 
-proc net_if_is_ip_offloaded*(iface: ptr net_if): bool {.inline.} =
-  when CONFIG_NET_OFFLOAD:
-    return iface.if_dev.offload != nil
-  else:
-    ARG_UNUSED(iface)
-    return false
+proc net_if_is_ip_offloaded*(iface: ptr net_if): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Return the IP offload plugin
@@ -488,12 +475,7 @@ proc net_if_is_ip_offloaded*(iface: ptr net_if): bool {.inline.} =
 ##  @return NULL if there is no offload plugin defined, valid pointer otherwise
 ##
 
-proc net_if_offload*(iface: ptr net_if): ptr net_offload {.inline.} =
-  when CONFIG_NET_OFFLOAD:
-    return iface.if_dev.offload
-  else:
-    ARG_UNUSED(iface)
-    return nil
+proc net_if_offload*(iface: ptr net_if): ptr net_offload_alias {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Return the socket offload status
@@ -503,12 +485,7 @@ proc net_if_offload*(iface: ptr net_if): ptr net_offload {.inline.} =
 ##  @return True if socket offloading is active, false otherwise.
 ##
 
-proc net_if_is_socket_offloaded*(iface: ptr net_if): bool {.inline.} =
-  when CONFIG_NET_SOCKETS_OFFLOAD:
-    return iface.if_dev.offloaded
-  else:
-    ARG_UNUSED(iface)
-    return false
+proc net_if_is_socket_offloaded*(iface: ptr net_if): bool {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Get an network interface's link address
@@ -518,8 +495,7 @@ proc net_if_is_socket_offloaded*(iface: ptr net_if): bool {.inline.} =
 ##  @return a pointer to the network link address
 ##
 
-proc net_if_get_link_addr*(iface: ptr net_if): ptr net_linkaddr {.inline.} =
-  return addr(iface.if_dev.link_addr)
+proc net_if_get_link_addr*(iface: ptr net_if): ptr net_linkaddr {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Return network configuration for this network interface
@@ -529,8 +505,7 @@ proc net_if_get_link_addr*(iface: ptr net_if): ptr net_linkaddr {.inline.} =
 ##  @return Pointer to configuration
 ##
 
-proc net_if_get_config*(iface: ptr net_if): ptr net_if_config {.inline.} =
-  return addr(iface.config)
+proc net_if_get_config*(iface: ptr net_if): ptr net_if_config {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Start duplicate address detection procedure.
@@ -538,12 +513,7 @@ proc net_if_get_config*(iface: ptr net_if): ptr net_if_config {.inline.} =
 ##  @param iface Pointer to a network interface structure
 ##
 
-when CONFIG_NET_IPV6_DAD) and defined(CONFIG_NET_NATIVE_IPV6:
-  proc net_if_start_dad*(iface: ptr net_if) {.importc: "net_if_start_dad",
-      header: "net_if.h".}
-else:
-  proc net_if_start_dad*(iface: ptr net_if) {.inline.} =
-    ARG_UNUSED(iface)
+proc net_if_start_dad*(iface: ptr net_if) {.importc: "net_if_start_dad", header: "net_if.h".}
 
 ## *
 ##  @brief Start neighbor discovery and send router solicitation message.
@@ -559,27 +529,15 @@ proc net_if_start_rs*(iface: ptr net_if) {.importc: "net_if_start_rs",
 ##  @param iface Pointer to a network interface structure
 ##
 
-when CONFIG_NET_IPV6_ND) and defined(CONFIG_NET_NATIVE_IPV6:
-  proc net_if_stop_rs*(iface: ptr net_if) {.importc: "net_if_stop_rs",
-                                        header: "net_if.h".}
-else:
-  proc net_if_stop_rs*(iface: ptr net_if) {.inline.} =
-    ARG_UNUSED(iface)
+proc net_if_stop_rs*(iface: ptr net_if) {.importc: "net_if_stop_rs", header: "net_if.h".}
 
 ## * @cond INTERNAL_HIDDEN
 
-proc net_if_set_link_addr_unlocked*(iface: ptr net_if; `addr`: ptr uint8; len: uint8;
-                                   `type`: net_link_type): cint {.inline.} =
-  if net_if_flag_is_set(iface, NET_IF_UP):
-    return -EPERM
-  net_if_get_link_addr(iface).`addr` = `addr`
-  net_if_get_link_addr(iface).len = len
-  net_if_get_link_addr(iface).`type` = `type`
-  net_hostname_set_postfix(`addr`, len)
-  return 0
+proc net_if_set_link_addr_unlocked*(iface: ptr net_if; caddr: ptr uint8; len: uint8;
+                                   ctype: net_link_type): cint {.importc: "$1", header: hdr.}
 
-proc net_if_set_link_addr_locked*(iface: ptr net_if; `addr`: ptr uint8; len: uint8;
-                                 `type`: net_link_type): cint {.
+proc net_if_set_link_addr_locked*(iface: ptr net_if; caddr: ptr uint8; len: uint8;
+                                 ctype: net_link_type): cint {.
     importc: "net_if_set_link_addr_locked", header: "net_if.h".}
 ## * @endcond
 ## *
@@ -594,12 +552,8 @@ proc net_if_set_link_addr_locked*(iface: ptr net_if; `addr`: ptr uint8; len: uin
 ##  @return 0 on success
 ##
 
-proc net_if_set_link_addr*(iface: ptr net_if; `addr`: ptr uint8; len: uint8;
-                          `type`: net_link_type): cint {.inline.} =
-  when CONFIG_NET_RAW_MODE:
-    return net_if_set_link_addr_unlocked(iface, `addr`, len, `type`)
-  else:
-    return net_if_set_link_addr_locked(iface, `addr`, len, `type`)
+proc net_if_set_link_addr*(iface: ptr net_if; caddr: ptr uint8; len: uint8;
+                          ctype: net_link_type): cint {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Get an network interface's MTU
@@ -609,10 +563,7 @@ proc net_if_set_link_addr*(iface: ptr net_if; `addr`: ptr uint8; len: uint8;
 ##  @return the MTU
 ##
 
-proc net_if_get_mtu*(iface: ptr net_if): uint16 {.inline.} =
-  if iface == nil:
-    return 0'u
-  return iface.if_dev.mtu
+proc net_if_get_mtu*(iface: ptr net_if): uint16 {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Set an network interface's MTU
@@ -621,10 +572,7 @@ proc net_if_get_mtu*(iface: ptr net_if): uint16 {.inline.} =
 ##  @param mtu New MTU, note that we store only 16 bit mtu value.
 ##
 
-proc net_if_set_mtu*(iface: ptr net_if; mtu: uint16) {.inline.} =
-  if iface == nil:
-    return
-  iface.if_dev.mtu = mtu
+proc net_if_set_mtu*(iface: ptr net_if; mtu: uint16) {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Set the infinite status of the network interface address
@@ -633,8 +581,7 @@ proc net_if_set_mtu*(iface: ptr net_if; mtu: uint16) {.inline.} =
 ##  @param is_infinite Infinite status
 ##
 
-proc net_if_addr_set_lf*(ifaddr: ptr net_if_addr; is_infinite: bool) {.inline.} =
-  ifaddr.is_infinite = is_infinite
+proc net_if_addr_set_lf*(ifaddr: ptr net_if_addr; is_infinite: bool) {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Get an interface according to link layer address.
@@ -646,6 +593,7 @@ proc net_if_addr_set_lf*(ifaddr: ptr net_if_addr; is_infinite: bool) {.inline.} 
 
 proc net_if_get_by_link_addr*(ll_addr: ptr net_linkaddr): ptr net_if {.
     importc: "net_if_get_by_link_addr", header: "net_if.h".}
+
 ## *
 ##  @brief Find an interface from it's related device
 ##
@@ -656,6 +604,7 @@ proc net_if_get_by_link_addr*(ll_addr: ptr net_linkaddr): ptr net_if {.
 
 proc net_if_lookup_by_dev*(dev: ptr device): ptr net_if {.
     importc: "net_if_lookup_by_dev", header: "net_if.h".}
+
 ## *
 ##  @brief Get network interface IP config
 ##
@@ -664,8 +613,7 @@ proc net_if_lookup_by_dev*(dev: ptr device): ptr net_if {.
 ##  @return NULL if not found or pointer to correct config settings.
 ##
 
-proc net_if_config_get*(iface: ptr net_if): ptr net_if_config {.inline.} =
-  return addr(iface.config)
+proc net_if_config_get*(iface: ptr net_if): ptr net_if_config {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Remove a router from the system
@@ -675,6 +623,7 @@ proc net_if_config_get*(iface: ptr net_if): ptr net_if_config {.inline.} =
 
 proc net_if_router_rm*(router: ptr net_if_router) {.importc: "net_if_router_rm",
     header: "net_if.h".}
+
 ## *
 ##  @brief Get the default network interface.
 ##
@@ -683,6 +632,7 @@ proc net_if_router_rm*(router: ptr net_if_router) {.importc: "net_if_router_rm",
 
 proc net_if_get_default*(): ptr net_if {.importc: "net_if_get_default",
                                      header: "net_if.h".}
+
 ## *
 ##  @brief Get the first network interface according to its type.
 ##
@@ -694,6 +644,7 @@ proc net_if_get_default*(): ptr net_if {.importc: "net_if_get_default",
 
 proc net_if_get_first_by_type*(l2: ptr net_l2): ptr net_if {.
     importc: "net_if_get_first_by_type", header: "net_if.h".}
+
 when CONFIG_NET_L2_IEEE802154:
   ## *
   ##  @brief Get the first IEEE 802.15.4 network interface.
@@ -701,8 +652,7 @@ when CONFIG_NET_L2_IEEE802154:
   ##  @return First IEEE 802.15.4 network interface or NULL if no such
   ##  interfaces was found.
   ##
-  proc net_if_get_ieee802154*(): ptr net_if {.inline.} =
-    return net_if_get_first_by_type(addr(NET_L2_GET_NAME(IEEE802154)))
+  proc net_if_get_ieee802154*(): ptr net_if {.importc: "$1", header: hdr.}
 
 ## *
 ##  @brief Allocate network interface IPv6 config.
@@ -717,6 +667,7 @@ when CONFIG_NET_L2_IEEE802154:
 
 proc net_if_config_ipv6_get*(iface: ptr net_if; ipv6: ptr ptr net_if_ipv6): cint {.
     importc: "net_if_config_ipv6_get", header: "net_if.h".}
+
 ## *
 ##  @brief Release network interface IPv6 config.
 ##
@@ -727,6 +678,7 @@ proc net_if_config_ipv6_get*(iface: ptr net_if; ipv6: ptr ptr net_if_ipv6): cint
 
 proc net_if_config_ipv6_put*(iface: ptr net_if): cint {.
     importc: "net_if_config_ipv6_put", header: "net_if.h".}
+
 ## *
 ##  @brief Check if this IPv6 address belongs to one of the interfaces.
 ##
@@ -736,8 +688,9 @@ proc net_if_config_ipv6_put*(iface: ptr net_if): cint {.
 ##  @return Pointer to interface address, NULL if not found.
 ##
 
-proc net_if_ipv6_addr_lookup*(`addr`: ptr in6_addr; iface: ptr ptr net_if): ptr net_if_addr {.
+proc net_if_ipv6_addr_lookup*(caddr: ptr In6Addr; iface: ptr ptr net_if): ptr net_if_addr {.
     importc: "net_if_ipv6_addr_lookup", header: "net_if.h".}
+
 ## *
 ##  @brief Check if this IPv6 address belongs to this specific interfaces.
 ##
@@ -747,8 +700,9 @@ proc net_if_ipv6_addr_lookup*(`addr`: ptr in6_addr; iface: ptr ptr net_if): ptr 
 ##  @return Pointer to interface address, NULL if not found.
 ##
 
-proc net_if_ipv6_addr_lookup_by_iface*(iface: ptr net_if; `addr`: ptr in6_addr): ptr net_if_addr {.
+proc net_if_ipv6_addr_lookup_by_iface*(iface: ptr net_if; caddr: ptr In6Addr): ptr net_if_addr {.
     importc: "net_if_ipv6_addr_lookup_by_iface", header: "net_if.h".}
+
 ## *
 ##  @brief Check if this IPv6 address belongs to one of the interface indices.
 ##
@@ -758,8 +712,9 @@ proc net_if_ipv6_addr_lookup_by_iface*(iface: ptr net_if; `addr`: ptr in6_addr):
 ##  all other values mean address was not found
 ##
 
-proc net_if_ipv6_addr_lookup_by_index*(`addr`: ptr in6_addr): cint {.syscall,
+proc net_if_ipv6_addr_lookup_by_index*(caddr: ptr In6Addr): cint {.
     importc: "net_if_ipv6_addr_lookup_by_index", header: "net_if.h".}
+
 ## *
 ##  @brief Add a IPv6 address to an interface
 ##
@@ -771,9 +726,10 @@ proc net_if_ipv6_addr_lookup_by_index*(`addr`: ptr in6_addr): cint {.syscall,
 ##  @return Pointer to interface address, NULL if cannot be added
 ##
 
-proc net_if_ipv6_addr_add*(iface: ptr net_if; `addr`: ptr in6_addr;
+proc net_if_ipv6_addr_add*(iface: ptr net_if; caddr: ptr In6Addr;
                           addr_type: net_addr_type; vlifetime: uint32): ptr net_if_addr {.
     importc: "net_if_ipv6_addr_add", header: "net_if.h".}
+
 ## *
 ##  @brief Add a IPv6 address to an interface by index
 ##
@@ -785,7 +741,7 @@ proc net_if_ipv6_addr_add*(iface: ptr net_if; `addr`: ptr in6_addr;
 ##  @return True if ok, false if address could not be added
 ##
 
-proc net_if_ipv6_addr_add_by_index*(index: cint; `addr`: ptr in6_addr;
+proc net_if_ipv6_addr_add_by_index*(index: cint; caddr: ptr In6Addr;
                                    addr_type: net_addr_type; vlifetime: uint32): bool {.
     syscall, importc: "net_if_ipv6_addr_add_by_index", header: "net_if.h".}
 ## *
@@ -806,7 +762,7 @@ proc net_if_ipv6_addr_update_lifetime*(ifaddr: ptr net_if_addr; vlifetime: uint3
 ##  @return True if successfully removed, false otherwise
 ##
 
-proc net_if_ipv6_addr_rm*(iface: ptr net_if; `addr`: ptr in6_addr): bool {.
+proc net_if_ipv6_addr_rm*(iface: ptr net_if; caddr: ptr In6Addr): bool {.
     importc: "net_if_ipv6_addr_rm", header: "net_if.h".}
 ## *
 ##  @brief Remove an IPv6 address from an interface by index
@@ -817,7 +773,7 @@ proc net_if_ipv6_addr_rm*(iface: ptr net_if; `addr`: ptr in6_addr): bool {.
 ##  @return True if successfully removed, false otherwise
 ##
 
-proc net_if_ipv6_addr_rm_by_index*(index: cint; `addr`: ptr in6_addr): bool {.syscall,
+proc net_if_ipv6_addr_rm_by_index*(index: cint; caddr: ptr In6Addr): bool {.syscall,
     importc: "net_if_ipv6_addr_rm_by_index", header: "net_if.h".}
 ## *
 ##  @brief Add a IPv6 multicast address to an interface
@@ -828,7 +784,7 @@ proc net_if_ipv6_addr_rm_by_index*(index: cint; `addr`: ptr in6_addr): bool {.sy
 ##  @return Pointer to interface multicast address, NULL if cannot be added
 ##
 
-proc net_if_ipv6_maddr_add*(iface: ptr net_if; `addr`: ptr in6_addr): ptr net_if_mcast_addr {.
+proc net_if_ipv6_maddr_add*(iface: ptr net_if; caddr: ptr In6Addr): ptr net_if_mcast_addr {.
     importc: "net_if_ipv6_maddr_add", header: "net_if.h".}
 ## *
 ##  @brief Remove an IPv6 multicast address from an interface
@@ -839,7 +795,7 @@ proc net_if_ipv6_maddr_add*(iface: ptr net_if; `addr`: ptr in6_addr): ptr net_if
 ##  @return True if successfully removed, false otherwise
 ##
 
-proc net_if_ipv6_maddr_rm*(iface: ptr net_if; `addr`: ptr in6_addr): bool {.
+proc net_if_ipv6_maddr_rm*(iface: ptr net_if; caddr: ptr In6Addr): bool {.
     importc: "net_if_ipv6_maddr_rm", header: "net_if.h".}
 ## *
 ##  @brief Check if this IPv6 multicast address belongs to a specific interface
@@ -852,7 +808,7 @@ proc net_if_ipv6_maddr_rm*(iface: ptr net_if; `addr`: ptr in6_addr): bool {.
 ##  @return Pointer to interface multicast address, NULL if not found.
 ##
 
-proc net_if_ipv6_maddr_lookup*(`addr`: ptr in6_addr; iface: ptr ptr net_if): ptr net_if_mcast_addr {.
+proc net_if_ipv6_maddr_lookup*(caddr: ptr In6Addr; iface: ptr ptr net_if): ptr net_if_mcast_addr {.
     importc: "net_if_ipv6_maddr_lookup", header: "net_if.h".}
 ## *
 ##  @typedef net_if_mcast_callback_t
@@ -867,7 +823,7 @@ proc net_if_ipv6_maddr_lookup*(`addr`: ptr in6_addr; iface: ptr ptr net_if): ptr
 ##
 
 type
-  net_if_mcast_callback_t* = proc (iface: ptr net_if; `addr`: ptr in6_addr;
+  net_if_mcast_callback_t* = proc (iface: ptr net_if; caddr: ptr In6Addr;
                                 is_joined: bool)
 
 ## *
@@ -915,7 +871,7 @@ proc net_if_mcast_mon_unregister*(mon: ptr net_if_mcast_monitor) {.
 ##  @param is_joined Is this multicast address joined (true) or not (false)
 ##
 
-proc net_if_mcast_monitor*(iface: ptr net_if; `addr`: ptr in6_addr; is_joined: bool) {.
+proc net_if_mcast_monitor*(iface: ptr net_if; caddr: ptr In6Addr; is_joined: bool) {.
     importc: "net_if_mcast_monitor", header: "net_if.h".}
 ## *
 ##  @brief Mark a given multicast address to be joined.
@@ -923,7 +879,7 @@ proc net_if_mcast_monitor*(iface: ptr net_if; `addr`: ptr in6_addr; is_joined: b
 ##  @param addr IPv6 multicast address
 ##
 
-proc net_if_ipv6_maddr_join*(`addr`: ptr net_if_mcast_addr) {.
+proc net_if_ipv6_maddr_join*(caddr: ptr net_if_mcast_addr) {.
     importc: "net_if_ipv6_maddr_join", header: "net_if.h".}
 ## *
 ##  @brief Check if given multicast address is joined or not.
@@ -933,9 +889,9 @@ proc net_if_ipv6_maddr_join*(`addr`: ptr net_if_mcast_addr) {.
 ##  @return True if address is joined, False otherwise.
 ##
 
-proc net_if_ipv6_maddr_is_joined*(`addr`: ptr net_if_mcast_addr): bool {.inline.} =
-  NET_ASSERT(`addr`)
-  return `addr`.is_joined
+proc net_if_ipv6_maddr_is_joined*(caddr: ptr net_if_mcast_addr): bool {.importc: "$1", header: hdr.}
+  NET_ASSERT(caddr)
+  return caddr.is_joined
 
 ## *
 ##  @brief Mark a given multicast address to be left.
@@ -943,7 +899,7 @@ proc net_if_ipv6_maddr_is_joined*(`addr`: ptr net_if_mcast_addr): bool {.inline.
 ##  @param addr IPv6 multicast address
 ##
 
-proc net_if_ipv6_maddr_leave*(`addr`: ptr net_if_mcast_addr) {.
+proc net_if_ipv6_maddr_leave*(caddr: ptr net_if_mcast_addr) {.
     importc: "net_if_ipv6_maddr_leave", header: "net_if.h".}
 ## *
 ##  @brief Return prefix that corresponds to this IPv6 address.
@@ -954,7 +910,7 @@ proc net_if_ipv6_maddr_leave*(`addr`: ptr net_if_mcast_addr) {.
 ##  @return Pointer to prefix, NULL if not found.
 ##
 
-proc net_if_ipv6_prefix_get*(iface: ptr net_if; `addr`: ptr in6_addr): ptr net_if_ipv6_prefix {.
+proc net_if_ipv6_prefix_get*(iface: ptr net_if; caddr: ptr In6Addr): ptr net_if_ipv6_prefix {.
     importc: "net_if_ipv6_prefix_get", header: "net_if.h".}
 ## *
 ##  @brief Check if this IPv6 prefix belongs to this interface
@@ -966,7 +922,7 @@ proc net_if_ipv6_prefix_get*(iface: ptr net_if; `addr`: ptr in6_addr): ptr net_i
 ##  @return Pointer to prefix, NULL if not found.
 ##
 
-proc net_if_ipv6_prefix_lookup*(iface: ptr net_if; `addr`: ptr in6_addr; len: uint8): ptr net_if_ipv6_prefix {.
+proc net_if_ipv6_prefix_lookup*(iface: ptr net_if; caddr: ptr In6Addr; len: uint8): ptr net_if_ipv6_prefix {.
     importc: "net_if_ipv6_prefix_lookup", header: "net_if.h".}
 ## *
 ##  @brief Add a IPv6 prefix to an network interface.
@@ -979,7 +935,7 @@ proc net_if_ipv6_prefix_lookup*(iface: ptr net_if; `addr`: ptr in6_addr; len: ui
 ##  @return Pointer to prefix, NULL if the prefix was not added.
 ##
 
-proc net_if_ipv6_prefix_add*(iface: ptr net_if; prefix: ptr in6_addr; len: uint8;
+proc net_if_ipv6_prefix_add*(iface: ptr net_if; prefix: ptr In6Addr; len: uint8;
                             lifetime: uint32): ptr net_if_ipv6_prefix {.
     importc: "net_if_ipv6_prefix_add", header: "net_if.h".}
 ## *
@@ -992,7 +948,7 @@ proc net_if_ipv6_prefix_add*(iface: ptr net_if; prefix: ptr in6_addr; len: uint8
 ##  @return True if successfully removed, false otherwise
 ##
 
-proc net_if_ipv6_prefix_rm*(iface: ptr net_if; `addr`: ptr in6_addr; len: uint8): bool {.
+proc net_if_ipv6_prefix_rm*(iface: ptr net_if; caddr: ptr In6Addr; len: uint8): bool {.
     importc: "net_if_ipv6_prefix_rm", header: "net_if.h".}
 ## *
 ##  @brief Set the infinite status of the prefix
@@ -1033,7 +989,7 @@ proc net_if_ipv6_prefix_unset_timer*(prefix: ptr net_if_ipv6_prefix) {.
 ##  @return True if address is part of our subnet, false otherwise
 ##
 
-proc net_if_ipv6_addr_onlink*(iface: ptr ptr net_if; `addr`: ptr in6_addr): bool {.
+proc net_if_ipv6_addr_onlink*(iface: ptr ptr net_if; caddr: ptr In6Addr): bool {.
     importc: "net_if_ipv6_addr_onlink", header: "net_if.h".}
 ## *
 ##  @brief Get the IPv6 address of the given router
@@ -1043,14 +999,14 @@ proc net_if_ipv6_addr_onlink*(iface: ptr ptr net_if; `addr`: ptr in6_addr): bool
 ##
 
 when CONFIG_NET_NATIVE_IPV6:
-  proc net_if_router_ipv6*(router: ptr net_if_router): ptr in6_addr {.inline.} =
-    return addr(router.address.in6_addr)
+  proc net_if_router_ipv6*(router: ptr net_if_router): ptr In6Addr {.importc: "$1", header: hdr.}
+    return addr(router.address.In6Addr)
 
 else:
-  proc net_if_router_ipv6*(router: ptr net_if_router): ptr in6_addr {.inline.} =
-    var `addr`: in6_addr
+  proc net_if_router_ipv6*(router: ptr net_if_router): ptr In6Addr {.importc: "$1", header: hdr.}
+    var caddr: In6Addr
     ARG_UNUSED(router)
-    return addr(`addr`)
+    return addr(caddr)
 
 ## *
 ##  @brief Check if IPv6 address is one of the routers configured
@@ -1062,7 +1018,7 @@ else:
 ##  @return Pointer to router information, NULL if cannot be found
 ##
 
-proc net_if_ipv6_router_lookup*(iface: ptr net_if; `addr`: ptr in6_addr): ptr net_if_router {.
+proc net_if_ipv6_router_lookup*(iface: ptr net_if; caddr: ptr In6Addr): ptr net_if_router {.
     importc: "net_if_ipv6_router_lookup", header: "net_if.h".}
 ## *
 ##  @brief Find default router for this IPv6 address.
@@ -1074,7 +1030,7 @@ proc net_if_ipv6_router_lookup*(iface: ptr net_if; `addr`: ptr in6_addr): ptr ne
 ##  @return Pointer to router information, NULL if cannot be found
 ##
 
-proc net_if_ipv6_router_find_default*(iface: ptr net_if; `addr`: ptr in6_addr): ptr net_if_router {.
+proc net_if_ipv6_router_find_default*(iface: ptr net_if; caddr: ptr In6Addr): ptr net_if_router {.
     importc: "net_if_ipv6_router_find_default", header: "net_if.h".}
 ## *
 ##  @brief Update validity lifetime time of a router.
@@ -1095,7 +1051,7 @@ proc net_if_ipv6_router_update_lifetime*(router: ptr net_if_router; lifetime: ui
 ##  @return Pointer to router information, NULL if could not be added
 ##
 
-proc net_if_ipv6_router_add*(iface: ptr net_if; `addr`: ptr in6_addr;
+proc net_if_ipv6_router_add*(iface: ptr net_if; caddr: ptr In6Addr;
                             router_lifetime: uint16): ptr net_if_router {.
     importc: "net_if_ipv6_router_add", header: "net_if.h".}
 ## *
@@ -1150,7 +1106,7 @@ proc net_if_ipv6_set_base_reachable_time*(iface: ptr net_if; reachable_time: uin
 ##  @return Reachable timeout
 ##
 
-proc net_if_ipv6_get_reachable_time*(iface: ptr net_if): uint32 {.inline.} =
+proc net_if_ipv6_get_reachable_time*(iface: ptr net_if): uint32 {.importc: "$1", header: hdr.}
   when CONFIG_NET_NATIVE_IPV6:
     if not iface.config.ip.ipv6:
       return 0
@@ -1175,7 +1131,7 @@ proc net_if_ipv6_calc_reachable_time*(ipv6: ptr net_if_ipv6): uint32 {.
 ##  @param ipv6 IPv6 address configuration
 ##
 
-proc net_if_ipv6_set_reachable_time*(ipv6: ptr net_if_ipv6) {.inline.} =
+proc net_if_ipv6_set_reachable_time*(ipv6: ptr net_if_ipv6) {.importc: "$1", header: hdr.}
   when CONFIG_NET_NATIVE_IPV6:
     ipv6.reachable_time = net_if_ipv6_calc_reachable_time(ipv6)
 
@@ -1186,7 +1142,7 @@ proc net_if_ipv6_set_reachable_time*(ipv6: ptr net_if_ipv6) {.inline.} =
 ##  @param retrans_timer New retransmit timer
 ##
 
-proc net_if_ipv6_set_retrans_timer*(iface: ptr net_if; retrans_timer: uint32) {.inline.} =
+proc net_if_ipv6_set_retrans_timer*(iface: ptr net_if; retrans_timer: uint32) {.importc: "$1", header: hdr.}
   when CONFIG_NET_NATIVE_IPV6:
     if not iface.config.ip.ipv6:
       return
@@ -1200,7 +1156,7 @@ proc net_if_ipv6_set_retrans_timer*(iface: ptr net_if; retrans_timer: uint32) {.
 ##  @return Retransmit timer
 ##
 
-proc net_if_ipv6_get_retrans_timer*(iface: ptr net_if): uint32 {.inline.} =
+proc net_if_ipv6_get_retrans_timer*(iface: ptr net_if): uint32 {.importc: "$1", header: hdr.}
   when CONFIG_NET_NATIVE_IPV6:
     if not iface.config.ip.ipv6:
       return 0
@@ -1221,10 +1177,10 @@ proc net_if_ipv6_get_retrans_timer*(iface: ptr net_if): uint32 {.inline.} =
 ##
 
 when CONFIG_NET_NATIVE_IPV6:
-  proc net_if_ipv6_select_src_addr*(iface: ptr net_if; dst: ptr in6_addr): ptr in6_addr {.
+  proc net_if_ipv6_select_src_addr*(iface: ptr net_if; dst: ptr In6Addr): ptr In6Addr {.
       importc: "net_if_ipv6_select_src_addr", header: "net_if.h".}
 else:
-  proc net_if_ipv6_select_src_addr*(iface: ptr net_if; dst: ptr in6_addr): ptr in6_addr {.
+  proc net_if_ipv6_select_src_addr*(iface: ptr net_if; dst: ptr In6Addr): ptr In6Addr {.
       inline.} =
     ARG_UNUSED(iface)
     ARG_UNUSED(dst)
@@ -1241,10 +1197,10 @@ else:
 ##
 
 when CONFIG_NET_NATIVE_IPV6:
-  proc net_if_ipv6_select_src_iface*(dst: ptr in6_addr): ptr net_if {.
+  proc net_if_ipv6_select_src_iface*(dst: ptr In6Addr): ptr net_if {.
       importc: "net_if_ipv6_select_src_iface", header: "net_if.h".}
 else:
-  proc net_if_ipv6_select_src_iface*(dst: ptr in6_addr): ptr net_if {.inline.} =
+  proc net_if_ipv6_select_src_iface*(dst: ptr In6Addr): ptr net_if {.importc: "$1", header: hdr.}
     ARG_UNUSED(dst)
     return nil
 
@@ -1258,7 +1214,7 @@ else:
 ##  could be found.
 ##
 
-proc net_if_ipv6_get_ll*(iface: ptr net_if; addr_state: net_addr_state): ptr in6_addr {.
+proc net_if_ipv6_get_ll*(iface: ptr net_if; addr_state: net_addr_state): ptr In6Addr {.
     importc: "net_if_ipv6_get_ll", header: "net_if.h".}
 ## *
 ##  @brief Return link local IPv6 address from the first interface that has
@@ -1270,7 +1226,7 @@ proc net_if_ipv6_get_ll*(iface: ptr net_if; addr_state: net_addr_state): ptr in6
 ##  @return Pointer to IPv6 address, NULL if not found.
 ##
 
-proc net_if_ipv6_get_ll_addr*(state: net_addr_state; iface: ptr ptr net_if): ptr in6_addr {.
+proc net_if_ipv6_get_ll_addr*(state: net_addr_state; iface: ptr ptr net_if): ptr In6Addr {.
     importc: "net_if_ipv6_get_ll_addr", header: "net_if.h".}
 ## *
 ##  @brief Stop IPv6 Duplicate Address Detection (DAD) procedure if
@@ -1280,7 +1236,7 @@ proc net_if_ipv6_get_ll_addr*(state: net_addr_state; iface: ptr ptr net_if): ptr
 ##  @param addr IPv6 address that failed DAD
 ##
 
-proc net_if_ipv6_dad_failed*(iface: ptr net_if; `addr`: ptr in6_addr) {.
+proc net_if_ipv6_dad_failed*(iface: ptr net_if; caddr: ptr In6Addr) {.
     importc: "net_if_ipv6_dad_failed", header: "net_if.h".}
 ## *
 ##  @brief Return global IPv6 address from the first interface that has
@@ -1294,7 +1250,7 @@ proc net_if_ipv6_dad_failed*(iface: ptr net_if; `addr`: ptr in6_addr) {.
 ##  @return Pointer to IPv6 address, NULL if not found.
 ##
 
-proc net_if_ipv6_get_global_addr*(state: net_addr_state; iface: ptr ptr net_if): ptr in6_addr {.
+proc net_if_ipv6_get_global_addr*(state: net_addr_state; iface: ptr ptr net_if): ptr In6Addr {.
     importc: "net_if_ipv6_get_global_addr", header: "net_if.h".}
 ## *
 ##  @brief Allocate network interface IPv4 config.
@@ -1347,8 +1303,9 @@ proc net_if_ipv4_set_ttl*(iface: ptr net_if; ttl: uint8) {.
 ##  @return Pointer to interface address, NULL if not found.
 ##
 
-proc net_if_ipv4_addr_lookup*(`addr`: ptr in_addr; iface: ptr ptr net_if): ptr net_if_addr {.
+proc net_if_ipv4_addr_lookup*(caddr: ptr InAddr; iface: ptr ptr net_if): ptr net_if_addr {.
     importc: "net_if_ipv4_addr_lookup", header: "net_if.h".}
+
 ## *
 ##  @brief Add a IPv4 address to an interface
 ##
@@ -1360,9 +1317,10 @@ proc net_if_ipv4_addr_lookup*(`addr`: ptr in_addr; iface: ptr ptr net_if): ptr n
 ##  @return Pointer to interface address, NULL if cannot be added
 ##
 
-proc net_if_ipv4_addr_add*(iface: ptr net_if; `addr`: ptr in_addr;
+proc net_if_ipv4_addr_add*(iface: ptr net_if; caddr: ptr InAddr;
                           addr_type: net_addr_type; vlifetime: uint32): ptr net_if_addr {.
     importc: "net_if_ipv4_addr_add", header: "net_if.h".}
+
 ## *
 ##  @brief Remove a IPv4 address from an interface
 ##
@@ -1372,8 +1330,9 @@ proc net_if_ipv4_addr_add*(iface: ptr net_if; `addr`: ptr in_addr;
 ##  @return True if successfully removed, false otherwise
 ##
 
-proc net_if_ipv4_addr_rm*(iface: ptr net_if; `addr`: ptr in_addr): bool {.
+proc net_if_ipv4_addr_rm*(iface: ptr net_if; caddr: ptr InAddr): bool {.
     importc: "net_if_ipv4_addr_rm", header: "net_if.h".}
+
 ## *
 ##  @brief Check if this IPv4 address belongs to one of the interface indices.
 ##
@@ -1383,8 +1342,9 @@ proc net_if_ipv4_addr_rm*(iface: ptr net_if; `addr`: ptr in_addr): bool {.
 ##  all other values mean address was not found
 ##
 
-proc net_if_ipv4_addr_lookup_by_index*(`addr`: ptr in_addr): cint {.syscall,
+proc net_if_ipv4_addr_lookup_by_index*(caddr: ptr InAddr): cint {.syscall,
     importc: "net_if_ipv4_addr_lookup_by_index", header: "net_if.h".}
+
 ## *
 ##  @brief Add a IPv4 address to an interface by network interface index
 ##
@@ -1396,9 +1356,10 @@ proc net_if_ipv4_addr_lookup_by_index*(`addr`: ptr in_addr): cint {.syscall,
 ##  @return True if ok, false if the address could not be added
 ##
 
-proc net_if_ipv4_addr_add_by_index*(index: cint; `addr`: ptr in_addr;
+proc net_if_ipv4_addr_add_by_index*(index: cint; caddr: ptr InAddr;
                                    addr_type: net_addr_type; vlifetime: uint32): bool {.
     syscall, importc: "net_if_ipv4_addr_add_by_index", header: "net_if.h".}
+
 ## *
 ##  @brief Remove a IPv4 address from an interface by interface index
 ##
@@ -1408,7 +1369,7 @@ proc net_if_ipv4_addr_add_by_index*(index: cint; `addr`: ptr in_addr;
 ##  @return True if successfully removed, false otherwise
 ##
 
-proc net_if_ipv4_addr_rm_by_index*(index: cint; `addr`: ptr in_addr): bool {.syscall,
+proc net_if_ipv4_addr_rm_by_index*(index: cint; caddr: ptr InAddr): bool {.syscall,
     importc: "net_if_ipv4_addr_rm_by_index", header: "net_if.h".}
 ## *
 ##  @brief Add a IPv4 multicast address to an interface
@@ -1419,7 +1380,7 @@ proc net_if_ipv4_addr_rm_by_index*(index: cint; `addr`: ptr in_addr): bool {.sys
 ##  @return Pointer to interface multicast address, NULL if cannot be added
 ##
 
-proc net_if_ipv4_maddr_add*(iface: ptr net_if; `addr`: ptr in_addr): ptr net_if_mcast_addr {.
+proc net_if_ipv4_maddr_add*(iface: ptr net_if; caddr: ptr InAddr): ptr net_if_mcast_addr {.
     importc: "net_if_ipv4_maddr_add", header: "net_if.h".}
 ## *
 ##  @brief Remove an IPv4 multicast address from an interface
@@ -1430,7 +1391,7 @@ proc net_if_ipv4_maddr_add*(iface: ptr net_if; `addr`: ptr in_addr): ptr net_if_
 ##  @return True if successfully removed, false otherwise
 ##
 
-proc net_if_ipv4_maddr_rm*(iface: ptr net_if; `addr`: ptr in_addr): bool {.
+proc net_if_ipv4_maddr_rm*(iface: ptr net_if; caddr: ptr InAddr): bool {.
     importc: "net_if_ipv4_maddr_rm", header: "net_if.h".}
 ## *
 ##  @brief Check if this IPv4 multicast address belongs to a specific interface
@@ -1443,7 +1404,7 @@ proc net_if_ipv4_maddr_rm*(iface: ptr net_if; `addr`: ptr in_addr): bool {.
 ##  @return Pointer to interface multicast address, NULL if not found.
 ##
 
-proc net_if_ipv4_maddr_lookup*(`addr`: ptr in_addr; iface: ptr ptr net_if): ptr net_if_mcast_addr {.
+proc net_if_ipv4_maddr_lookup*(caddr: ptr InAddr; iface: ptr ptr net_if): ptr net_if_mcast_addr {.
     importc: "net_if_ipv4_maddr_lookup", header: "net_if.h".}
 ## *
 ##  @brief Mark a given multicast address to be joined.
@@ -1451,7 +1412,7 @@ proc net_if_ipv4_maddr_lookup*(`addr`: ptr in_addr; iface: ptr ptr net_if): ptr 
 ##  @param addr IPv4 multicast address
 ##
 
-proc net_if_ipv4_maddr_join*(`addr`: ptr net_if_mcast_addr) {.
+proc net_if_ipv4_maddr_join*(caddr: ptr net_if_mcast_addr) {.
     importc: "net_if_ipv4_maddr_join", header: "net_if.h".}
 ## *
 ##  @brief Check if given multicast address is joined or not.
@@ -1461,9 +1422,9 @@ proc net_if_ipv4_maddr_join*(`addr`: ptr net_if_mcast_addr) {.
 ##  @return True if address is joined, False otherwise.
 ##
 
-proc net_if_ipv4_maddr_is_joined*(`addr`: ptr net_if_mcast_addr): bool {.inline.} =
-  NET_ASSERT(`addr`)
-  return `addr`.is_joined
+proc net_if_ipv4_maddr_is_joined*(caddr: ptr net_if_mcast_addr): bool {.importc: "$1", header: hdr.}
+  NET_ASSERT(caddr)
+  return caddr.is_joined
 
 ## *
 ##  @brief Mark a given multicast address to be left.
@@ -1471,7 +1432,7 @@ proc net_if_ipv4_maddr_is_joined*(`addr`: ptr net_if_mcast_addr): bool {.inline.
 ##  @param addr IPv4 multicast address
 ##
 
-proc net_if_ipv4_maddr_leave*(`addr`: ptr net_if_mcast_addr) {.
+proc net_if_ipv4_maddr_leave*(caddr: ptr net_if_mcast_addr) {.
     importc: "net_if_ipv4_maddr_leave", header: "net_if.h".}
 ## *
 ##  @brief Get the IPv4 address of the given router
@@ -1481,14 +1442,14 @@ proc net_if_ipv4_maddr_leave*(`addr`: ptr net_if_mcast_addr) {.
 ##
 
 when CONFIG_NET_NATIVE_IPV4:
-  proc net_if_router_ipv4*(router: ptr net_if_router): ptr in_addr {.inline.} =
-    return addr(router.address.in_addr)
+  proc net_if_router_ipv4*(router: ptr net_if_router): ptr InAddr {.importc: "$1", header: hdr.}
+    return addr(router.address.InAddr)
 
 else:
-  proc net_if_router_ipv4*(router: ptr net_if_router): ptr in_addr {.inline.} =
-    var `addr`: in_addr
+  proc net_if_router_ipv4*(router: ptr net_if_router): ptr InAddr {.importc: "$1", header: hdr.}
+    var caddr: InAddr
     ARG_UNUSED(router)
-    return addr(`addr`)
+    return addr(caddr)
 
 ## *
 ##  @brief Check if IPv4 address is one of the routers configured
@@ -1500,7 +1461,7 @@ else:
 ##  @return Pointer to router information, NULL if cannot be found
 ##
 
-proc net_if_ipv4_router_lookup*(iface: ptr net_if; `addr`: ptr in_addr): ptr net_if_router {.
+proc net_if_ipv4_router_lookup*(iface: ptr net_if; caddr: ptr InAddr): ptr net_if_router {.
     importc: "net_if_ipv4_router_lookup", header: "net_if.h".}
 ## *
 ##  @brief Find default router for this IPv4 address.
@@ -1512,7 +1473,7 @@ proc net_if_ipv4_router_lookup*(iface: ptr net_if; `addr`: ptr in_addr): ptr net
 ##  @return Pointer to router information, NULL if cannot be found
 ##
 
-proc net_if_ipv4_router_find_default*(iface: ptr net_if; `addr`: ptr in_addr): ptr net_if_router {.
+proc net_if_ipv4_router_find_default*(iface: ptr net_if; caddr: ptr InAddr): ptr net_if_router {.
     importc: "net_if_ipv4_router_find_default", header: "net_if.h".}
 ## *
 ##  @brief Add IPv4 router to the system.
@@ -1525,7 +1486,7 @@ proc net_if_ipv4_router_find_default*(iface: ptr net_if; `addr`: ptr in_addr): p
 ##  @return Pointer to router information, NULL if could not be added
 ##
 
-proc net_if_ipv4_router_add*(iface: ptr net_if; `addr`: ptr in_addr; is_default: bool;
+proc net_if_ipv4_router_add*(iface: ptr net_if; caddr: ptr InAddr; is_default: bool;
                             router_lifetime: uint16): ptr net_if_router {.
     importc: "net_if_ipv4_router_add", header: "net_if.h".}
 ## *
@@ -1547,7 +1508,7 @@ proc net_if_ipv4_router_rm*(router: ptr net_if_router): bool {.
 ##  @return True if address is part of local subnet, false otherwise.
 ##
 
-proc net_if_ipv4_addr_mask_cmp*(iface: ptr net_if; `addr`: ptr in_addr): bool {.
+proc net_if_ipv4_addr_mask_cmp*(iface: ptr net_if; caddr: ptr InAddr): bool {.
     importc: "net_if_ipv4_addr_mask_cmp", header: "net_if.h".}
 ## *
 ##  @brief Check if the given IPv4 address is a broadcast address.
@@ -1558,7 +1519,7 @@ proc net_if_ipv4_addr_mask_cmp*(iface: ptr net_if; `addr`: ptr in_addr): bool {.
 ##  @return True if address is a broadcast address, false otherwise.
 ##
 
-proc net_if_ipv4_is_addr_bcast*(iface: ptr net_if; `addr`: ptr in_addr): bool {.
+proc net_if_ipv4_is_addr_bcast*(iface: ptr net_if; caddr: ptr InAddr): bool {.
     importc: "net_if_ipv4_is_addr_bcast", header: "net_if.h".}
 ## *
 ##  @brief Get a network interface that should be used when sending
@@ -1571,10 +1532,10 @@ proc net_if_ipv4_is_addr_bcast*(iface: ptr net_if; `addr`: ptr in_addr): bool {.
 ##
 
 when CONFIG_NET_NATIVE_IPV4:
-  proc net_if_ipv4_select_src_iface*(dst: ptr in_addr): ptr net_if {.
+  proc net_if_ipv4_select_src_iface*(dst: ptr InAddr): ptr net_if {.
       importc: "net_if_ipv4_select_src_iface", header: "net_if.h".}
 else:
-  proc net_if_ipv4_select_src_iface*(dst: ptr in_addr): ptr net_if {.inline.} =
+  proc net_if_ipv4_select_src_iface*(dst: ptr InAddr): ptr net_if {.importc: "$1", header: hdr.}
     ARG_UNUSED(dst)
     return nil
 
@@ -1591,10 +1552,10 @@ else:
 ##
 
 when CONFIG_NET_NATIVE_IPV4:
-  proc net_if_ipv4_select_src_addr*(iface: ptr net_if; dst: ptr in_addr): ptr in_addr {.
+  proc net_if_ipv4_select_src_addr*(iface: ptr net_if; dst: ptr InAddr): ptr InAddr {.
       importc: "net_if_ipv4_select_src_addr", header: "net_if.h".}
 else:
-  proc net_if_ipv4_select_src_addr*(iface: ptr net_if; dst: ptr in_addr): ptr in_addr {.
+  proc net_if_ipv4_select_src_addr*(iface: ptr net_if; dst: ptr InAddr): ptr InAddr {.
       inline.} =
     ARG_UNUSED(iface)
     ARG_UNUSED(dst)
@@ -1610,7 +1571,7 @@ else:
 ##  could be found.
 ##
 
-proc net_if_ipv4_get_ll*(iface: ptr net_if; addr_state: net_addr_state): ptr in_addr {.
+proc net_if_ipv4_get_ll*(iface: ptr net_if; addr_state: net_addr_state): ptr InAddr {.
     importc: "net_if_ipv4_get_ll", header: "net_if.h".}
 ## *
 ##  @brief Get a IPv4 global address in a given state.
@@ -1622,7 +1583,7 @@ proc net_if_ipv4_get_ll*(iface: ptr net_if; addr_state: net_addr_state): ptr in_
 ##  could be found.
 ##
 
-proc net_if_ipv4_get_global_addr*(iface: ptr net_if; addr_state: net_addr_state): ptr in_addr {.
+proc net_if_ipv4_get_global_addr*(iface: ptr net_if; addr_state: net_addr_state): ptr InAddr {.
     importc: "net_if_ipv4_get_global_addr", header: "net_if.h".}
 ## *
 ##  @brief Set IPv4 netmask for an interface.
@@ -1631,7 +1592,7 @@ proc net_if_ipv4_get_global_addr*(iface: ptr net_if; addr_state: net_addr_state)
 ##  @param netmask IPv4 netmask
 ##
 
-proc net_if_ipv4_set_netmask*(iface: ptr net_if; netmask: ptr in_addr) {.
+proc net_if_ipv4_set_netmask*(iface: ptr net_if; netmask: ptr InAddr) {.
     importc: "net_if_ipv4_set_netmask", header: "net_if.h".}
 ## *
 ##  @brief Set IPv4 netmask for an interface index.
@@ -1642,7 +1603,7 @@ proc net_if_ipv4_set_netmask*(iface: ptr net_if; netmask: ptr in_addr) {.
 ##  @return True if netmask was added, false otherwise.
 ##
 
-proc net_if_ipv4_set_netmask_by_index*(index: cint; netmask: ptr in_addr): bool {.
+proc net_if_ipv4_set_netmask_by_index*(index: cint; netmask: ptr InAddr): bool {.
     syscall, importc: "net_if_ipv4_set_netmask_by_index", header: "net_if.h".}
 ## *
 ##  @brief Set IPv4 gateway for an interface.
@@ -1651,7 +1612,7 @@ proc net_if_ipv4_set_netmask_by_index*(index: cint; netmask: ptr in_addr): bool 
 ##  @param gw IPv4 address of an gateway
 ##
 
-proc net_if_ipv4_set_gw*(iface: ptr net_if; gw: ptr in_addr) {.
+proc net_if_ipv4_set_gw*(iface: ptr net_if; gw: ptr InAddr) {.
     importc: "net_if_ipv4_set_gw", header: "net_if.h".}
 ## *
 ##  @brief Set IPv4 gateway for an interface index.
@@ -1662,7 +1623,7 @@ proc net_if_ipv4_set_gw*(iface: ptr net_if; gw: ptr in_addr) {.
 ##  @return True if gateway was added, false otherwise.
 ##
 
-proc net_if_ipv4_set_gw_by_index*(index: cint; gw: ptr in_addr): bool {.syscall,
+proc net_if_ipv4_set_gw_by_index*(index: cint; gw: ptr InAddr): bool {.syscall,
     importc: "net_if_ipv4_set_gw_by_index", header: "net_if.h".}
 ## *
 ##  @brief Get a network interface that should be used when sending
@@ -1792,7 +1753,7 @@ proc net_if_up*(iface: ptr net_if): cint {.importc: "net_if_up", header: "net_if
 ##  @return True if interface is up, False if it is down.
 ##
 
-proc net_if_is_up*(iface: ptr net_if): bool {.inline.} =
+proc net_if_is_up*(iface: ptr net_if): bool {.importc: "$1", header: hdr.}
   NET_ASSERT(iface)
   return net_if_flag_is_set(iface, NET_IF_UP)
 
@@ -1911,7 +1872,7 @@ proc net_if_is_promisc*(iface: ptr net_if): bool {.importc: "net_if_is_promisc",
 ##          interface, False otherwise.
 ##
 
-proc net_if_are_pending_tx_packets*(iface: ptr net_if): bool {.inline.} =
+proc net_if_are_pending_tx_packets*(iface: ptr net_if): bool {.importc: "$1", header: hdr.}
   when CONFIG_NET_POWER_MANAGEMENT:
     return not not iface.tx_pending
   else:
