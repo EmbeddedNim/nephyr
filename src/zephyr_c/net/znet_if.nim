@@ -19,6 +19,9 @@ import ../zkernel_fixes
 import ../zconfs
 
 import znet_ip
+import znet_timeout
+
+import posix
 
 ## *
 ##  @brief Network Interface unicast IP addresses
@@ -26,41 +29,49 @@ import znet_ip
 ##  Stores the unicast IP addresses assigned to this network interface.
 ##
 
-when defined(CONFIG_NET_OFFLOAD):
-  discard "forward decl of net_offload"
-## * @cond INTERNAL_HIDDEN
+# when defined(CONFIG_NET_NATIVE_IPV6):
+#   const
+#     NET_IF_MAX_IPV6_ADDR* = CONFIG_NET_IF_UNICAST_IPV6_ADDR_COUNT
+#     NET_IF_MAX_IPV6_MADDR* = CONFIG_NET_IF_MCAST_IPV6_ADDR_COUNT
+#     NET_IF_MAX_IPV6_PREFIX* = CONFIG_NET_IF_IPV6_PREFIX_COUNT
+# else:
+#   const
+#     NET_IF_MAX_IPV6_ADDR* = 0
+#     NET_IF_MAX_IPV6_MADDR* = 0
+#     NET_IF_MAX_IPV6_PREFIX* = 0
+# when defined(CONFIG_NET_NATIVE_IPV4):
+#   const
+#     NET_IF_MAX_IPV4_ADDR* = CONFIG_NET_IF_UNICAST_IPV4_ADDR_COUNT
+#     NET_IF_MAX_IPV4_MADDR* = CONFIG_NET_IF_MCAST_IPV4_ADDR_COUNT
+# else:
+#   const
+#     NET_IF_MAX_IPV4_ADDR* = 0
+#     NET_IF_MAX_IPV4_MADDR* = 0
+# const
+#   NET_IF_MAX_CONFIGS* = 1
+# # * @endcond
 
-when defined(CONFIG_NET_NATIVE_IPV6):
-  const
-    NET_IF_MAX_IPV6_ADDR* = CONFIG_NET_IF_UNICAST_IPV6_ADDR_COUNT
-    NET_IF_MAX_IPV6_MADDR* = CONFIG_NET_IF_MCAST_IPV6_ADDR_COUNT
-    NET_IF_MAX_IPV6_PREFIX* = CONFIG_NET_IF_IPV6_PREFIX_COUNT
-else:
-  const
-    NET_IF_MAX_IPV6_ADDR* = 0
-    NET_IF_MAX_IPV6_MADDR* = 0
-    NET_IF_MAX_IPV6_PREFIX* = 0
-##  @endcond
+type
+  net_if_flag* {.size: sizeof(cint).} = enum ## * Interface is up/ready to receive and transmit
+    NET_IF_UP,                ## * Interface is pointopoint
+    NET_IF_POINTOPOINT,       ## * Interface is in promiscuous mode
+    NET_IF_PROMISC, ## * Do not start the interface immediately after initialization.
+                   ##  This requires that either the device driver or some other entity
+                   ##  will need to manually take the interface up when needed.
+                   ##  For example for Ethernet this will happen when the driver calls
+                   ##  the net_eth_carrier_on() function.
+                   ##
+    NET_IF_NO_AUTO_START,     ## * Power management specific: interface is being suspended
+    NET_IF_SUSPENDED, ## * Flag defines if received multicasts of other interface are
+                     ##  forwarded on this interface. This activates multicast
+                     ##  routing / forwarding for this interface.
+                     ##
+    NET_IF_FORWARD_MULTICASTS, ## * Interface supports IPv4
+    NET_IF_IPV4,              ## * Interface supports IPv6
+    NET_IF_IPV6,              ## * @cond INTERNAL_HIDDEN
+                ##  Total number of flags - must be at the end of the enum
+    NET_IF_NUM_FLAGS          ## * @endcond
 
-## * @cond INTERNAL_HIDDEN
-
-when defined(CONFIG_NET_NATIVE_IPV4):
-  const
-    NET_IF_MAX_IPV4_ADDR* = CONFIG_NET_IF_UNICAST_IPV4_ADDR_COUNT
-    NET_IF_MAX_IPV4_MADDR* = CONFIG_NET_IF_MCAST_IPV4_ADDR_COUNT
-else:
-  const
-    NET_IF_MAX_IPV4_ADDR* = 0
-    NET_IF_MAX_IPV4_MADDR* = 0
-## * @endcond
-
-## * @cond INTERNAL_HIDDEN
-##  We always need to have at least one IP config
-
-const
-  NET_IF_MAX_CONFIGS* = 1
-
-## * @endcond
 
 type
   net_if_addr* {.importc: "net_if_addr", header: "net_if.h", bycopy.} = object
@@ -132,27 +143,7 @@ type
     is_used* {.importc: "is_used", bitsize: 1.}: uint8 ## * Is default router
     is_default* {.importc: "is_default", bitsize: 1.}: uint8 ## * Is the router valid forever
     is_infinite* {.importc: "is_infinite", bitsize: 1.}: uint8
-    _unused* {.importc: "_unused", bitsize: 5.}: uint8
-
-  net_if_flag* {.size: sizeof(cint).} = enum ## * Interface is up/ready to receive and transmit
-    NET_IF_UP,                ## * Interface is pointopoint
-    NET_IF_POINTOPOINT,       ## * Interface is in promiscuous mode
-    NET_IF_PROMISC, ## * Do not start the interface immediately after initialization.
-                   ##  This requires that either the device driver or some other entity
-                   ##  will need to manually take the interface up when needed.
-                   ##  For example for Ethernet this will happen when the driver calls
-                   ##  the net_eth_carrier_on() function.
-                   ##
-    NET_IF_NO_AUTO_START,     ## * Power management specific: interface is being suspended
-    NET_IF_SUSPENDED, ## * Flag defines if received multicasts of other interface are
-                     ##  forwarded on this interface. This activates multicast
-                     ##  routing / forwarding for this interface.
-                     ##
-    NET_IF_FORWARD_MULTICASTS, ## * Interface supports IPv4
-    NET_IF_IPV4,              ## * Interface supports IPv6
-    NET_IF_IPV6,              ## * @cond INTERNAL_HIDDEN
-                ##  Total number of flags - must be at the end of the enum
-    NET_IF_NUM_FLAGS          ## * @endcond
+    unused* {.importc: "_unused", bitsize: 5.}: uint8
 
 
   net_if_ipv6* {.importc: "net_if_ipv6", header: "net_if.h", bycopy.} = object
@@ -175,11 +166,11 @@ type
     retrans_timer* {.importc: "retrans_timer".}: uint32
     when defined(CONFIG_NET_IPV6_ND) and defined(CONFIG_NET_NATIVE_IPV6):
       ## * Router solicitation timer node
-      var rs_node* {.importc: "rs_node", header: "net_if.h".}: sys_snode_t
+      rs_node* {.importc: "rs_node", header: "net_if.h".}: sys_snode_t
       ##  RS start time
-      var rs_start* {.importc: "rs_start", header: "net_if.h".}: uint32
+      rs_start* {.importc: "rs_start", header: "net_if.h".}: uint32
       ## * RS count
-      var rs_count* {.importc: "rs_count", header: "net_if.h".}: uint8
+      rs_count* {.importc: "rs_count", header: "net_if.h".}: uint8
     hop_limit* {.importc: "hop_limit".}: uint8 ## * IPv6 hop limit
 
 
@@ -194,6 +185,104 @@ type
     ttl* {.importc: "ttl".}: uint8
 
 
+
+  net_if_ip* {.importc: "net_if_ip", header: "net_if.h", bycopy.} = object
+    ## *
+    ##  @brief Network interface IP address configuration.
+    ##
+    when defined(CONFIG_NET_NATIVE_IPV6):
+      ipv6* {.importc: "ipv6", header: "net_if.h".}: ptr net_if_ipv6
+    when defined(CONFIG_NET_NATIVE_IPV4):
+      ipv4* {.importc: "ipv4", header: "net_if.h".}: ptr net_if_ipv4
+
+
+
+  net_if_config* {.importc: "net_if_config", header: "net_if.h", bycopy.} = object
+    ## *
+    ##  @brief IP and other configuration related data for network interface.
+    ##
+    ip* {.importc: "ip".}: net_if_ip ## * IP address configuration setting
+    when defined(CONFIG_NET_DHCPV4) and defined(CONFIG_NET_NATIVE_IPV4):
+      dhcpv4* {.importc: "dhcpv4", header: "net_if.h".}: net_if_dhcpv4
+    when defined(CONFIG_NET_IPV4_AUTO) and defined(CONFIG_NET_NATIVE_IPV4):
+      ipv4auto* {.importc: "ipv4auto", header: "net_if.h".}: net_if_ipv4_autoconf
+    when defined(CONFIG_NET_L2_VIRTUAL):
+      ## *
+      ##  This list keeps track of the virtual network interfaces
+      ##  that are attached to this network interface.
+      ##
+      virtual_interfaces* {.importc: "virtual_interfaces", header: "net_if.h".}: sys_slist_t
+
+  net_traffic_class* {.importc: "net_traffic_class", header: "net_if.h", bycopy.} = object
+    ## *
+    ##  @brief Network traffic class.
+    ##
+    ##  Traffic classes are used when sending or receiving data that is classified
+    ##  with different priorities. So some traffic can be marked as high priority
+    ##  and it will be sent or received first. Each network packet that is
+    ##  transmitted or received goes through a fifo to a thread that will transmit
+    ##  it.
+    ##
+    fifo* {.importc: "fifo".}: k_fifo ## * Fifo for handling this Tx or Rx packet
+    ## * Traffic class handler thread
+    handler* {.importc: "handler".}: k_thread ## * Stack for this handler
+    stack* {.importc: "stack".}: ptr k_thread_stack_t
+
+
+  net_if_dev* {.importc: "net_if_dev", header: "net_if.h", bycopy.} = object
+    ## *
+    ##  @brief Network Interface Device structure
+    ##
+    ##  Used to handle a network interface on top of a device driver instance.
+    ##  There can be many net_if_dev instance against the same device.
+    ##
+    ##  Such interface is mainly to be used by the link layer, but is also tight
+    ##  to a network context: it then makes the relation with a network context
+    ##  and the network device.
+    ##
+    ##  Because of the strong relationship between a device driver and such
+    ##  network interface, each net_if_dev should be instantiated by
+    ##
+    dev* {.importc: "dev".}: ptr device ## * The actually device driver instance the net_if is related to
+    ## * Interface's L2 layer
+    l2* {.importc: "l2".}: ptr net_l2 ## * Interface's private L2 data pointer
+    l2_data* {.importc: "l2_data".}: pointer ## * The hardware link address
+    link_addr* {.importc: "link_addr".}: net_linkaddr
+    when defined(CONFIG_NET_OFFLOAD):
+      ## * TCP/IP Offload functions.
+      ##  If non-NULL, then the TCP/IP stack is located
+      ##  in the communication chip that is accessed via this
+      ##  network interface.
+      ##
+      offload* {.importc: "offload", header: "net_if.h".}: ptr net_offload
+    mtu* {.importc: "mtu".}: uint16 ## * The hardware MTU
+    when defined(CONFIG_NET_SOCKETS_OFFLOAD):
+      ## * Indicate whether interface is offloaded at socket level.
+      offloaded* {.importc: "offloaded", header: "net_if.h".}: bool
+
+
+
+  net_if* {.importc: "net_if", header: "net_if.h", bycopy.} = object
+    ## *
+    ##  @brief Network Interface structure
+    ##
+    ##  Used to handle a network interface on top of a net_if_dev instance.
+    ##  There can be many net_if instance against the same net_if_dev instance.
+    ##
+    ##
+    if_dev* {.importc: "if_dev".}: ptr net_if_dev ## * The net_if_dev instance the net_if is related to
+    when defined(CONFIG_NET_STATISTICS_PER_INTERFACE):
+      ## * Network statistics related to this network interface
+      stats* {.importc: "stats", header: "net_if.h".}: net_stats
+    config* {.importc: "config".}: net_if_config ## * Network interface instance configuration
+    when defined(CONFIG_NET_POWER_MANAGEMENT):
+      ## * Keep track of packets pending in traffic queues. This is
+      ##  needed to avoid putting network device driver to sleep if
+      ##  there are packets waiting to be sent.
+      ##
+      tx_pending* {.importc: "tx_pending", header: "net_if.h".}: cint
+
+type
   when defined(CONFIG_NET_DHCPV4) and defined(CONFIG_NET_NATIVE_IPV4):
     net_if_dhcpv4* {.importc: "net_if_dhcpv4", header: "net_if.h", bycopy.} = object
       node* {.importc: "node".}: sys_snode_t ## * Used for timer lists
@@ -227,106 +316,6 @@ type
       probe_cnt* {.importc: "probe_cnt".}: uint8 ## * Number of sent announcements
       announce_cnt* {.importc: "announce_cnt".}: uint8 ## * Incoming conflict count
       conflict_cnt* {.importc: "conflict_cnt".}: uint8
-
-
-  net_if_ip* {.importc: "net_if_ip", header: "net_if.h", bycopy.} = object
-    ## *
-    ##  @brief Network interface IP address configuration.
-    ##
-    when defined(CONFIG_NET_NATIVE_IPV6):
-      var ipv6* {.importc: "ipv6", header: "net_if.h".}: ptr net_if_ipv6
-    when defined(CONFIG_NET_NATIVE_IPV4):
-      var ipv4* {.importc: "ipv4", header: "net_if.h".}: ptr net_if_ipv4
-
-
-
-  net_if_config* {.importc: "net_if_config", header: "net_if.h", bycopy.} = object
-    ## *
-    ##  @brief IP and other configuration related data for network interface.
-    ##
-    ip* {.importc: "ip".}: net_if_ip ## * IP address configuration setting
-    when defined(CONFIG_NET_DHCPV4) and defined(CONFIG_NET_NATIVE_IPV4):
-      var dhcpv4* {.importc: "dhcpv4", header: "net_if.h".}: net_if_dhcpv4
-    when defined(CONFIG_NET_IPV4_AUTO) and defined(CONFIG_NET_NATIVE_IPV4):
-      var ipv4auto* {.importc: "ipv4auto", header: "net_if.h".}: net_if_ipv4_autoconf
-    when defined(CONFIG_NET_L2_VIRTUAL):
-      ## *
-      ##  This list keeps track of the virtual network interfaces
-      ##  that are attached to this network interface.
-      ##
-      var virtual_interfaces* {.importc: "virtual_interfaces", header: "net_if.h".}: sys_slist_t
-
-
-
-  net_traffic_class* {.importc: "net_traffic_class", header: "net_if.h", bycopy.} = object
-    ## *
-    ##  @brief Network traffic class.
-    ##
-    ##  Traffic classes are used when sending or receiving data that is classified
-    ##  with different priorities. So some traffic can be marked as high priority
-    ##  and it will be sent or received first. Each network packet that is
-    ##  transmitted or received goes through a fifo to a thread that will transmit
-    ##  it.
-    ##
-    fifo* {.importc: "fifo".}: k_fifo ## * Fifo for handling this Tx or Rx packet
-    ## * Traffic class handler thread
-    handler* {.importc: "handler".}: k_thread ## * Stack for this handler
-    stack* {.importc: "stack".}: ptr k_thread_stack_t
-
-
-
-  net_if_dev* {.importc: "net_if_dev", header: "net_if.h", bycopy.} = object
-    ## *
-    ##  @brief Network Interface Device structure
-    ##
-    ##  Used to handle a network interface on top of a device driver instance.
-    ##  There can be many net_if_dev instance against the same device.
-    ##
-    ##  Such interface is mainly to be used by the link layer, but is also tight
-    ##  to a network context: it then makes the relation with a network context
-    ##  and the network device.
-    ##
-    ##  Because of the strong relationship between a device driver and such
-    ##  network interface, each net_if_dev should be instantiated by
-    ##
-    dev* {.importc: "dev".}: ptr device ## * The actually device driver instance the net_if is related to
-    ## * Interface's L2 layer
-    l2* {.importc: "l2".}: ptr net_l2 ## * Interface's private L2 data pointer
-    l2_data* {.importc: "l2_data".}: pointer ## * The hardware link address
-    link_addr* {.importc: "link_addr".}: net_linkaddr
-    when defined(CONFIG_NET_OFFLOAD):
-      ## * TCP/IP Offload functions.
-      ##  If non-NULL, then the TCP/IP stack is located
-      ##  in the communication chip that is accessed via this
-      ##  network interface.
-      ##
-      var offload* {.importc: "offload", header: "net_if.h".}: ptr net_offload
-    mtu* {.importc: "mtu".}: uint16 ## * The hardware MTU
-    when defined(CONFIG_NET_SOCKETS_OFFLOAD):
-      ## * Indicate whether interface is offloaded at socket level.
-      var offloaded* {.importc: "offloaded", header: "net_if.h".}: bool
-
-
-
-  net_if* {.importc: "net_if", header: "net_if.h", bycopy.} = object
-    ## *
-    ##  @brief Network Interface structure
-    ##
-    ##  Used to handle a network interface on top of a net_if_dev instance.
-    ##  There can be many net_if instance against the same net_if_dev instance.
-    ##
-    ##
-    if_dev* {.importc: "if_dev".}: ptr net_if_dev ## * The net_if_dev instance the net_if is related to
-    when defined(CONFIG_NET_STATISTICS_PER_INTERFACE):
-      ## * Network statistics related to this network interface
-      var stats* {.importc: "stats", header: "net_if.h".}: net_stats
-    config* {.importc: "config".}: net_if_config ## * Network interface instance configuration
-    when defined(CONFIG_NET_POWER_MANAGEMENT):
-      ## * Keep track of packets pending in traffic queues. This is
-      ##  needed to avoid putting network device driver to sleep if
-      ##  there are packets waiting to be sent.
-      ##
-      var tx_pending* {.importc: "tx_pending", header: "net_if.h".}: cint
 
 
 ## *
