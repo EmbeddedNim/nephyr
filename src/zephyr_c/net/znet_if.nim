@@ -21,7 +21,9 @@ import ../zdevice
 import ../kernel/zk_fifo
 import ../zkernel
 
+import znet_core
 import znet_ip
+import znet_l2
 import znet_timeout
 
 import posix
@@ -287,8 +289,32 @@ type
       ##
       tx_pending* {.importc: "tx_pending", header: "net_if.h".}: cint
 
-type
-  when CONFIG_NET_DHCPV4) and defined(CONFIG_NET_NATIVE_IPV4:
+  net_if_link_callback_t* = proc (iface: ptr net_if; dst: ptr net_linkaddr; status: cint)
+    ## *
+    ##  @typedef net_if_link_callback_t
+    ##  @brief Define callback that is called after a network packet
+    ##         has been sent.
+    ##  @param iface A pointer to a struct net_if to which the the net_pkt was sent to.
+    ##  @param dst Link layer address of the destination where the network packet was sent.
+    ##  @param status Send status, 0 is ok, < 0 error.
+    ##
+
+  net_if_link_cb* {.importc: "net_if_link_cb", header: "net_if.h", bycopy.} = object
+    ## *
+    ##  @brief Link callback handler struct.
+    ##
+    ##  Stores the link callback information. Caller must make sure that
+    ##  the variable pointed by this is valid during the lifetime of
+    ##  registration. Typically this means that the variable cannot be
+    ##  allocated from stack.
+    ##
+    node* {.importc: "node".}: sys_snode_t ## * Node information for the slist.
+    ## * Link callback
+    cb* {.importc: "cb".}: net_if_link_callback_t
+
+
+when CONFIG_NET_DHCPV4 and CONFIG_NET_NATIVE_IPV4:
+  type
     net_if_dhcpv4* {.importc: "net_if_dhcpv4", header: "net_if.h", bycopy.} = object
       node* {.importc: "node".}: sys_snode_t ## * Used for timer lists
       ## * Timer start
@@ -306,7 +332,8 @@ type
       state* {.importc: "state".}: net_dhcpv4_state ## * Number of attempts made for REQUEST and RENEWAL messages
       attempts* {.importc: "attempts".}: uint8
 
-  when CONFIG_NET_IPV4_AUTO) and defined(CONFIG_NET_NATIVE_IPV4:
+when CONFIG_NET_IPV4_AUTO and CONFIG_NET_NATIVE_IPV4:
+  type
     net_if_ipv4_autoconf* {.importc: "net_if_ipv4_autoconf", header: "net_if.h",
                            bycopy.} = object
       node* {.importc: "node".}: sys_snode_t ## * Used for timer lists
@@ -1650,32 +1677,6 @@ proc net_if_ipv4_set_gw_by_index*(index: cint; gw: ptr in_addr): bool {.syscall,
 
 proc net_if_select_src_iface*(dst: ptr sockaddr): ptr net_if {.
     importc: "net_if_select_src_iface", header: "net_if.h".}
-## *
-##  @typedef net_if_link_callback_t
-##  @brief Define callback that is called after a network packet
-##         has been sent.
-##  @param iface A pointer to a struct net_if to which the the net_pkt was sent to.
-##  @param dst Link layer address of the destination where the network packet was sent.
-##  @param status Send status, 0 is ok, < 0 error.
-##
-
-type
-  net_if_link_callback_t* = proc (iface: ptr net_if; dst: ptr net_linkaddr; status: cint)
-
-## *
-##  @brief Link callback handler struct.
-##
-##  Stores the link callback information. Caller must make sure that
-##  the variable pointed by this is valid during the lifetime of
-##  registration. Typically this means that the variable cannot be
-##  allocated from stack.
-##
-
-type
-  net_if_link_cb* {.importc: "net_if_link_cb", header: "net_if.h", bycopy.} = object
-    node* {.importc: "node".}: sys_snode_t ## * Node information for the slist.
-    ## * Link callback
-    cb* {.importc: "cb".}: net_if_link_callback_t
 
 
 ## *
