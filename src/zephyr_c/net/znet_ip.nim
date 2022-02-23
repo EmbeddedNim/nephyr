@@ -389,20 +389,17 @@ type
     ip_proto* {.importc: "ip_proto".}: net_ip_protocol ## *< IP protocol
 
 
-## * What is the current state of the network address
 
 type
   net_addr_state* {.size: sizeof(uint8).} = enum
+    ## * What is the current state of the network address
     NET_ADDR_ANY_STATE = -1,    ## *< Default (invalid) address type
     NET_ADDR_TENTATIVE = 0,     ## *< Tentative address
     NET_ADDR_PREFERRED,       ## *< Preferred address
     NET_ADDR_DEPRECATED       ## *< Deprecated address
 
-
-## * How the network address is assigned to network interface
-
-type
   net_addr_type* {.size: sizeof(uint8).} = enum ## * Default value. This is not a valid value.
+  ## * How the network address is assigned to network interface
     NET_ADDR_ANY = 0,           ## * Auto configured address
     NET_ADDR_AUTOCONF,        ## * Address is from DHCP
     NET_ADDR_DHCP,            ## * Manually set address

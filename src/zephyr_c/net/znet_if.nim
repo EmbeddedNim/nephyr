@@ -23,34 +23,73 @@ import znet_ip
 ##  Stores the unicast IP addresses assigned to this network interface.
 ##
 
+when defined(CONFIG_NET_OFFLOAD):
+  discard "forward decl of net_offload"
+## * @cond INTERNAL_HIDDEN
+
+when defined(CONFIG_NET_NATIVE_IPV6):
+  const
+    NET_IF_MAX_IPV6_ADDR* = CONFIG_NET_IF_UNICAST_IPV6_ADDR_COUNT
+    NET_IF_MAX_IPV6_MADDR* = CONFIG_NET_IF_MCAST_IPV6_ADDR_COUNT
+    NET_IF_MAX_IPV6_PREFIX* = CONFIG_NET_IF_IPV6_PREFIX_COUNT
+else:
+  const
+    NET_IF_MAX_IPV6_ADDR* = 0
+    NET_IF_MAX_IPV6_MADDR* = 0
+    NET_IF_MAX_IPV6_PREFIX* = 0
+##  @endcond
+
+## * @cond INTERNAL_HIDDEN
+
+when defined(CONFIG_NET_NATIVE_IPV4):
+  const
+    NET_IF_MAX_IPV4_ADDR* = CONFIG_NET_IF_UNICAST_IPV4_ADDR_COUNT
+    NET_IF_MAX_IPV4_MADDR* = CONFIG_NET_IF_MCAST_IPV4_ADDR_COUNT
+else:
+  const
+    NET_IF_MAX_IPV4_ADDR* = 0
+    NET_IF_MAX_IPV4_MADDR* = 0
+## * @endcond
+
+## * @cond INTERNAL_HIDDEN
+##  We always need to have at least one IP config
+
+const
+  NET_IF_MAX_CONFIGS* = 1
+
+## * @endcond
+
 type
   net_if_addr* {.importc: "net_if_addr", header: "net_if.h", bycopy.} = object
-    address* {.importc: "address".}: net_addr ## * IP address
+    address* {.importc: "address".}: NetAddr ## * IP address
+
     when defined(CONFIG_NET_NATIVE_IPV6):
-      var lifetime* {.importc: "lifetime", header: "net_if.h".}: net_timeout
+      lifetime* {.importc: "lifetime", header: "net_if.h".}: net_timeout
+
     when defined(CONFIG_NET_IPV6_DAD) and defined(CONFIG_NET_NATIVE_IPV6):
       ## * Duplicate address detection (DAD) timer
-      var dad_node* {.importc: "dad_node", header: "net_if.h".}: sys_snode_t
-      var dad_start* {.importc: "dad_start", header: "net_if.h".}: uint32
+      dad_node* {.importc: "dad_node", header: "net_if.h".}: sys_snode_t
+      dad_start* {.importc: "dad_start", header: "net_if.h".}: uint32
+
     addr_type* {.importc: "addr_type".}: net_addr_type ## * How the IP address was set
     addr_state* {.importc: "addr_state".}: net_addr_state ## * What is the current state of the address
+
     when defined(CONFIG_NET_IPV6_DAD) and defined(CONFIG_NET_NATIVE_IPV6):
       ## * How many times we have done DAD
-      var dad_count* {.importc: "dad_count", header: "net_if.h".}: uint8
+      dad_count* {.importc: "dad_count", header: "net_if.h".}: uint8
+
     is_infinite* {.importc: "is_infinite", bitsize: 1.}: uint8 ## * Is the IP address valid forever
     is_used* {.importc: "is_used", bitsize: 1.}: uint8 ## * Is this IP address used or not
     is_mesh_local* {.importc: "is_mesh_local", bitsize: 1.}: uint8 ## * Is this IP address usage limited to the subnet (mesh) or not
-    _unused* {.importc: "_unused", bitsize: 5.}: uint8
+    unused* {.importc: "_unused", bitsize: 5.}: uint8
 
 
-## *
-##  @brief Network Interface multicast IP addresses
-##
-##  Stores the multicast IP addresses assigned to this network interface.
-##
-
-type
   net_if_mcast_addr* {.importc: "net_if_mcast_addr", header: "net_if.h", bycopy.} = object
+    ## *
+    ##  @brief Network Interface multicast IP addresses
+    ##
+    ##  Stores the multicast IP addresses assigned to this network interface.
+    ##
     address* {.importc: "address".}: net_addr ## * IP address
     ## * Is this multicast IP address used or not
     is_used* {.importc: "is_used", bitsize: 1.}: uint8 ## * Did we join to this group
@@ -58,14 +97,12 @@ type
     _unused* {.importc: "_unused", bitsize: 6.}: uint8
 
 
-## *
-##  @brief Network Interface IPv6 prefixes
-##
-##  Stores the multicast IP addresses assigned to this network interface.
-##
-
-type
   net_if_ipv6_prefix* {.importc: "net_if_ipv6_prefix", header: "net_if.h", bycopy.} = object
+    ## *
+    ##  @brief Network Interface IPv6 prefixes
+    ##
+    ##  Stores the multicast IP addresses assigned to this network interface.
+    ##
     lifetime* {.importc: "lifetime".}: net_timeout ## * Prefix lifetime
     ## * IPv6 prefix
     prefix* {.importc: "prefix".}: in6_addr ## * Backpointer to network interface where this prefix is used
@@ -76,14 +113,13 @@ type
     _unused* {.importc: "_unused", bitsize: 6.}: uint8
 
 
-## *
-##  @brief Information about routers in the system.
-##
-##  Stores the router information.
-##
 
-type
   net_if_router* {.importc: "net_if_router", header: "net_if.h", bycopy.} = object
+    ## *
+    ##  @brief Information about routers in the system.
+    ##
+    ##  Stores the router information.
+    ##
     node* {.importc: "node".}: sys_snode_t ## * Slist lifetime timer node
     ## * IP address
     address* {.importc: "address".}: net_addr ## * Network interface the router is connected to
@@ -116,23 +152,6 @@ type
     NET_IF_NUM_FLAGS          ## * @endcond
 
 
-when defined(CONFIG_NET_OFFLOAD):
-  discard "forward decl of net_offload"
-## * @cond INTERNAL_HIDDEN
-
-when defined(CONFIG_NET_NATIVE_IPV6):
-  const
-    NET_IF_MAX_IPV6_ADDR* = CONFIG_NET_IF_UNICAST_IPV6_ADDR_COUNT
-    NET_IF_MAX_IPV6_MADDR* = CONFIG_NET_IF_MCAST_IPV6_ADDR_COUNT
-    NET_IF_MAX_IPV6_PREFIX* = CONFIG_NET_IF_IPV6_PREFIX_COUNT
-else:
-  const
-    NET_IF_MAX_IPV6_ADDR* = 0
-    NET_IF_MAX_IPV6_MADDR* = 0
-    NET_IF_MAX_IPV6_PREFIX* = 0
-##  @endcond
-
-type
   net_if_ipv6* {.importc: "net_if_ipv6", header: "net_if.h", bycopy.} = object
     unicast* {.importc: "unicast".}: array[NET_IF_MAX_IPV6_ADDR, net_if_addr] ## * Unicast IP
                                                                          ## addresses
@@ -161,19 +180,6 @@ type
     hop_limit* {.importc: "hop_limit".}: uint8 ## * IPv6 hop limit
 
 
-## * @cond INTERNAL_HIDDEN
-
-when defined(CONFIG_NET_NATIVE_IPV4):
-  const
-    NET_IF_MAX_IPV4_ADDR* = CONFIG_NET_IF_UNICAST_IPV4_ADDR_COUNT
-    NET_IF_MAX_IPV4_MADDR* = CONFIG_NET_IF_MCAST_IPV4_ADDR_COUNT
-else:
-  const
-    NET_IF_MAX_IPV4_ADDR* = 0
-    NET_IF_MAX_IPV4_MADDR* = 0
-## * @endcond
-
-type
   net_if_ipv4* {.importc: "net_if_ipv4", header: "net_if.h", bycopy.} = object
     unicast* {.importc: "unicast".}: array[NET_IF_MAX_IPV4_ADDR, net_if_addr] ## * Unicast IP
                                                                          ## addresses
@@ -185,8 +191,7 @@ type
     ttl* {.importc: "ttl".}: uint8
 
 
-when defined(CONFIG_NET_DHCPV4) and defined(CONFIG_NET_NATIVE_IPV4):
-  type
+  when defined(CONFIG_NET_DHCPV4) and defined(CONFIG_NET_NATIVE_IPV4):
     net_if_dhcpv4* {.importc: "net_if_dhcpv4", header: "net_if.h", bycopy.} = object
       node* {.importc: "node".}: sys_snode_t ## * Used for timer lists
       ## * Timer start
@@ -204,8 +209,7 @@ when defined(CONFIG_NET_DHCPV4) and defined(CONFIG_NET_NATIVE_IPV4):
       state* {.importc: "state".}: net_dhcpv4_state ## * Number of attempts made for REQUEST and RENEWAL messages
       attempts* {.importc: "attempts".}: uint8
 
-when defined(CONFIG_NET_IPV4_AUTO) and defined(CONFIG_NET_NATIVE_IPV4):
-  type
+  when defined(CONFIG_NET_IPV4_AUTO) and defined(CONFIG_NET_NATIVE_IPV4):
     net_if_ipv4_autoconf* {.importc: "net_if_ipv4_autoconf", header: "net_if.h",
                            bycopy.} = object
       node* {.importc: "node".}: sys_snode_t ## * Used for timer lists
@@ -221,31 +225,22 @@ when defined(CONFIG_NET_IPV4_AUTO) and defined(CONFIG_NET_NATIVE_IPV4):
       announce_cnt* {.importc: "announce_cnt".}: uint8 ## * Incoming conflict count
       conflict_cnt* {.importc: "conflict_cnt".}: uint8
 
-## * @cond INTERNAL_HIDDEN
-##  We always need to have at least one IP config
 
-const
-  NET_IF_MAX_CONFIGS* = 1
-
-## * @endcond
-## *
-##  @brief Network interface IP address configuration.
-##
-
-type
   net_if_ip* {.importc: "net_if_ip", header: "net_if.h", bycopy.} = object
+    ## *
+    ##  @brief Network interface IP address configuration.
+    ##
     when defined(CONFIG_NET_NATIVE_IPV6):
       var ipv6* {.importc: "ipv6", header: "net_if.h".}: ptr net_if_ipv6
     when defined(CONFIG_NET_NATIVE_IPV4):
       var ipv4* {.importc: "ipv4", header: "net_if.h".}: ptr net_if_ipv4
 
 
-## *
-##  @brief IP and other configuration related data for network interface.
-##
 
-type
   net_if_config* {.importc: "net_if_config", header: "net_if.h", bycopy.} = object
+    ## *
+    ##  @brief IP and other configuration related data for network interface.
+    ##
     ip* {.importc: "ip".}: net_if_ip ## * IP address configuration setting
     when defined(CONFIG_NET_DHCPV4) and defined(CONFIG_NET_NATIVE_IPV4):
       var dhcpv4* {.importc: "dhcpv4", header: "net_if.h".}: net_if_dhcpv4
@@ -259,40 +254,38 @@ type
       var virtual_interfaces* {.importc: "virtual_interfaces", header: "net_if.h".}: sys_slist_t
 
 
-## *
-##  @brief Network traffic class.
-##
-##  Traffic classes are used when sending or receiving data that is classified
-##  with different priorities. So some traffic can be marked as high priority
-##  and it will be sent or received first. Each network packet that is
-##  transmitted or received goes through a fifo to a thread that will transmit
-##  it.
-##
 
-type
   net_traffic_class* {.importc: "net_traffic_class", header: "net_if.h", bycopy.} = object
+    ## *
+    ##  @brief Network traffic class.
+    ##
+    ##  Traffic classes are used when sending or receiving data that is classified
+    ##  with different priorities. So some traffic can be marked as high priority
+    ##  and it will be sent or received first. Each network packet that is
+    ##  transmitted or received goes through a fifo to a thread that will transmit
+    ##  it.
+    ##
     fifo* {.importc: "fifo".}: k_fifo ## * Fifo for handling this Tx or Rx packet
     ## * Traffic class handler thread
     handler* {.importc: "handler".}: k_thread ## * Stack for this handler
     stack* {.importc: "stack".}: ptr k_thread_stack_t
 
 
-## *
-##  @brief Network Interface Device structure
-##
-##  Used to handle a network interface on top of a device driver instance.
-##  There can be many net_if_dev instance against the same device.
-##
-##  Such interface is mainly to be used by the link layer, but is also tight
-##  to a network context: it then makes the relation with a network context
-##  and the network device.
-##
-##  Because of the strong relationship between a device driver and such
-##  network interface, each net_if_dev should be instantiated by
-##
 
-type
   net_if_dev* {.importc: "net_if_dev", header: "net_if.h", bycopy.} = object
+    ## *
+    ##  @brief Network Interface Device structure
+    ##
+    ##  Used to handle a network interface on top of a device driver instance.
+    ##  There can be many net_if_dev instance against the same device.
+    ##
+    ##  Such interface is mainly to be used by the link layer, but is also tight
+    ##  to a network context: it then makes the relation with a network context
+    ##  and the network device.
+    ##
+    ##  Because of the strong relationship between a device driver and such
+    ##  network interface, each net_if_dev should be instantiated by
+    ##
     dev* {.importc: "dev".}: ptr device ## * The actually device driver instance the net_if is related to
     ## * Interface's L2 layer
     l2* {.importc: "l2".}: ptr net_l2 ## * Interface's private L2 data pointer
@@ -311,16 +304,15 @@ type
       var offloaded* {.importc: "offloaded", header: "net_if.h".}: bool
 
 
-## *
-##  @brief Network Interface structure
-##
-##  Used to handle a network interface on top of a net_if_dev instance.
-##  There can be many net_if instance against the same net_if_dev instance.
-##
-##
 
-type
   net_if* {.importc: "net_if", header: "net_if.h", bycopy.} = object
+    ## *
+    ##  @brief Network Interface structure
+    ##
+    ##  Used to handle a network interface on top of a net_if_dev instance.
+    ##  There can be many net_if instance against the same net_if_dev instance.
+    ##
+    ##
     if_dev* {.importc: "if_dev".}: ptr net_if_dev ## * The net_if_dev instance the net_if is related to
     when defined(CONFIG_NET_STATISTICS_PER_INTERFACE):
       ## * Network statistics related to this network interface
