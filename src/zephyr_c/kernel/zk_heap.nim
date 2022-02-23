@@ -1,5 +1,6 @@
 import ../zkernel_fixes
 import ../sys/zsys_heap
+import ../zsys_clock
 
 type
 
