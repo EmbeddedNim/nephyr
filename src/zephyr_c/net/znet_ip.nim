@@ -342,7 +342,7 @@ import posix
 
 type
 
-  NetAddr* {.importc: "NetAddr", header: hdr, bycopy, incompleteStruct.} = object
+  NetAddr* {.importc: "struct net_addr", header: hdr, bycopy, incompleteStruct.} = object
     family* {.importc: "family".}: TSa_Family
     ## the C code uses an anonymous union 
     In6Addr* {.importc: "In6Addr".}: In6Addr
