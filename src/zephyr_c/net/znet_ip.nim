@@ -345,8 +345,8 @@ type
   NetAddr* {.importc: "struct net_addr", header: hdr, bycopy, incompleteStruct.} = object
     family* {.importc: "family".}: TSa_Family
     ## the C code uses an anonymous union 
-    In6Addr* {.importc: "In6Addr".}: In6Addr
-    InAddr* {.importc: "InAddr".}: InAddr
+    In6Addr* {.importc: "in6_addr".}: In6Addr
+    InAddr* {.importc: "in_addr".}: InAddr
 
 
 type
