@@ -23,6 +23,8 @@
 import ../zdevice
 import znet_if
 
+const hdr = "<net/net_config.h>"
+
 const
   NET_CONFIG_NEED_ROUTER* = 0x00000001
 
@@ -57,7 +59,7 @@ const
 ##
 
 proc net_config_init*(app_info: cstring; flags: uint32; timeout: int32): cint {.
-    importc: "net_config_init", header: "net_config.h".}
+    importc: "net_config_init", header: hdr.}
 
 ## *
 ##  @brief Initialize this network application using a specific network
@@ -77,7 +79,7 @@ proc net_config_init*(app_info: cstring; flags: uint32; timeout: int32): cint {.
 
 proc net_config_init_by_iface*(iface: ptr net_if; app_info: cstring; flags: uint32;
                               timeout: int32): cint {.
-    importc: "net_config_init_by_iface", header: "net_config.h".}
+    importc: "net_config_init_by_iface", header: hdr.}
 
 ## *
 ##  @brief Initialize this network application.
@@ -96,7 +98,7 @@ proc net_config_init_by_iface*(iface: ptr net_if; app_info: cstring; flags: uint
 ##
 
 proc net_config_init_app*(dev: ptr device; app_info: cstring): cint {.
-    importc: "net_config_init_app", header: "net_config.h".}
+    importc: "net_config_init_app", header: hdr.}
 
 ## *
 ##  @}
