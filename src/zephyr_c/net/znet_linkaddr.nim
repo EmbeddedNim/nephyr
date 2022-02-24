@@ -55,7 +55,7 @@ type
 ##
 
 type
-  net_linkaddr* {.importc: "net_linkaddr", header: hdr, bycopy.} = object
+  net_linkaddr* {.importc: "struct net_linkaddr", header: hdr, bycopy.} = object
     caddr* {.importc: "addr".}: ptr uint8 ## * The array of byte representing the address
     ## * Length of that address array
     len* {.importc: "len".}: uint8 ## * What kind of address is this for
@@ -74,7 +74,7 @@ type
 ##
 
 type
-  net_linkaddr_storage* {.importc: "net_linkaddr_storage",
+  net_linkaddr_storage* {.importc: "struct net_linkaddr_storage",
                          header: hdr, bycopy.} = object
     ctype* {.importc: "type".}: uint8 ## * What kind of address is this for
     ## * The real length of the ll address.

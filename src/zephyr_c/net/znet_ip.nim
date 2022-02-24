@@ -378,7 +378,7 @@ var NET_MAX_PRIORITIES* {.importc: "NET_MAX_PRIORITIES", header: hdr.}: int
 ## * IPv6/IPv4 network connection tuple
 
 type
-  net_tuple* {.importc: "net_tuple", header: hdr, bycopy.} = object
+  net_tuple* {.importc: "struct net_tuple", header: hdr, bycopy.} = object
     remote_addr* {.importc: "remote_addr".}: ptr NetAddr ## *< IPv6/IPv4 remote address
     local_addr* {.importc: "local_addr".}: ptr NetAddr ## *< IPv6/IPv4 local address
     remote_port* {.importc: "remote_port".}: uint16 ## *< UDP/TCP remote port
@@ -407,7 +407,7 @@ type
 ## * @cond INTERNAL_HIDDEN
 
 type
-  net_ipv6_hdr* {.importc: "net_ipv6_hdr", header: hdr, bycopy, packed.} = object
+  net_ipv6_hdr* {.importc: "struct net_ipv6_hdr", header: hdr, bycopy, packed.} = object
     vtc* {.importc: "vtc".}: uint8
     tcflow* {.importc: "tcflow".}: uint8
     flow* {.importc: "flow".}: uint16
@@ -417,13 +417,13 @@ type
     src* {.importc: "src".}: In6Addr
     dst* {.importc: "dst".}: In6Addr
 
-  net_ipv6_frag_hdr* {.importc: "net_ipv6_frag_hdr", header: hdr, bycopy, packed.} = object
+  net_ipv6_frag_hdr* {.importc: "struct net_ipv6_frag_hdr", header: hdr, bycopy, packed.} = object
     nexthdr* {.importc: "nexthdr".}: uint8
     reserved* {.importc: "reserved".}: uint8
     offset* {.importc: "offset".}: uint16
     id* {.importc: "id".}: uint32
 
-  net_ipv4_hdr* {.importc: "net_ipv4_hdr", header: hdr, bycopy, packed.} = object
+  net_ipv4_hdr* {.importc: "struct net_ipv4_hdr", header: hdr, bycopy, packed.} = object
     vhl* {.importc: "vhl".}: uint8
     tos* {.importc: "tos".}: uint8
     len* {.importc: "len".}: uint16
@@ -435,18 +435,18 @@ type
     src* {.importc: "src".}: InAddr
     dst* {.importc: "dst".}: InAddr
 
-  net_icmp_hdr* {.importc: "net_icmp_hdr", header: hdr, bycopy, packed.} = object
+  net_icmp_hdr* {.importc: "struct net_icmp_hdr", header: hdr, bycopy, packed.} = object
     typ* {.importc: "type".}: uint8
     code* {.importc: "code".}: uint8
     chksum* {.importc: "chksum".}: uint16
 
-  net_udp_hdr* {.importc: "net_udp_hdr", header: hdr, bycopy, packed.} = object
+  net_udp_hdr* {.importc: "struct net_udp_hdr", header: hdr, bycopy, packed.} = object
     src_port* {.importc: "src_port".}: uint16
     dst_port* {.importc: "dst_port".}: uint16
     len* {.importc: "len".}: uint16
     chksum* {.importc: "chksum".}: uint16
 
-  net_tcp_hdr* {.importc: "net_tcp_hdr", header: hdr, bycopy, packed.} = object
+  net_tcp_hdr* {.importc: "struct net_tcp_hdr", header: hdr, bycopy, packed.} = object
     src_port* {.importc: "src_port".}: uint16
     dst_port* {.importc: "dst_port".}: uint16
     seq* {.importc: "seq".}: array[4, uint8]

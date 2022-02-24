@@ -72,8 +72,11 @@ const
 
 type
   net_ipv6_nbr_state* {.size: sizeof(cint).} = enum
-    NET_IPV6_NBR_STATE_INCOMPLETE, NET_IPV6_NBR_STATE_REACHABLE,
-    NET_IPV6_NBR_STATE_STALE, NET_IPV6_NBR_STATE_DELAY, NET_IPV6_NBR_STATE_PROBE,
+    NET_IPV6_NBR_STATE_INCOMPLETE,
+    NET_IPV6_NBR_STATE_REACHABLE,
+    NET_IPV6_NBR_STATE_STALE,
+    NET_IPV6_NBR_STATE_DELAY,
+    NET_IPV6_NBR_STATE_PROBE,
     NET_IPV6_NBR_STATE_STATIC
 
 
@@ -84,7 +87,7 @@ proc net_ipv6_nbr_state2str*(state: net_ipv6_nbr_state): cstring {.
 ##
 
 type
-  net_ipv6_nbr_data* {.importc: "net_ipv6_nbr_data", header: hdr, bycopy, incompleteStruct.} = object
+  net_ipv6_nbr_data* {.importc: "struct net_ipv6_nbr_data", header: hdr, bycopy, incompleteStruct.} = object
     pending* {.importc: "pending".}: ptr net_pkt_alias ## * Any pending packet waiting ND to finish.
     ## * IPv6 address.
     iaddr* {.importc: "addr".}: In6Addr ## * Reachable timer.

@@ -41,7 +41,7 @@ const
 
 
 type
-  net_timeout* {.importc: "net_timeout", header: hdr, bycopy.} = object
+  net_timeout* {.importc: "struct net_timeout", header: hdr, bycopy.} = object
     ## * Generic struct for handling network timeouts.
     ##
     ##  Except for the linking node, all access to state from these objects must go
