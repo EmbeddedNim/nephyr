@@ -92,7 +92,7 @@ type
 
 
 type
-  net_if_addr* {.importc: "net_if_addr", header: hdr, bycopy.} = object
+  net_if_addr* {.importc: "struct net_if_addr", header: hdr, bycopy.} = object
     address* {.importc: "address".}: NetAddr ## * IP address
     when CONFIG_NET_NATIVE_IPV6:
       lifetime* {.importc: "lifetime".}: net_timeout
@@ -109,7 +109,7 @@ type
     unused {.importc: "_unused", bitsize: 5.}: uint8
 
 
-  net_if_mcast_addr* {.importc: "net_if_mcast_addr", header: hdr, bycopy.} = object
+  net_if_mcast_addr* {.importc: "struct net_if_mcast_addr", header: hdr, bycopy.} = object
     ##  @brief Network Interface multicast IP addresses
     ##
     ##  Stores the multicast IP addresses assigned to this network interface.
@@ -119,7 +119,7 @@ type
     is_joined* {.importc: "is_joined", bitsize: 1.}: uint8 ## * Did we join to this group
     unused {.importc: "_unused", bitsize: 6.}: uint8
 
-  net_if_ipv6_prefix* {.importc: "net_if_ipv6_prefix", header: hdr, bycopy.} = object
+  net_if_ipv6_prefix* {.importc: "struct net_if_ipv6_prefix", header: hdr, bycopy.} = object
     ##  @brief Network Interface IPv6 prefixes
     ##
     ##  Stores the multicast IP addresses assigned to this network interface.
@@ -133,7 +133,7 @@ type
     unused {.importc: "_unused", bitsize: 6.}: uint8
 
 
-  net_if_router* {.importc: "net_if_router", header: hdr, bycopy.} = object
+  net_if_router* {.importc: "struct net_if_router", header: hdr, bycopy.} = object
     ##  @brief Information about routers in the system.
     ##
     ##  Stores the router information.
@@ -149,7 +149,7 @@ type
     unused* {.importc: "_unused", bitsize: 5.}: uint8
 
 
-  net_if_ipv6* {.importc: "net_if_ipv6", header: hdr, bycopy.} = object
+  net_if_ipv6* {.importc: "struct net_if_ipv6", header: hdr, bycopy.} = object
     unicast* {.importc: "unicast".}: array[NET_IF_MAX_IPV6_ADDR, net_if_addr] ## * Unicast IP addresses
     mcast* {.importc: "mcast".}: array[NET_IF_MAX_IPV6_MADDR, net_if_mcast_addr] ## * Multicast IP addresses
 
@@ -163,21 +163,21 @@ type
       rs_count* {.importc: "rs_count".}: uint8 ## * RS count
     hop_limit* {.importc: "hop_limit".}: uint8 ## * IPv6 hop limit
   
-  net_if_ipv4* {.importc: "net_if_ipv4", header: hdr, bycopy.} = object
+  net_if_ipv4* {.importc: "struct net_if_ipv4", header: hdr, bycopy.} = object
     unicast* {.importc: "unicast".}: array[NET_IF_MAX_IPV4_ADDR, net_if_addr] ## * Unicast IP addresses
     mcast* {.importc: "mcast".}: array[NET_IF_MAX_IPV4_MADDR, net_if_mcast_addr] ## * Multicast IP addresses
     gw* {.importc: "gw".}: InAddr ## Gateway
     netmask* {.importc: "netmask".}: InAddr ## * Netmask
     ttl* {.importc: "ttl".}: uint8 ## * IPv4 time-to-live
 
-  net_if_ip* {.importc: "net_if_ip", header: hdr, bycopy.} = object
+  net_if_ip* {.importc: "struct net_if_ip", header: hdr, bycopy.} = object
     ##  @brief Network interface IP address configuration.
     when CONFIG_NET_NATIVE_IPV6:
       ipv6* {.importc: "ipv6".}: ptr net_if_ipv6
     when CONFIG_NET_NATIVE_IPV4:
       ipv4* {.importc: "ipv4".}: ptr net_if_ipv4
 
-  net_if_config* {.importc: "net_if_config", header: hdr, bycopy.} = object
+  net_if_config* {.importc: "struct net_if_config", header: hdr, bycopy.} = object
     ##  @brief IP and other configuration related data for network interface.
     ip* {.importc: "ip".}: net_if_ip ## * IP address configuration setting
 
@@ -191,7 +191,7 @@ type
         ##  that are attached to this network interface.
         ##
 
-  net_traffic_class* {.importc: "net_traffic_class", header: hdr, bycopy.} = object
+  net_traffic_class* {.importc: "struct net_traffic_class", header: hdr, bycopy.} = object
     ##  @brief Network traffic class.
     ##
     ##  Traffic classes are used when sending or receiving data that is classified
@@ -206,7 +206,7 @@ type
     stack* {.importc: "stack".}: ptr k_thread_stack_t ## * Stack for this handler
 
 
-  net_if_dev* {.importc: "net_if_dev", header: hdr, bycopy.} = object
+  net_if_dev* {.importc: "struct net_if_dev", header: hdr, bycopy.} = object
     ##  @brief Network Interface Device structure
     ##
     ##  Used to handle a network interface on top of a device driver instance.
@@ -239,7 +239,7 @@ type
       offloaded* {.importc: "offloaded".}: bool ## * Indicate whether interface is offloaded at socket level.
 
 
-  net_if* {.importc: "net_if", header: hdr, bycopy.} = object
+  net_if* {.importc: "struct net_if", header: hdr, bycopy.} = object
     ##  @brief Network Interface structure
     ##
     ##  Used to handle a network interface on top of a net_if_dev instance.
@@ -267,7 +267,7 @@ type
     ##  @param status Send status, 0 is ok, < 0 error.
     ##
 
-  net_if_link_cb* {.importc: "net_if_link_cb", header: hdr, bycopy.} = object
+  net_if_link_cb* {.importc: "struct net_if_link_cb", header: hdr, bycopy.} = object
     ##  @brief Link callback handler struct.
     ##
     ##  Stores the link callback information. Caller must make sure that
@@ -280,7 +280,7 @@ type
 
 when CONFIG_NET_DHCPV4 and CONFIG_NET_NATIVE_IPV4:
   type
-    net_if_dhcpv4* {.importc: "net_if_dhcpv4", header: hdr, bycopy.} = object
+    net_if_dhcpv4* {.importc: "struct net_if_dhcpv4", header: hdr, bycopy.} = object
       node* {.importc: "node".}: sys_snode_t ## * Used for timer lists
       timer_start* {.importc: "timer_start".}: int64 ## * Timer start
       request_time* {.importc: "request_time".}: uint32 ## * Time for INIT, DISCOVER, REQUESTING, RENEWAL
@@ -295,7 +295,7 @@ when CONFIG_NET_DHCPV4 and CONFIG_NET_NATIVE_IPV4:
 
 when CONFIG_NET_IPV4_AUTO and CONFIG_NET_NATIVE_IPV4:
   type
-    net_if_ipv4_autoconf* {.importc: "net_if_ipv4_autoconf", header: hdr,
+    net_if_ipv4_autoconf* {.importc: "struct net_if_ipv4_autoconf", header: hdr,
                            bycopy.} = object
       node* {.importc: "node".}: sys_snode_t ## * Used for timer lists
       iface* {.importc: "iface".}: ptr net_if_alias ## * Backpointer to correct network interface

@@ -37,7 +37,7 @@ type
 ##
 
 type
-  net_l2* {.importc: "net_l2", header: hdr, bycopy.} = object
+  net_l2* {.importc: "struct net_l2", header: hdr, bycopy.} = object
 
     recv* {.importc: "recv".}: proc (iface: ptr net_if_alias; pkt: ptr net_pkt_alias): net_verdict ##\
       ##  This function is used by net core to get iface's L2 layer parsing
