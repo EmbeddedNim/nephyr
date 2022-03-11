@@ -15,7 +15,10 @@
 ##  @{
 ##
 
-discard "forward decl of net_if"
+import ../wrapper_utils
+import ../zkernel_fixes
+import znet_if
+
 const
   NET_MGMT_EVENT_MASK* = 0x80000000
   NET_MGMT_ON_IFACE_MASK* = 0x40000000
@@ -27,22 +30,25 @@ const
   NET_MGMT_IFACE_BIT* = BIT(30)
   NET_MGMT_SYNC_EVENT_BIT* = BIT(27)
 
-proc NET_MGMT_LAYER*(_layer: untyped) {.importc: "NET_MGMT_LAYER",
-                                     header: "net_mgmt.h".}
-proc NET_MGMT_LAYER_CODE*(_code: untyped) {.importc: "NET_MGMT_LAYER_CODE",
-    header: "net_mgmt.h".}
-proc NET_MGMT_EVENT*(mgmt_request: untyped) {.importc: "NET_MGMT_EVENT",
-    header: "net_mgmt.h".}
-proc NET_MGMT_ON_IFACE*(mgmt_request: untyped) {.importc: "NET_MGMT_ON_IFACE",
-    header: "net_mgmt.h".}
-proc NET_MGMT_EVENT_SYNCHRONOUS*(mgmt_request: untyped) {.
-    importc: "NET_MGMT_EVENT_SYNCHRONOUS", header: "net_mgmt.h".}
-proc NET_MGMT_GET_LAYER*(mgmt_request: untyped) {.importc: "NET_MGMT_GET_LAYER",
-    header: "net_mgmt.h".}
-proc NET_MGMT_GET_LAYER_CODE*(mgmt_request: untyped) {.
-    importc: "NET_MGMT_GET_LAYER_CODE", header: "net_mgmt.h".}
-proc NET_MGMT_GET_COMMAND*(mgmt_request: untyped) {.
-    importc: "NET_MGMT_GET_COMMAND", header: "net_mgmt.h".}
+# proc NET_MGMT_LAYER*(layer: untyped) {.importc: "NET_MGMT_LAYER",
+                                    #  header: "net_mgmt.h".}
+
+# proc NET_MGMT_LAYER_CODE*(_code: untyped) {.importc: "NET_MGMT_LAYER_CODE",
+    # header: "net_mgmt.h".}
+
+# proc NET_MGMT_EVENT*(mgmt_request: untyped) {.importc: "NET_MGMT_EVENT",
+#     header: "net_mgmt.h".}
+# proc NET_MGMT_ON_IFACE*(mgmt_request: untyped) {.importc: "NET_MGMT_ON_IFACE",
+#     header: "net_mgmt.h".}
+# proc NET_MGMT_EVENT_SYNCHRONOUS*(mgmt_request: untyped) {.
+#     importc: "NET_MGMT_EVENT_SYNCHRONOUS", header: "net_mgmt.h".}
+# proc NET_MGMT_GET_LAYER*(mgmt_request: untyped) {.importc: "NET_MGMT_GET_LAYER",
+#     header: "net_mgmt.h".}
+# proc NET_MGMT_GET_LAYER_CODE*(mgmt_request: untyped) {.
+#     importc: "NET_MGMT_GET_LAYER_CODE", header: "net_mgmt.h".}
+# proc NET_MGMT_GET_COMMAND*(mgmt_request: untyped) {.
+#     importc: "NET_MGMT_GET_COMMAND", header: "net_mgmt.h".}
+
 ##  Useful generic definitions
 
 const
@@ -67,30 +73,16 @@ type
   net_mgmt_request_handler_t* = proc (mgmt_request: uint32; iface: ptr net_if;
                                    data: pointer; len: csize_t): cint
 
-proc net_mgmt*(_mgmt_request: untyped; _iface: untyped; _data: untyped; _len: untyped) {.
-    importc: "net_mgmt", header: "net_mgmt.h".}
-proc NET_MGMT_REGISTER_REQUEST_HANDLER*(_mgmt_request: untyped; _func: untyped) {.
-    importc: "NET_MGMT_REGISTER_REQUEST_HANDLER", header: "net_mgmt.h".}
-discard "forward decl of net_mgmt_event_callback"
-type
   net_mgmt_event_handler_t* = proc (cb: ptr net_mgmt_event_callback;
                                  mgmt_event: uint32; iface: ptr net_if)
 
-## *
-##  @brief Network Management event callback structure
-##  Used to register a callback into the network management event part, in order
-##  to let the owner of this struct to get network event notification based on
-##  given event mask.
-##
-
-type
   INNER_C_UNION_net_mgmt_0* {.importc: "no_name", header: "net_mgmt.h", bycopy, union.} = object
     handler* {.importc: "handler".}: net_mgmt_event_handler_t ## * Actual callback function being used to notify the owner
                                                           ##
     ## * Semaphore meant to be used internaly for the synchronous
     ##  net_mgmt_event_wait() function.
     ##
-    sync_call* {.importc: "sync_call".}: ptr k_sem
+    # sync_call* {.importc: "sync_call".}: ptr k_sem
 
   INNER_C_UNION_net_mgmt_2* {.importc: "no_name", header: "net_mgmt.h", bycopy, union.} = object
     event_mask* {.importc: "event_mask".}: uint32 ## * A mask of network events on which the above handler should
@@ -115,6 +107,20 @@ type
     ano_net_mgmt_3* {.importc: "ano_net_mgmt_3".}: INNER_C_UNION_net_mgmt_2
 
 
+# proc net_mgmt*(mgmt_request: untyped; _iface: untyped; _data: untyped; _len: untyped) {.
+    # importc: "net_mgmt", header: "net_mgmt.h".}
+# proc NET_MGMT_REGISTER_REQUEST_HANDLER*(_mgmt_request: untyped; _func: untyped) {.
+    # importc: "NET_MGMT_REGISTER_REQUEST_HANDLER", header: "net_mgmt.h".}
+
+
+## *
+##  @brief Network Management event callback structure
+##  Used to register a callback into the network management event part, in order
+##  to let the owner of this struct to get network event notification based on
+##  given event mask.
+##
+
+
 ## *
 ##  @brief Helper to initialize a struct net_mgmt_event_callback properly
 ##  @param cb A valid application's callback structure pointer.
@@ -122,38 +128,26 @@ type
 ##  @param mgmt_event_mask A mask of relevant events for the handler
 ##
 
-when defined(CONFIG_NET_MGMT_EVENT):
-  proc net_mgmt_init_event_callback*(cb: ptr net_mgmt_event_callback;
+proc net_mgmt_init_event_callback*(cb: ptr net_mgmt_event_callback;
                                     handler: net_mgmt_event_handler_t;
-                                    mgmt_event_mask: uint32) {.inline.} =
-    __ASSERT(cb, "Callback pointer should not be NULL")
-    __ASSERT(handler, "Handler pointer should not be NULL")
-    cb.handler = handler
-    cb.event_mask = mgmt_event_mask
+                                    mgmt_event_mask: uint32) 
 
-  ## ignored statement
-else:
-  discard
 ## *
 ##  @brief Add a user callback
 ##  @param cb A valid pointer on user's callback to add.
 ##
 
-when defined(CONFIG_NET_MGMT_EVENT):
-  proc net_mgmt_add_event_callback*(cb: ptr net_mgmt_event_callback) {.
-      importc: "net_mgmt_add_event_callback", header: "net_mgmt.h".}
-else:
-  discard
+proc net_mgmt_add_event_callback*(cb: ptr net_mgmt_event_callback) {.
+    importc: "net_mgmt_add_event_callback", header: "net_mgmt.h".}
+
 ## *
 ##  @brief Delete a user callback
 ##  @param cb A valid pointer on user's callback to delete.
 ##
 
-when defined(CONFIG_NET_MGMT_EVENT):
   proc net_mgmt_del_event_callback*(cb: ptr net_mgmt_event_callback) {.
       importc: "net_mgmt_del_event_callback", header: "net_mgmt.h".}
-else:
-  discard
+
 ## *
 ##  @brief Used by the system to notify an event.
 ##  @param mgmt_event The actual network event code to notify
@@ -168,14 +162,12 @@ else:
 ##        is not defined.
 ##
 
-when defined(CONFIG_NET_MGMT_EVENT):
-  proc net_mgmt_event_notify_with_info*(mgmt_event: uint32; iface: ptr net_if;
-                                       info: pointer; length: csize_t) {.
-      importc: "net_mgmt_event_notify_with_info", header: "net_mgmt.h".}
-  proc net_mgmt_event_notify*(mgmt_event: uint32; iface: ptr net_if) {.inline.} =
-    net_mgmt_event_notify_with_info(mgmt_event, iface, nil, 0)
+proc net_mgmt_event_notify_with_info*(mgmt_event: uint32; iface: ptr net_if;
+                                      info: pointer; length: csize_t) {.
+    importc: "net_mgmt_event_notify_with_info", header: "net_mgmt.h".}
+proc net_mgmt_event_notify*(mgmt_event: uint32; iface: ptr net_if) {.inline.} =
+  net_mgmt_event_notify_with_info(mgmt_event, iface, nil, 0)
 
-else:
 ## *
 ##  @brief Used to wait synchronously on an event mask
 ##  @param mgmt_event_mask A mask of relevant events to wait on.
@@ -197,17 +189,10 @@ else:
 ##          actual event.
 ##
 
-when defined(CONFIG_NET_MGMT_EVENT):
-  proc net_mgmt_event_wait*(mgmt_event_mask: uint32; raised_event: ptr uint32;
-                           iface: ptr ptr net_if; info: ptr pointer;
-                           info_length: ptr csize_t; timeout: k_timeout_t): cint {.
-      importc: "net_mgmt_event_wait", header: "net_mgmt.h".}
-else:
-  proc net_mgmt_event_wait*(mgmt_event_mask: uint32; raised_event: ptr uint32;
-                           iface: ptr ptr net_if; info: ptr pointer;
-                           info_length: ptr csize_t; timeout: k_timeout_t): cint {.
-      inline.} =
-    return 0
+proc net_mgmt_event_wait*(mgmt_event_mask: uint32; raised_event: ptr uint32;
+                          iface: ptr ptr net_if; info: ptr pointer;
+                          info_length: ptr csize_t; timeout: k_timeout_t): cint {.
+    importc: "net_mgmt_event_wait", header: "net_mgmt.h".}
 
 ## *
 ##  @brief Used to wait synchronously on an event mask for a specific iface
@@ -229,27 +214,18 @@ else:
 ##          actual event.
 ##
 
-when defined(CONFIG_NET_MGMT_EVENT):
-  proc net_mgmt_event_wait_on_iface*(iface: ptr net_if; mgmt_event_mask: uint32;
-                                    raised_event: ptr uint32; info: ptr pointer;
-                                    info_length: ptr csize_t; timeout: k_timeout_t): cint {.
-      importc: "net_mgmt_event_wait_on_iface", header: "net_mgmt.h".}
-else:
-  proc net_mgmt_event_wait_on_iface*(iface: ptr net_if; mgmt_event_mask: uint32;
-                                    raised_event: ptr uint32; info: ptr pointer;
-                                    info_length: ptr csize_t; timeout: k_timeout_t): cint {.
-      inline.} =
-    return 0
+proc net_mgmt_event_wait_on_iface*(iface: ptr net_if; mgmt_event_mask: uint32;
+                                  raised_event: ptr uint32; info: ptr pointer;
+                                  info_length: ptr csize_t; timeout: k_timeout_t): cint {.
+    importc: "net_mgmt_event_wait_on_iface", header: "net_mgmt.h".}
 
 ## *
 ##  @brief Used by the core of the network stack to initialize the network
 ##         event processing.
 ##
 
-when defined(CONFIG_NET_MGMT_EVENT):
-  proc net_mgmt_event_init*() {.importc: "net_mgmt_event_init", header: "net_mgmt.h".}
-else:
-  discard
+proc net_mgmt_event_init*() {.importc: "net_mgmt_event_init", header: "net_mgmt.h".}
+
 ## *
 ##  @}
 ##

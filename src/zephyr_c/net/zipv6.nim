@@ -89,8 +89,8 @@ proc net_ipv6_nbr_state2str*(state: net_ipv6_nbr_state): cstring {.
 type
   net_ipv6_nbr_data* {.importc: "struct net_ipv6_nbr_data", header: hdr, bycopy, incompleteStruct.} = object
     pending* {.importc: "pending".}: ptr net_pkt_alias ## * Any pending packet waiting ND to finish.
-    ## * IPv6 address.
-    iaddr* {.importc: "addr".}: In6Addr ## * Reachable timer.
+    ## * IPv6 ipaddress.
+    iaddr* {.importc: "ipaddr".}: In6Addr ## * Reachable timer.
     reachable* {.importc: "reachable".}: int64 ## * Reachable timeout
     reachable_timeout* {.importc: "reachable_timeout".}: int32 ## * Neighbor Solicitation reply timer
     send_ns* {.importc: "send_ns".}: int64 ## * State of the neighbor discovery
@@ -125,8 +125,8 @@ proc net_ipv6_is_nexthdr_upper_layer*(nexthdr: uint8): bool {.importc: "$1", hea
 ##  @brief Create IPv6 packet in provided net_pkt_alias.
 ##
 ##  @param pkt Network packet
-##  @param src Source IPv6 address
-##  @param dst Destination IPv6 address
+##  @param src Source IPv6 ipaddress
+##  @param dst Destination IPv6 ipaddress
 ##
 ##  @return 0 on success, negative errno otherwise.
 ##
@@ -153,24 +153,24 @@ proc net_ipv6_finalize*(pkt: ptr net_pkt_alias; next_header_proto: uint8): cint 
 ##  @brief Join a given multicast group.
 ##
 ##  @param iface Network interface where join message is sent
-##  @param addr Multicast group to join
+##  @param ipaddr Multicast group to join
 ##
 ##  @return Return 0 if joining was done, <0 otherwise.
 ##
 
-proc net_ipv6_mld_join*(iface: ptr net_if; `addr`: ptr In6Addr): cint {.
+proc net_ipv6_mld_join*(iface: ptr net_if; ipaddr: ptr In6Addr): cint {.
       importc: "net_ipv6_mld_join", header: hdr.}
 
 ## *
 ##  @brief Leave a given multicast group.
 ##
 ##  @param iface Network interface where leave message is sent
-##  @param addr Multicast group to leave
+##  @param ipaddr Multicast group to leave
 ##
 ##  @return Return 0 if leaving is done, <0 otherwise.
 ##
 
-proc net_ipv6_mld_leave*(iface: ptr net_if; `addr`: ptr In6Addr): cint {.
+proc net_ipv6_mld_leave*(iface: ptr net_if; `ipaddr`: ptr In6Addr): cint {.
       importc: "net_ipv6_mld_leave", header: hdr.}
 
 
@@ -186,8 +186,8 @@ type
   net_nbr_cb_t* = proc (nbr: ptr net_nbr_alias; user_data: pointer)
 
 ## *
-##  @brief Make sure the link layer address is set according to
-##  destination address. If the ll address is not yet known, then
+##  @brief Make sure the link layer ipaddress is set according to
+##  destination ipaddress. If the ll ipaddress is not yet known, then
 ##  start neighbor discovery to find it out. If ND needs to be done
 ##  then the returned packet is the Neighbor Solicitation message
 ##  and the original message is sent after Neighbor Advertisement
@@ -206,24 +206,24 @@ else:
     return NET_OK
 
 ## *
-##  @brief Look for a neighbor from it's address on an iface
+##  @brief Look for a neighbor from it's ipaddress on an iface
 ##
 ##  @param iface A valid pointer on a network interface
-##  @param addr The IPv6 address to match
+##  @param ipaddr The IPv6 ipaddress to match
 ##
 ##  @return A valid pointer on a neighbor on success, NULL otherwise
 ##
 
 when defined(CONFIG_NET_IPV6_NBR_CACHE) and defined(CONFIG_NET_NATIVE_IPV6):
-  proc net_ipv6_nbr_lookup*(iface: ptr net_if; `addr`: ptr In6Addr): ptr net_nbr_alias {.
+  proc net_ipv6_nbr_lookup*(iface: ptr net_if; `ipaddr`: ptr In6Addr): ptr net_nbr_alias {.
       importc: "net_ipv6_nbr_lookup", header: hdr.}
 
 ## *
 ##  @brief Get neighbor from its index.
 ##
 ##  @param iface Network interface to match. If NULL, then use
-##  whatever interface there is configured for the neighbor address.
-##  @param idx Index of the link layer address in the address array
+##  whatever interface there is configured for the neighbor ipaddress.
+##  @param idx Index of the link layer ipaddress in the ipaddress array
 ##
 ##  @return A valid pointer on a neighbor on success, NULL otherwise
 ##
@@ -231,11 +231,11 @@ when defined(CONFIG_NET_IPV6_NBR_CACHE) and defined(CONFIG_NET_NATIVE_IPV6):
 proc net_ipv6_get_nbr*(iface: ptr net_if; idx: uint8): ptr net_nbr_alias {.
     importc: "net_ipv6_get_nbr", header: hdr.}
 ## *
-##  @brief Look for a neighbor from it's link local address index
+##  @brief Look for a neighbor from it's link local ipaddress index
 ##
 ##  @param iface Network interface to match. If NULL, then use
-##  whatever interface there is configured for the neighbor address.
-##  @param idx Index of the link layer address in the address array
+##  whatever interface there is configured for the neighbor ipaddress.
+##  @param idx Index of the link layer ipaddress in the ipaddress array
 ##
 ##  @return A valid pointer on a neighbor on success, NULL otherwise
 ##
@@ -255,8 +255,8 @@ else:
 ##  there exists an entry in the cache update its state and lladdr.
 ##
 ##  @param iface A valid pointer on a network interface
-##  @param addr Neighbor IPv6 address
-##  @param lladdr Neighbor link layer address
+##  @param ipaddr Neighbor IPv6 ipaddress
+##  @param lladdr Neighbor link layer ipaddress
 ##  @param is_router Set to true if the neighbor is a router, false
 ##  otherwise
 ##  @param state Initial state of the neighbor entry in the cache
@@ -264,7 +264,7 @@ else:
 ##  @return A valid pointer on a neighbor on success, NULL otherwise
 ##
 
-proc net_ipv6_nbr_add*(iface: ptr net_if; `addr`: ptr In6Addr;
+proc net_ipv6_nbr_add*(iface: ptr net_if; `ipaddr`: ptr In6Addr;
                       lladdr: ptr net_linkaddr; is_router: bool;
                       state: net_ipv6_nbr_state): ptr net_nbr_alias {.
       importc: "net_ipv6_nbr_add", header: hdr.}
@@ -273,12 +273,12 @@ proc net_ipv6_nbr_add*(iface: ptr net_if; `addr`: ptr In6Addr;
 ##  @brief Remove a neighbor from neighbor cache.
 ##
 ##  @param iface A valid pointer on a network interface
-##  @param addr Neighbor IPv6 address
+##  @param ipaddr Neighbor IPv6 ipaddress
 ##
 ##  @return True if neighbor could be removed, False otherwise
 ##
 
-proc net_ipv6_nbr_rm*(iface: ptr net_if; `addr`: ptr In6Addr): bool {.
+proc net_ipv6_nbr_rm*(iface: ptr net_if; `ipaddr`: ptr In6Addr): bool {.
     importc: "net_ipv6_nbr_rm", header: hdr.}
 
 ## *
@@ -306,8 +306,8 @@ when CONFIG_NET_IPV6_FRAGMENT:
   ## * Store pending IPv6 fragment information that is needed for reassembly.
   type
     net_ipv6_reassembly* {.importc: "net_ipv6_reassembly", header: hdr, bycopy.} = object
-      src* {.importc: "src".}: In6Addr ## * IPv6 source address of the fragment
-      ## * IPv6 destination address of the fragment
+      src* {.importc: "src".}: In6Addr ## * IPv6 source ipaddress of the fragment
+      ## * IPv6 destination ipaddress of the fragment
       dst* {.importc: "dst".}: In6Addr ## *
                                     ##  Timeout for cancelling the reassembly. The timer is used
                                     ##  also to detect if this reassembly slot is used or not.
