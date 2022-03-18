@@ -28,3 +28,9 @@ template sysUsbEnable*(arg: pointer = nil, check = false) =
   if check:
     doCheck(res)
 
+
+proc hwinfo_get_device_id*(buffer: cstring, length: csize_t) {.importc: "$1", header: "<drivers/hwinfo.h>".}
+
+proc getDeviceId*(size = 64): string =
+  result = newString(size)
+  hwinfo_get_device_id(result.cstring, size.csize_t)
