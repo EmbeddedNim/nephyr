@@ -1,10 +1,11 @@
-
+import std/[times, monotimes]
 import mcu_utils/basictypes
 
 import ../zephyr_c/zconfs
 import ../zephyr_c/zkernel
 
-from std/monotimes import MonoTime
+# from std/monotimes import MonoTime
+export times, monotimes
 
 export basictypes
 export MonoTime
