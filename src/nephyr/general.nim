@@ -34,3 +34,18 @@ proc hwinfo_get_device_id*(buffer: cstring, length: csize_t) {.importc: "$1", he
 proc getDeviceId*(size = 64): string =
   result = newString(size)
   hwinfo_get_device_id(result.cstring, size.csize_t)
+
+type SystemInitLevel* = enum
+  INIT_PRE_KERNEL_1 = 0,
+  INIT_PRE_KERNEL_2 = 1,
+  INIT_POST_KERNEL = 2,
+  INIT_APPLICATION = 3,
+  INIT_SMP = 4
+
+var KernelInitPriorityDefault* {.importc: "CONFIG_KERNEL_INIT_PRIORITY_DEFAULT", header: "<init.h>".}: cint
+var KernelInitPriorityDevice* {.importc: "CONFIG_KERNEL_INIT_PRIORITY_DEVICE", header: "<init.h>".}: cint
+var KernelInitPriorityObjects* {.importc: "CONFIG_KERNEL_INIT_PRIORITY_OBJECTS", header: "<init.h>".}: cint
+
+template SystemInit*(fn: proc {.cdecl.}, level: SystemInitLevel, priority: int) =
+  ## Template to setup a zephyr initialization callback for a given level and priority. 
+  {.emit: ["/*VARSECTION*/\nSYS_INIT(", fn, ", ", level.ord(), ", ", priority, ");"].}

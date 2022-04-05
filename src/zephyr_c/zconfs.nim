@@ -84,7 +84,7 @@ const CONFIG_NAMES = [
 template other_configs(): seq[(string, NimNode)] =
   @[
     ("ARCH_EXCEPT", newLit(true)),
-    ("BOARD", newLit("native_posix")),
+    # ("BOARD", newLit("native_posix")),
   ]
 
 proc parseCmakeConfig*(configName=".config"): TableRef[string, JsonNode] =
