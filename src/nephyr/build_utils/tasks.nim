@@ -257,7 +257,7 @@ task zephyr_compile, "Compile Nim project for Zephyr program":
       "--nomain",
       "--compileOnly",
       "--nimcache:" & nopts.cachedir.quoteShell(),
-      "-d:zboard:" & board,
+      "-d:board:" & board,
       "-d:NimAppMain",
       "" & useMallocFlag, 
       "-d:ZephyrConfigFile:"&zconfpath, # this is important now! sets the config flags
