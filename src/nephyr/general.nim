@@ -35,17 +35,20 @@ proc getDeviceId*(size = 64): string =
   result = newString(size)
   hwinfo_get_device_id(result.cstring, size.csize_t)
 
-type SystemInitLevel* = enum
-  INIT_PRE_KERNEL_1 = 0,
-  INIT_PRE_KERNEL_2 = 1,
-  INIT_POST_KERNEL = 2,
-  INIT_APPLICATION = 3,
-  INIT_SMP = 4
+type
+  SystemInitLevel* = distinct int
+  SystemInitPriority* = distinct int
 
-var KernelInitPriorityDefault* {.importc: "CONFIG_KERNEL_INIT_PRIORITY_DEFAULT", header: "<init.h>".}: cint
-var KernelInitPriorityDevice* {.importc: "CONFIG_KERNEL_INIT_PRIORITY_DEVICE", header: "<init.h>".}: cint
-var KernelInitPriorityObjects* {.importc: "CONFIG_KERNEL_INIT_PRIORITY_OBJECTS", header: "<init.h>".}: cint
+var INIT_PRE_KERNEL_1* {.importc: "PRE_KERNEL_1", header: "<init.h>".}: SystemInitLevel
+var INIT_PRE_KERNEL_2* {.importc: "PRE_KERNEL_2", header: "<init.h>".}: SystemInitLevel
+var INIT_POST_KERNEL* {.importc: "POST_KERNEL", header: "<init.h>".}: SystemInitLevel
+var INIT_APPLICATION* {.importc: "APPLICATION", header: "<init.h>".}: SystemInitLevel
 
-template SystemInit*(fn: proc {.cdecl.}, level: SystemInitLevel, priority: int) =
+var KernelInitPriorityDefault* {.importc: "CONFIG_KERNEL_INIT_PRIORITY_DEFAULT", header: "<init.h>".}: SystemInitPriority
+var KernelInitPriorityDevice* {.importc: "CONFIG_KERNEL_INIT_PRIORITY_DEVICE", header: "<init.h>".}: SystemInitPriority
+var KernelInitPriorityObjects* {.importc: "CONFIG_KERNEL_INIT_PRIORITY_OBJECTS", header: "<init.h>".}: SystemInitPriority
+
+template SystemInit*(fn: proc {.cdecl.}, level: SystemInitLevel, priority: SystemInitPriority) =
   ## Template to setup a zephyr initialization callback for a given level and priority. 
-  {.emit: ["/*VARSECTION*/\nSYS_INIT(", fn, ", ", level.ord(), ", ", priority, ");"].}
+  {.emit: "/*INCLUDESECTION*/\n#include <init.h>".}
+  {.emit: ["/*VARSECTION*/\nSYS_INIT(", fn, ", ", level, ", ", priority, ");"].}
