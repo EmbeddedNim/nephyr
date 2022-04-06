@@ -258,7 +258,7 @@ type
       ##  there are packets waiting to be sent.
       ##
 
-  net_if_link_callback_t* = proc (iface: ptr net_if; dst: ptr net_linkaddr; status: cint) ##\
+  net_if_link_callback_t* = proc (iface: ptr net_if; dst: ptr net_linkaddr; status: cint) {.cdecl.} ##\
     ##  @typedef net_if_link_callback_t
     ##  @brief Define callback that is called after a network packet
     ##         has been sent.
@@ -307,7 +307,6 @@ when CONFIG_NET_IPV4_AUTO and CONFIG_NET_NATIVE_IPV4:
       probe_cnt* {.importc: "probe_cnt".}: uint8 ## * Number of sent probe requests
       announce_cnt* {.importc: "announce_cnt".}: uint8 ## * Number of sent announcements
       conflict_cnt* {.importc: "conflict_cnt".}: uint8 ## * Incoming conflict count
-
 
 
 
@@ -867,7 +866,7 @@ proc net_if_ipv6_maddr_lookup*(caddr: ptr In6Addr; iface: ptr ptr net_if): ptr n
 
 type
   net_if_mcast_callback_t* = proc (iface: ptr net_if; caddr: ptr In6Addr;
-                                is_joined: bool)
+                                is_joined: bool) {.cdecl.}
 
 
 
@@ -1845,7 +1844,7 @@ proc net_if_get_by_iface*(iface: ptr net_if): cint {.importc: "net_if_get_by_ifa
 ##
 
 type
-  net_if_cb_t* = proc (iface: ptr net_if; user_data: pointer)
+  net_if_cb_t* = proc (iface: ptr net_if; user_data: pointer) {.cdecl.}
 
 
 
@@ -1903,7 +1902,7 @@ when CONFIG_NET_PKT_TIMESTAMP and CONFIG_NET_NATIVE:
   ##         been timestamped after being sent.
   ##
   type
-    net_if_timestamp_callback_t* = proc (pkt: ptr net_pkt)
+    net_if_timestamp_callback_t* = proc (pkt: ptr net_pkt) {.cdecl.}
   
   ##  @brief Timestamp callback handler struct.
   ##
@@ -2037,8 +2036,7 @@ when CONFIG_NET_POWER_MANAGEMENT:
   proc net_if_is_suspended*(iface: ptr net_if): bool {.
       importc: "net_if_is_suspended", header: hdr.}
 
-
 type
   net_if_api* {.importc: "net_if_api", header: hdr, bycopy.} = object
-    init* {.importc: "init".}: proc (iface: ptr net_if)
+    init* {.importc: "init".}: proc (iface: ptr net_if) {.cdecl.}
 

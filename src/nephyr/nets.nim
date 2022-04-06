@@ -18,17 +18,17 @@ export posix, nativesockets, net
 import mcu_utils/nettypes
 
 # void net_if_foreach(net_if_cb_t cb, void *user_data)
-proc zfind_interfaces(iface: ptr net_if; user_data: pointer) =
+proc zfind_interfaces(iface: ptr net_if; user_data: pointer) {.cdecl, exportc.} =
   var table = cast[TableRef[NetIfId, NetIfDevice]](user_data)
   let nid = NetIfId(table.len())
-  let nif = NetIfDevice(iface: iface)
+  let nif = NetIfDevice(raw: iface)
   table[nid] = nif
 
 proc findAllInterfaces*(): TableRef[NetIfId, NetIfDevice] = 
   ## Finds all current network interfaces
   let cb: net_if_cb_t = zfind_interfaces
   result = newTable[NetIfId, NetIfDevice]()
-  net_if_foreach(cb, result.addr)
+  net_if_foreach(cb, cast[pointer](result))
 
 proc hasDefaultInterface*(): bool =
   ## check for default interface
@@ -40,10 +40,10 @@ proc getDefaultInterface*(): NetIfDevice {.raises: [ValueError].} =
   let iface: ptr net_if = net_if_get_default()
   if iface.isNil:
     raise newException(ValueError, "no default interface")
-  result = NetIfDevice(iface: iface)
+  result = NetIfDevice(raw: iface)
 
 proc hwAddress*(ifdev: NetIfDevice): seq[uint8] =
-  let ll_addr: net_linkaddr = ifdev.iface.if_dev.link_addr
+  let ll_addr: net_linkaddr = ifdev.raw.if_dev.link_addr
   result = newSeq[uint8](ll_addr.len.int)
   copyMem(result[0].addr, ll_addr.caddr, ll_addr.len.int)
 
@@ -53,7 +53,7 @@ proc hwMacAddress*(ifdev: NetIfDevice): array[6, uint8] =
 
 proc linkLocalAddr*(ifdev: NetIfDevice): IpAddress {.raises: [ValueError].} =
   ## finds and returns link local address
-  let lladdr: ptr In6Addr = net_if_ipv6_get_ll(ifdev.iface, NET_ADDR_ANY_STATE)
+  let lladdr: ptr In6Addr = net_if_ipv6_get_ll(ifdev.raw, NET_ADDR_ANY_STATE)
 
   if lladdr.isNil:
     raise newException(ValueError, "no ipv6 link-local addr")
@@ -65,3 +65,18 @@ proc linkLocalAddr*(ifdev: NetIfDevice): IpAddress {.raises: [ValueError].} =
   saddr.sin6_family = toInt(Domain.AF_INET6).TSa_Family
   saddr.sin6_addr = lladdr[]
   fromSockAddr(saddr, sizeof(saddr).SockLen, result, port)
+
+# proc setLinkLocalAddress*(ifdev: NetIfDevice, open) =
+#   ## finds and returns link local address
+#   let lladdr: ptr In6Addr = net_if_ipv6_get_ll(ifdev.raw, NET_ADDR_ANY_STATE)
+
+#   if lladdr.isNil:
+#     raise newException(ValueError, "no ipv6 link-local addr")
+
+#   var
+#     saddr: Sockaddr_in6
+#     port: Port
+  
+#   saddr.sin6_family = toInt(Domain.AF_INET6).TSa_Family
+#   saddr.sin6_addr = lladdr[]
+#   fromSockAddr(saddr, sizeof(saddr).SockLen, result, port)

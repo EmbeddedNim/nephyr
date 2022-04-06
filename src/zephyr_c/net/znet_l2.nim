@@ -39,26 +39,26 @@ type
 type
   net_l2* {.importc: "struct net_l2", header: hdr, bycopy.} = object
 
-    recv* {.importc: "recv".}: proc (iface: ptr net_if_alias; pkt: ptr net_pkt_alias): net_verdict ##\
+    recv* {.importc: "recv".}: proc (iface: ptr net_if_alias; pkt: ptr net_pkt_alias): net_verdict {.cdecl.} ##\
       ##  This function is used by net core to get iface's L2 layer parsing
       ##  what's relevant to itself.
       ##
-    send* {.importc: "send".}: proc (iface: ptr net_if_alias; pkt: ptr net_pkt_alias): cint ##\
+    send* {.importc: "send".}: proc (iface: ptr net_if_alias; pkt: ptr net_pkt_alias): cint {.cdecl.} ##\
       ## *
       ##  This function is used by net core to push a packet to lower layer
       ##  (interface's L2), which in turn might work on the packet relevantly.
       ##  (adding proper header etc...)
       ##  Returns a negative error code, or the number of bytes sent otherwise.
       ##
-    enable* {.importc: "enable".}: proc (iface: ptr net_if_alias; state: bool): cint ##\
+    enable* {.importc: "enable".}: proc (iface: ptr net_if_alias; state: bool): cint {.cdecl.} ##\
       ##  This function is used to enable/disable traffic over a network
       ##  interface. The function returns <0 if error and >=0 if no error.
       ##
-    get_flags* {.importc: "get_flags".}: proc (iface: ptr net_if_alias): net_l2_flags ## *\
+    get_flags* {.importc: "get_flags".}: proc (iface: ptr net_if_alias): net_l2_flags {.cdecl.} ## *\
       ##  Return L2 flags for the network interface.
       ##
 
-  net_l2_send_t* = proc (dev: ptr device; pkt: ptr net_pkt_alias): cint
+  net_l2_send_t* = proc (dev: ptr device; pkt: ptr net_pkt_alias): cint {.cdecl.}
 
 ##  /** @cond INTERNAL_HIDDEN */
 ##  #define NET_L2_GET_NAME(_name) _net_l2_##_name

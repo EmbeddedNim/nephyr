@@ -18,7 +18,7 @@
 
 import ../zconfs
 
-const hdr = "<net/net_linkaddr.h>"
+const hdr = "#include <string.h>\n#include <net/net_linkaddr.h>"
 
 const
   NET_LINK_ADDR_MAX_LENGTH* = 
