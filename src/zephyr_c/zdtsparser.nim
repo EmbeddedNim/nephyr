@@ -8,14 +8,19 @@ import npeg
 
 let parser = peg("props", d: Table[string, string]):
   props <- *propline
-  propline <- >(targetProps | customTarget) * ?Blank * "\n":
-    echo "propline : ", $1
+  propline <- proptarget * +'\n'
+  proptarget <- >(targetProps | customTarget):
+    echo "proptarget: ", $1
 
   # customTarget <- "add_custom_target(" * +1 * ")"
   # customTarget <- "add_custom_target(devicetree_target)"
   customTarget <- "add_custom_target(" * +word * ")"
-  targetProps <- "set_target_properties(devicetree_target PROPERTIES" * +Alpha * >dtProps * ")":
+
+  targetProps <- "set_target_properties(devicetree_target PROPERTIES " * >"\"DT_NODE|/\" TRUE" * ")":
     echo "targetProps: ", $1
+
+  allLessParen <- 1 - ' '
+  ps <- '"' * +path * '"'
 
   dtProps <- dtNode | dtProperty
   dtNode <- '"' * dtKind * '|' * dtPath * '|' * dtValue * '"' * ("TRUE" | E"only TRUE props handled")
@@ -26,7 +31,7 @@ let parser = peg("props", d: Table[string, string]):
   dtValue <- +Alnum
 
   word <- Alpha | {'_', '-'}
-  path <- Alpha | Digit | {'_', '-', '/', '@'}
+  path <- Alnum | {'_', '-', '/', '@', '|'}
 
 proc parseCmakeDts*(file: string) =
   echo fmt"Parsing cmake dts: {file=}"
