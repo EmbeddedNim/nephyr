@@ -21,19 +21,22 @@ let parser = peg("props", d: Table[string, string]):
 
   allLessParen <- 1 - ' '
   ps <- '"' * +path * '"'
+  dtParams <- dtParams3 | dtParams2 | dtParams1
+  dtParams1 <- '"' * +path * '|' * '/' * '"'
+  dtParams2 <- '"' * +path * '|' * +path * '"'
+  dtParams3 <- '"' * +path * '|' * +path * '|' * +path * '"'
 
   dtProps <- dtNode | dtProperty
   dtNode <- dtParams * ("TRUE" | E"only TRUE props handled")
   dtProperty <- dtParams * +Blank * '"' * +Alnum * '"'
   # dtParams <- '"' * dtKind * '|' * dtPath * '|' * dtValue * '"'
-  dtParams <- '"' * +path * '|' * +path * '|' * +path * '"'
 
   dtKind <- "DT_NODE_LABEL" | "DT_NODE" | "DT_PROP" | "DT_REG" | "DT_CHOOSEN"
   dtPath <- +Alnum
   dtValue <- +Alnum
 
   word <- Alpha | {'_', '-'}
-  path <- Alnum | {'_', '-', '/', '@', '|'}
+  path <- Alnum | {'_', '-', '/', '@'}
 
 proc parseCmakeDts*(file: string) =
   echo fmt"Parsing cmake dts: {file=}"
