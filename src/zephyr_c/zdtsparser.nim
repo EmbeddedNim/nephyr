@@ -29,7 +29,7 @@ let parser = peg("props", d: TableRef[string, TableRef[string, string]]):
   dtParams2 <- '"' * >dtKind * '|' * >+path * '"':
     # echo "dtKind2: ", $1
     echo "dtKind3: parent: ", $1, " path: ", $2
-    # d[$1][$2] = $2
+    d.getOrDefault($1, newTable[string, string]())[$2] = $2
     discard
   dtParams3 <- '"' * >dtKind * '|' * >+path * '|' * >+path * '"':
     # echo "dtKind3: parent: ", $1, " path: ", $2, " field: ", $3
