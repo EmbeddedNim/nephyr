@@ -12,7 +12,7 @@ import zephyr_c/cmtoken
 
 export zgpio
 export dt_gpio
-export utils, cmtoken, zdevice, zdevicetree
+export utils, cmtoken, zdevice, zdevicetree, zgpio
 
 import Pins
 export Pins
@@ -24,10 +24,8 @@ type
     pin*: gpio_pin_t
     mode*: gpio_flags_t
 
-template initPinLbl*(label: static[string], config: GpioFlags): Pin =
+proc initPinPort*(pin: gpio_pin_t, label: string, config: GpioFlags): Pin =
   let
-    pin = 0.gpio_pin_t # DT_N_S_gpio_keys_S_button_0_P_gpios_IDX_0_VAL_pin
-    # port = 0 # DT_N_S_soc_S_pin_controller_58020000_S_gpio_58020800
     port = device_get_binding(label)
 
   echo "initPin: label: ", label
