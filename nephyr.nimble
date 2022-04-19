@@ -11,11 +11,11 @@ bin           = @["nephyr"]
 
 # Dependencies
 
-requires "nim >= 1.4.8"
+requires "nim >= 1.6.6"
 requires "msgpack4nim >= 0.3.1"
 requires "stew >= 0.1.0"
-requires "https://github.com/EmbeddedNim/mcu_utils#main"
-requires "https://github.com/EmbeddedNim/fastrpc#devel"
+requires "https://github.com/EmbeddedNim/mcu_utils@#head"
+requires "https://github.com/EmbeddedNim/fastrpc@#head"
 
 
 import os, sequtils, sugar
