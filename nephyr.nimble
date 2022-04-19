@@ -14,8 +14,8 @@ bin           = @["nephyr"]
 requires "nim >= 1.6.5"
 requires "msgpack4nim >= 0.3.1"
 requires "stew >= 0.1.0"
-requires "https://github.com/EmbeddedNim/mcu_utils@#head"
-requires "https://github.com/EmbeddedNim/fastrpc@#head"
+requires "https://github.com/EmbeddedNim/mcu_utils#head"
+requires "https://github.com/EmbeddedNim/fastrpc#head"
 
 
 import os, sequtils, sugar
