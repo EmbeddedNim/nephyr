@@ -919,4 +919,3 @@ set_target_properties(devicetree_target PROPERTIES "DT_PROP|/leds/button_1|label
 set_target_properties(devicetree_target PROPERTIES "DT_REG|/leds/button_1|NUM" "0")
 set_target_properties(devicetree_target PROPERTIES "DT_REG|/leds/button_1|ADDR" "")
 set_target_properties(devicetree_target PROPERTIES "DT_REG|/leds/button_1|SIZE" "")
-
