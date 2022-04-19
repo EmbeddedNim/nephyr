@@ -30,7 +30,7 @@ let parser = peg("props", d: Table[string, string]):
   dtNode <- dtParams * +Space * "TRUE"
   dtProperty <- dtParams * +Space * ("\"\"" | '"' * +path * '"')
 
-  dtKind <- "DT_NODE_LABEL" | "DT_NODE" | "DT_PROP" | "DT_REG" | "DT_CHOOSEN"
+  dtKind <- ("DT_NODELABEL" | "DT_NODE" | "DT_PROP" | "DT_REG" | "DT_CHOSEN" | E"unsupported dt tag")
 
   word <- Alpha | {'_', '-'}
   path <- Alnum | {'_', '-', '/', ',', '@', ';', '.', ' '}
