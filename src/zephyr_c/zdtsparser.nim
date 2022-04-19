@@ -6,25 +6,34 @@ import npeg
 # add_custom_target(devicetree_target)
 # set_target_properties(devicetree_target PROPERTIES "DT_CHOSEN|zephyr,entropy" "/soc/random@400cc000")
 
-let parser = peg("props", d: Table[string, string]):
+let parser = peg("props", d: TableRef[string, TableRef[string, string]]):
   props <- +propline
   propline <- >(+'\n' | proptarget):
-    echo "propline: ", repr($1)
+    # echo "propline: ", repr($1)
+    discard
 
   proptarget <- targetProps | customTarget
 
   customTarget <- "add_custom_target(" * +word * ")"
 
   targetProps <- "set_target_properties(devicetree_target PROPERTIES " * >dtProps * ")":
-    echo "targetProps: ", $1
+    # echo "targetProps: ", $1
     discard
 
   allLessParen <- 1 - ' '
   ps <- '"' * +path * '"'
-  dtParams <- dtParams3 | dtParams2 | dtParams1 | E"params error"
-  dtParams1 <- '"' * dtKind * '|' * '/' * '"'
-  dtParams2 <- '"' * dtKind * '|' * +path * '"'
-  dtParams3 <- '"' * dtKind * '|' * +path * '|' * +path * '"'
+  dtParams <- dtParams1 | dtParams2 | dtParams3 | E"params error"
+  dtParams1 <- '"' * >dtKind * '|' * '/' * '"':
+    echo "dtKind1: ", $1
+    d[$1] = newTable[string, string]()
+  dtParams2 <- '"' * >dtKind * '|' * >+path * '"':
+    # echo "dtKind2: ", $1
+    echo "dtKind3: parent: ", $1, " path: ", $2
+    # d[$1][$2] = $2
+    discard
+  dtParams3 <- '"' * >dtKind * '|' * >+path * '|' * >+path * '"':
+    # echo "dtKind3: parent: ", $1, " path: ", $2, " field: ", $3
+    discard
 
   dtProps <- dtNode | dtProperty | E"dt prop error"
   dtNode <- dtParams * +Space * "TRUE"
@@ -40,7 +49,7 @@ proc parseCmakeDts*(file: string) =
   let cmakeData = file.readFile()
 
   try:
-    var words: Table[string, string]
+    var words = TableRef[string, TableRef[string, string]]()
     let res = parser.match(cmakeData, words)
     echo res.repr
     echo "words: ", $words
