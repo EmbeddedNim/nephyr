@@ -16,15 +16,17 @@ let parser = peg("props", d: Table[string, string]):
   # customTarget <- "add_custom_target(devicetree_target)"
   customTarget <- "add_custom_target(" * +word * ")"
 
-  targetProps <- "set_target_properties(devicetree_target PROPERTIES " * >"\"DT_NODE|/\"" * ' ' * "TRUE" * ")":
+  targetProps <- "set_target_properties(devicetree_target PROPERTIES " * >ps * Space * "TRUE" * ")":
     echo "targetProps: ", $1
 
   allLessParen <- 1 - ' '
   ps <- '"' * +path * '"'
 
   dtProps <- dtNode | dtProperty
-  dtNode <- '"' * dtKind * '|' * dtPath * '|' * dtValue * '"' * ("TRUE" | E"only TRUE props handled")
-  dtProperty <- '"' * dtKind * '|' * dtPath * '|' * dtValue * '"' * +Blank * '"' * +Alnum * '"'
+  dtNode <- dtParams * ("TRUE" | E"only TRUE props handled")
+  dtProperty <- dtParams * +Blank * '"' * +Alnum * '"'
+  # dtParams <- '"' * dtKind * '|' * dtPath * '|' * dtValue * '"'
+  dtParams <- '"' * dtKind * '|' * dtPath * '|' * dtValue * '"'
 
   dtKind <- "DT_NODE_LABEL" | "DT_NODE" | "DT_PROP" | "DT_REG" | "DT_CHOOSEN"
   dtPath <- +Alnum
