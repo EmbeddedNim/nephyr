@@ -5,7 +5,7 @@ set_target_properties(devicetree_target PROPERTIES "DT_CHOSEN|zephyr,entropy" "/
 set_target_properties(devicetree_target PROPERTIES "DT_CHOSEN|zephyr,sram" "/soc/flexram@400b0000/ocram@20200000")
 set_target_properties(devicetree_target PROPERTIES "DT_CHOSEN|zephyr,itcm" "/soc/flexram@400b0000/itcm@0")
 set_target_properties(devicetree_target PROPERTIES "DT_CHOSEN|zephyr,dtcm" "/soc/flexram@400b0000/dtcm@20000000")
-set_target_properties(devi+cetree_target PROPERTIES "DT_CHOSEN|zephyr,console" "/soc/uart@40194000")
+set_target_properties(devicetree_target PROPERTIES "DT_CHOSEN|zephyr,console" "/soc/uart@40194000")
 set_target_properties(devicetree_target PROPERTIES "DT_CHOSEN|zephyr,can-primary" "/soc/can@401d0000")
 set_target_properties(devicetree_target PROPERTIES "DT_NODE|/" TRUE)
 set_target_properties(devicetree_target PROPERTIES "DT_PROP|/|compatible" "nxp,mimxrt1062;")
