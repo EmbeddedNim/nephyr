@@ -8,11 +8,12 @@ import npeg
 
 let parser = peg("props", d: Table[string, string]):
   props <- *propline
-  propline <- >(targetProps | customTarget) * "\n":
+  propline <- >(targetProps | customTarget) * ?Blank * "\n":
     echo "propline : ", $1
 
-  customTarget <- "add_custom_target(" * +Alnum * ")":
-    echo "customTarget: ", $1
+  # customTarget <- "add_custom_target(" * +1 * ")"
+  # customTarget <- "add_custom_target(devicetree_target)"
+  customTarget <- "add_custom_target(" * +word * ")"
   targetProps <- "set_target_properties(devicetree_target PROPERTIES" * +Alpha * >dtProps * ")":
     echo "targetProps: ", $1
 
@@ -24,6 +25,8 @@ let parser = peg("props", d: Table[string, string]):
   dtPath <- +Alnum
   dtValue <- +Alnum
 
+  word <- Alpha | {'_', '-'}
+  path <- Alpha | Digit | {'_', '-', '/', '@'}
 
 proc parseCmakeDts*(file: string) =
   echo fmt"Parsing cmake dts: {file=}"
