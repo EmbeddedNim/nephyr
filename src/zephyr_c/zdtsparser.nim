@@ -22,17 +22,14 @@ let parser = peg("props", d: TableRef[string, TableRef[string, string]]):
 
   allLessParen <- 1 - ' '
   ps <- '"' * +path * '"'
-  dtParams <- dtParams1 | dtParams2 | dtParams3 | E"params error"
-  dtParams1 <- '"' * >dtKind * '|' * '/' * '"':
-    echo "dtKind1: ", $1
-    d[$1] = newTable[string, string]()
+  dtParams <- dtParams2 | dtParams3 | E"params error"
   dtParams2 <- '"' * >dtKind * '|' * >+path * '"':
-    # echo "dtKind2: ", $1
-    echo "dtKind3: parent: ", $1, " path: ", $2
-    d.getOrDefault($1, newTable[string, string]())[$2] = $2
+    echo "dtKind2: parent: ", $1, " path: ", $2
+    d.mgetOrPut($2, newTable[string, string]())[$1] = $2
     discard
   dtParams3 <- '"' * >dtKind * '|' * >+path * '|' * >+path * '"':
-    # echo "dtKind3: parent: ", $1, " path: ", $2, " field: ", $3
+    echo "dtKind3: parent: ", $1, " path: ", $2, " label: ", $3
+    d.mgetOrPut($2, newTable[string, string]())[$1] = $3
     discard
 
   dtProps <- dtNode | dtProperty | E"dt prop error"
@@ -52,7 +49,9 @@ proc parseCmakeDts*(file: string) =
     var words = TableRef[string, TableRef[string, string]]()
     let res = parser.match(cmakeData, words)
     echo res.repr
-    echo "words: ", $words
+    # echo "words: ", $words
+    for k, v in words.pairs():
+      echo fmt"words: {k=} => {v=}"
   except NPegException as res:
     echo "Parsing failed at position ", res.matchMax
     echo "cmakeData: ", cmakeData[res.matchMax ..< min(res.matchMax+100, cmakeData.len())].repr
