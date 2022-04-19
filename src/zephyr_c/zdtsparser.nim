@@ -22,9 +22,9 @@ let parser = peg("props", d: Table[string, string]):
   allLessParen <- 1 - ' '
   ps <- '"' * +path * '"'
   dtParams <- dtParams3 | dtParams2 | dtParams1 | E"params error"
-  dtParams1 <- '"' * +path * '|' * '/' * '"'
-  dtParams2 <- '"' * +path * '|' * +path * '"'
-  dtParams3 <- '"' * +path * '|' * +path * '|' * +path * '"'
+  dtParams1 <- '"' * dtKind * '|' * '/' * '"'
+  dtParams2 <- '"' * dtKind * '|' * +path * '"'
+  dtParams3 <- '"' * dtKind * '|' * +path * '|' * +path * '"'
 
   dtProps <- dtNode | dtProperty | E"dt prop error"
   dtNode <- dtParams * +Space * "TRUE"
