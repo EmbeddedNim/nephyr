@@ -16,7 +16,7 @@ let parser = peg("props", d: Table[string, string]):
   # customTarget <- "add_custom_target(devicetree_target)"
   customTarget <- "add_custom_target(" * +word * ")"
 
-  targetProps <- "set_target_properties(devicetree_target PROPERTIES " * >ps * Space * "TRUE" * ")":
+  targetProps <- "set_target_properties(devicetree_target PROPERTIES " * >dtParams * Space * "TRUE" * ")":
     echo "targetProps: ", $1
 
   allLessParen <- 1 - ' '
@@ -26,7 +26,7 @@ let parser = peg("props", d: Table[string, string]):
   dtNode <- dtParams * ("TRUE" | E"only TRUE props handled")
   dtProperty <- dtParams * +Blank * '"' * +Alnum * '"'
   # dtParams <- '"' * dtKind * '|' * dtPath * '|' * dtValue * '"'
-  dtParams <- '"' * dtKind * '|' * dtPath * '|' * dtValue * '"'
+  dtParams <- '"' * +path * '|' * +path * '|' * +path * '"'
 
   dtKind <- "DT_NODE_LABEL" | "DT_NODE" | "DT_PROP" | "DT_REG" | "DT_CHOOSEN"
   dtPath <- +Alnum
