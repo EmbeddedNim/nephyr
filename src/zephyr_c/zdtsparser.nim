@@ -16,32 +16,31 @@ let parser = peg("props", d: Table[string, string]):
   # customTarget <- "add_custom_target(devicetree_target)"
   customTarget <- "add_custom_target(" * +word * ")"
 
-  targetProps <- "set_target_properties(devicetree_target PROPERTIES " * >dtNode * ")":
+  targetProps <- "set_target_properties(devicetree_target PROPERTIES " * >dtProps * ")":
     echo "targetProps: ", $1
 
   allLessParen <- 1 - ' '
   ps <- '"' * +path * '"'
-  dtParams <- dtParams3 | dtParams2 | dtParams1
+  dtParams <- dtParams3 | dtParams2 | dtParams1 | E"params error"
   dtParams1 <- '"' * +path * '|' * '/' * '"'
   dtParams2 <- '"' * +path * '|' * +path * '"'
   dtParams3 <- '"' * +path * '|' * +path * '|' * +path * '"'
 
-  dtProps <- dtNode | dtProperty
-  dtNode <- dtParams * ("TRUE" | E"only TRUE props handled")
-  dtProperty <- dtParams * +Blank * '"' * +Alnum * '"'
-  # dtParams <- '"' * dtKind * '|' * dtPath * '|' * dtValue * '"'
+  dtProps <- dtNode | dtProperty | E"dt prop error"
+  dtNode <- dtParams * +Space * "TRUE"
+  dtProperty <- dtParams * +Space * '"' * +path * '"'
 
   dtKind <- "DT_NODE_LABEL" | "DT_NODE" | "DT_PROP" | "DT_REG" | "DT_CHOOSEN"
   dtPath <- +Alnum
   dtValue <- +Alnum
 
   word <- Alpha | {'_', '-'}
-  path <- Alnum | {'_', '-', '/', '@'}
+  path <- Alnum | {'_', '-', '/', ',', '@'}
 
 proc parseCmakeDts*(file: string) =
   echo fmt"Parsing cmake dts: {file=}"
   let cmakeData = file.readFile()
-  # echo "cmakeData: ", cmakeData[0..100]
+  echo "cmakeData: ", cmakeData[158..200].repr
 
   var words: Table[string, string]
   doAssert parser.match(cmakeData[0..600], words).ok
