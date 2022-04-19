@@ -8,11 +8,10 @@ import npeg
 
 let parser = peg("props", d: Table[string, string]):
   props <- +propline
-  propline <- >(proptarget * +Space):
+  propline <- >(+'\n' | proptarget):
     echo "propline: ", repr($1)
 
-  proptarget <- >(targetProps | customTarget | E"must find target"):
-    echo "proptarget: ", $1
+  proptarget <- targetProps | customTarget
 
   customTarget <- "add_custom_target(" * +word * ")"
 
@@ -47,7 +46,7 @@ proc parseCmakeDts*(file: string) =
     echo "words: ", $words
   except NPegException as res:
     echo "Parsing failed at position ", res.matchMax
-    echo "cmakeData: ", cmakeData[res.matchMax-10..<min(res.matchMax+100, cmakeData.len())].repr
+    echo "cmakeData: ", cmakeData[res.matchMax ..< min(res.matchMax+100, cmakeData.len())].repr
 
 when isMainModule:
   echo "\n\n"
