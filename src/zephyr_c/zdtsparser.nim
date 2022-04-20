@@ -33,9 +33,7 @@ proc `$`*(dts: DtAttrs): string =
 
 let parser = peg("props", state: ParserState):
   props <- +propline
-  propline <- >(+'\n' | proptarget):
-    # echo "propline: ", repr($1)
-    discard
+  propline <- (+'\n' | proptarget)
 
   proptarget <- targetProps | customTarget
 
