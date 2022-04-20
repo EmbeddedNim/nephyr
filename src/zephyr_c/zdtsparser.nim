@@ -9,25 +9,31 @@ import patty
 
 type
   DtKind = enum
-    DtProp,
-    DtReg,
-    DtLabel
+    DT_NODELABEL, DT_NODE, DT_PROP, DT_REG, DT_CHOSEN
 
-  DtAttrs* = object
+  DtAttrs* = ref object
     name: string
-    path: string
+    value: string
     kind: DtKind
 
-type
-  DtsProps* = TableRef[string, TableRef[string, string]]
+  DtsProps* = TableRef[string, TableRef[string, DtAttrs]]
+
   DNode* = object
     label*: string
     path*: string
-    values*: Table[string, string]
+    values*: TableRef[string, string]
 
   ParserState* = object
-    curr*: string
+    key*: string
+    curr*: DtAttrs
     props*: DtsProps
+
+proc `$`*(dts: DtAttrs): string =
+  let name = dts.name
+  let kind = dts.kind
+  let value = dts.value
+  result = fmt"DtAttr({name=}, {kind=}, {value=})"
+
 
 let parser = peg("props", state: ParserState):
   props <- +propline
@@ -47,20 +53,25 @@ let parser = peg("props", state: ParserState):
   ps <- '"' * +path * '"'
   dtParams <- dtParams3 | dtParams2 | E"params error"
   dtParams2 <- '"' * >dtKind * '|' * >+path * '"':
-    echo "dtKind2: parent: ", $1, " path: ", $2
-    state.curr = $2
-    state.props.mgetOrPut($2, newTable[string, string]())[$1] = $2
+    # echo "dtKind2: parent: ", $1, " path: ", $2
+    state.key = $2
+    state.curr = DtAttrs(name: $2, kind: parseEnum[DtKind]($1))
+    # state.props.mgetOrPut($2, newTable[string, string]())[$1] = $2
     discard
   dtParams3 <- '"' * >dtKind * '|' * >+path * '|' * >+path * '"':
-    echo "dtKind3: parent: ", $1, " path: ", $2, " label: ", $3
-    state.curr = $2
-    state.props.mgetOrPut($2, newTable[string, string]())[$1] = $3
+    # echo "dtKind3: kind: ", $1, " path: ", $2, " label: ", $3
+    state.key = $2
+    state.curr = DtAttrs(name: $3, kind: parseEnum[DtKind]($1))
+    # state.props.mgetOrPut($2, newTable[string, string]())[$1] = $3
     discard
 
   dtProps <- dtNode | dtProperty | E"dt prop error"
   dtNode <- dtParams * +Space * "TRUE"
   dtProperty <- dtParams * +Space * (>"\"\"" | '"' * >+path * '"'):
-    echo "DT_PROP: ", state.curr, " value: ", $1
+    let curr = move state.curr
+    curr.value = $1
+    # echo "DT_PROP: ", state.key, " curr: ", curr
+    state.props.mgetOrPut(state.key, newTable[string, DtAttrs]())[curr.name] = curr
 
   dtKind <- ("DT_NODELABEL" | "DT_NODE" | "DT_PROP" | "DT_REG" | "DT_CHOSEN" | E"unsupported dt tag")
 
@@ -78,7 +89,7 @@ proc parseCmakeDts*(file: string) =
   let cmakeData = file.readFile()
 
   try:
-    var state = ParserState(props: TableRef[string, TableRef[string, string]]())
+    var state = ParserState(props: TableRef[string, TableRef[string, DtAttrs]]())
     let res = parser.match(cmakeData, state)
     discard process(state)
     echo res.repr
