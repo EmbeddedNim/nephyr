@@ -1,5 +1,5 @@
 import tables, streams, strutils, strformat
-import sequtils, parseutils
+import sequtils
 import options
 import json, macros, os
 import parsecfg, tables
@@ -86,9 +86,9 @@ proc process*(dts: var ParserState): string =
     if node.regs("NUM").isSome:
       node.num = node.regs("NUM").get().value.parseInt()
     if node.regs("ADDR").isSome:
-      node.addrs = node.regs("ADDR").get().value.split(';')
+      node.addrs = node.regs("ADDR").get().value.split(';').filterIt(it.isEmptyOrWhitespace)
     if node.regs("SIZE").isSome:
-      node.size = node.regs("SIZE").get().value.split(';')
+      node.size = node.regs("SIZE").get().value.split(';').filterIt(it.isEmptyOrWhitespace)
     echo fmt"node: {key=}"
     echo fmt"  {node.num=}"
     echo fmt"  {node.addrs=}"
