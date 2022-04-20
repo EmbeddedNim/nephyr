@@ -22,7 +22,7 @@ type
   ParserState* = object
     key*: string
     curr*: DtAttrs
-    props*: DtsNodes
+    nodes*: DtsNodes
 
 proc `$`*(dts: DtAttrs): string =
   let name = dts.name
@@ -67,17 +67,17 @@ let parser = peg("props", state: ParserState):
     let curr = move state.curr
     curr.value = $1
     # echo "DT_PROP: ", state.key, " curr: ", curr
-    state.props.mgetOrPut(state.key, newSeq[DtAttrs]()).add curr
+    state.nodes.mgetOrPut(state.key, newSeq[DtAttrs]()).add curr
 
   dtKind <- ("DT_NODELABEL" | "DT_NODE" | "DT_PROP" | "DT_REG" | "DT_CHOSEN" | E"unsupported dt tag")
 
   word <- Alpha | {'_', '-'}
   path <- Alnum | {'_', '-', '/', ',', '@', ';', '.', ' '}
 
-proc process*(dts: var ParserState) =
+proc process*(dts: var ParserState): string =
   echo "process: dts: "
   # result = newTable[string, DNode]()
-  for k, v in dts.props.pairs():
+  for k, v in dts.nodes.pairs():
     echo fmt"node: {k=}"
     for d in v:
       echo fmt"  {d=}"
@@ -88,7 +88,7 @@ proc parseCmakeDts*(file: string) =
   let cmakeData = file.readFile()
 
   try:
-    var state = ParserState(props: DtsNodes())
+    var state = ParserState(nodes: DtsNodes())
     let res = parser.match(cmakeData, state)
     discard process(state)
     echo res.repr
