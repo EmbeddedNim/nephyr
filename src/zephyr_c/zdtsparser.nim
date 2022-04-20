@@ -1,4 +1,5 @@
 import tables, streams, strutils, strformat
+import sequtils
 import json, macros, os
 import parsecfg, tables
 import npeg
@@ -30,6 +31,10 @@ proc `$`*(dts: DtAttrs): string =
   let value = dts.value
   result = fmt"DtAttr({name=}, {kind=}, {value=})"
 
+proc regs*(props: DtsProps): seq[DtAttrs] =
+  result = props.filterIt(it.kind == DT_REG)
+proc props*(props: DtsProps): seq[DtAttrs] =
+  result = props.filterIt(it.kind == DT_PROP)
 
 let parser = peg("props", state: ParserState):
   props <- +propline
@@ -65,11 +70,12 @@ let parser = peg("props", state: ParserState):
 proc process*(dts: var ParserState): string =
   echo "process: dts: "
   # result = newTable[string, DNode]()
-  for k, v in dts.nodes.pairs():
-    echo fmt"node: {k=}"
-    for d in v:
-      echo fmt"  {d=}"
+  for key, node in dts.nodes.pairs():
+    echo fmt"node: {key=}"
+    for attr in node:
+      echo fmt"  {attr=}"
     echo ""
+    echo "  props: ", node.props()
 
 proc parseCmakeDts*(file: string) =
   echo fmt"Parsing cmake dts: {file=}"
