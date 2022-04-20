@@ -83,7 +83,8 @@ proc process*(dts: var ParserState): TableRef[string, DNode] =
   result = newTable[string, DNode]()
   for k, v in dts.props.pairs():
     echo fmt"node: {k=}"
-    echo fmt"  {v=}"
+    for d in v:
+      echo fmt"  {d=}"
     echo ""
 
 proc parseCmakeDts*(file: string) =
