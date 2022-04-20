@@ -2,11 +2,29 @@ import tables, streams, strutils, strformat
 import json, macros, os
 import parsecfg, tables
 import npeg
+import patty
 
 # add_custom_target(devicetree_target)
 # set_target_properties(devicetree_target PROPERTIES "DT_CHOSEN|zephyr,entropy" "/soc/random@400cc000")
+
+type
+  DtKind = enum
+    DtProp,
+    DtReg,
+    DtLabel
+
+  DtAttrs* = object
+    name: string
+    path: string
+    kind: DtKind
+
 type
   DtsProps* = TableRef[string, TableRef[string, string]]
+  DNode* = object
+    label*: string
+    path*: string
+    values*: Table[string, string]
+
   ParserState* = object
     curr*: string
     props*: DtsProps
@@ -29,30 +47,25 @@ let parser = peg("props", state: ParserState):
   ps <- '"' * +path * '"'
   dtParams <- dtParams3 | dtParams2 | E"params error"
   dtParams2 <- '"' * >dtKind * '|' * >+path * '"':
-    # if $1 == "DT_NODELABEL":
-      # echo "dtKind2: parent: ", $1, " path: ", $2
+    echo "dtKind2: parent: ", $1, " path: ", $2
     state.curr = $2
     state.props.mgetOrPut($2, newTable[string, string]())[$1] = $2
     discard
   dtParams3 <- '"' * >dtKind * '|' * >+path * '|' * >+path * '"':
-    # echo "dtKind3: parent: ", $1, " path: ", $2, " label: ", $3
+    echo "dtKind3: parent: ", $1, " path: ", $2, " label: ", $3
     state.curr = $2
     state.props.mgetOrPut($2, newTable[string, string]())[$1] = $3
     discard
 
   dtProps <- dtNode | dtProperty | E"dt prop error"
   dtNode <- dtParams * +Space * "TRUE"
-  dtProperty <- dtParams * +Space * ("\"\"" | '"' * +path * '"'):
-    echo "DT_PROP: ", state.curr
+  dtProperty <- dtParams * +Space * (>"\"\"" | '"' * >+path * '"'):
+    echo "DT_PROP: ", state.curr, " value: ", $1
 
   dtKind <- ("DT_NODELABEL" | "DT_NODE" | "DT_PROP" | "DT_REG" | "DT_CHOSEN" | E"unsupported dt tag")
 
   word <- Alpha | {'_', '-'}
   path <- Alnum | {'_', '-', '/', ',', '@', ';', '.', ' '}
-
-type
-  DNode* = object
-    label*: string
 
 proc process*(dts: var ParserState): TableRef[string, DNode] =
   echo "process: dts: "
