@@ -1,5 +1,6 @@
 import tables, streams, strutils, strformat
-import sequtils
+import sequtils, parseutils
+import options
 import json, macros, os
 import parsecfg, tables
 import npeg
@@ -19,6 +20,9 @@ type
 
   DtsNode* = object
     properties: seq[DtAttrs]
+    num: int
+    addrs: seq[string]
+    size: seq[string]
 
   DtsNodes* = TableRef[string, DtsNode]
 
@@ -35,8 +39,14 @@ proc `$`*(dts: DtAttrs): string =
 
 proc regs*(node: DtsNode): seq[DtAttrs] =
   result = node.properties.filterIt(it.kind == DT_REG)
+proc regs*(node: DtsNode, name: string): Option[DtAttrs] =
+  let r = node.regs().filterIt(it.name == name)
+  if r.len() > 0: result = some(r[0])
 proc props*(node: DtsNode): seq[DtAttrs] =
   result = node.properties.filterIt(it.kind == DT_PROP)
+proc props*(node: DtsNode, name: string): Option[DtAttrs] =
+  let r = node.props().filterIt(it.name == name)
+  if r.len() > 0: result = some(r[0])
 
 let parser = peg("props", state: ParserState):
   props <- +propline
@@ -72,8 +82,17 @@ let parser = peg("props", state: ParserState):
 proc process*(dts: var ParserState): string =
   echo "process: dts: "
   # result = newTable[string, DNode]()
-  for key, node in dts.nodes.pairs():
+  for key, node in dts.nodes.mpairs():
+    if node.regs("NUM").isSome:
+      node.num = node.regs("NUM").get().value.parseInt()
+    if node.regs("ADDR").isSome:
+      node.addrs = node.regs("ADDR").get().value.split(';')
+    if node.regs("SIZE").isSome:
+      node.size = node.regs("SIZE").get().value.split(';')
     echo fmt"node: {key=}"
+    echo fmt"  {node.num=}"
+    echo fmt"  {node.addrs=}"
+    echo fmt"  {node.size=}"
     for attr in node.properties:
       echo fmt"  {attr=}"
     echo "  props: ", node.props()
