@@ -82,14 +82,16 @@ proc process*(dts: var ParserState): TableRef[string, DNode] =
   echo "process: dts: "
   result = newTable[string, DNode]()
   for k, v in dts.props.pairs():
-    echo fmt"words: {k=} => {v=}"
+    echo fmt"node: {k=}"
+    echo fmt"  {v=}"
+    echo ""
 
 proc parseCmakeDts*(file: string) =
   echo fmt"Parsing cmake dts: {file=}"
   let cmakeData = file.readFile()
 
   try:
-    var state = ParserState(props: TableRef[string, TableRef[string, DtAttrs]]())
+    var state = ParserState(props: DtsProps())
     let res = parser.match(cmakeData, state)
     discard process(state)
     echo res.repr
