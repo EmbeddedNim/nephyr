@@ -17,8 +17,10 @@ type
     value: string
     kind: DtKind
 
-  DtsProps* = seq[DtAttrs]
-  DtsNodes* = TableRef[string, DtsProps]
+  DtsNode* = object
+    properties: seq[DtAttrs]
+
+  DtsNodes* = TableRef[string, DtsNode]
 
   ParserState* = object
     key*: string
@@ -31,10 +33,10 @@ proc `$`*(dts: DtAttrs): string =
   let value = dts.value
   result = fmt"DtAttr({name=}, {kind=}, {value=})"
 
-proc regs*(props: DtsProps): seq[DtAttrs] =
-  result = props.filterIt(it.kind == DT_REG)
-proc props*(props: DtsProps): seq[DtAttrs] =
-  result = props.filterIt(it.kind == DT_PROP)
+proc regs*(node: DtsNode): seq[DtAttrs] =
+  result = node.properties.filterIt(it.kind == DT_REG)
+proc props*(node: DtsNode): seq[DtAttrs] =
+  result = node.properties.filterIt(it.kind == DT_PROP)
 
 let parser = peg("props", state: ParserState):
   props <- +propline
@@ -60,7 +62,7 @@ let parser = peg("props", state: ParserState):
   dtProperty <- dtParams * +Space * (>"\"\"" | '"' * >+path * '"'):
     let curr = move state.curr
     curr.value = $1
-    state.nodes.mgetOrPut(state.key, newSeq[DtAttrs]()).add curr
+    state.nodes.mgetOrPut(state.key, DtsNode()).properties.add(curr)
 
   dtKind <- ("DT_NODELABEL" | "DT_NODE" | "DT_PROP" | "DT_REG" | "DT_CHOSEN" | E"unsupported dt tag")
 
@@ -72,7 +74,7 @@ proc process*(dts: var ParserState): string =
   # result = newTable[string, DNode]()
   for key, node in dts.nodes.pairs():
     echo fmt"node: {key=}"
-    for attr in node:
+    for attr in node.props:
       echo fmt"  {attr=}"
     echo ""
     echo "  props: ", node.props()
