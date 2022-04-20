@@ -21,8 +21,8 @@ type
   DtsNode* = object
     properties: seq[DtAttrs]
     num: int
-    addrs: seq[string]
-    size: seq[string]
+    addrs: string
+    size: string
 
   DtsNodes* = TableRef[string, DtsNode]
 
@@ -86,17 +86,17 @@ proc process*(dts: var ParserState): string =
     if node.regs("NUM").isSome:
       node.num = node.regs("NUM").get().value.parseInt()
     if node.regs("ADDR").isSome:
-      node.addrs = node.regs("ADDR").get().value.split(';').filterIt(it.isEmptyOrWhitespace)
+      node.addrs = node.regs("ADDR").get().value.strip(chars={';', '"'})
     if node.regs("SIZE").isSome:
-      node.size = node.regs("SIZE").get().value.split(';').filterIt(it.isEmptyOrWhitespace)
-    echo fmt"node: {key=}"
-    echo fmt"  {node.num=}"
-    echo fmt"  {node.addrs=}"
-    echo fmt"  {node.size=}"
-    for attr in node.properties:
+      node.size = node.regs("SIZE").get().value.strip(chars={';', '"'})
+    let num = node.num
+    let address = node.addrs
+    let size = node.size
+    echo fmt"node: {key=} ({num=}, {address=}, {size=})"
+    for attr in node.props():
       echo fmt"  {attr=}"
-    echo "  props: ", node.props()
-    echo "  regs: ", node.regs()
+    # echo "  props: ", node.props()
+    # echo "  regs: ", node.regs()
     echo ""
 
 proc parseCmakeDts*(file: string) =
