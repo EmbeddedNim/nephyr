@@ -74,10 +74,11 @@ proc process*(dts: var ParserState): string =
   # result = newTable[string, DNode]()
   for key, node in dts.nodes.pairs():
     echo fmt"node: {key=}"
-    for attr in node.props:
+    for attr in node.properties:
       echo fmt"  {attr=}"
-    echo ""
     echo "  props: ", node.props()
+    echo "  regs: ", node.regs()
+    echo ""
 
 proc parseCmakeDts*(file: string) =
   echo fmt"Parsing cmake dts: {file=}"
