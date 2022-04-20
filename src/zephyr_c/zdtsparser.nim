@@ -16,7 +16,7 @@ type
     value: string
     kind: DtKind
 
-  DtsProps* = TableRef[string, TableRef[string, DtAttrs]]
+  DtsProps* = TableRef[string, seq[DtAttrs]]
 
   DNode* = object
     label*: string
@@ -71,7 +71,7 @@ let parser = peg("props", state: ParserState):
     let curr = move state.curr
     curr.value = $1
     # echo "DT_PROP: ", state.key, " curr: ", curr
-    state.props.mgetOrPut(state.key, newTable[string, DtAttrs]())[curr.name] = curr
+    state.props.mgetOrPut(state.key, newSeq[DtAttrs]()).add curr
 
   dtKind <- ("DT_NODELABEL" | "DT_NODE" | "DT_PROP" | "DT_REG" | "DT_CHOSEN" | E"unsupported dt tag")
 
