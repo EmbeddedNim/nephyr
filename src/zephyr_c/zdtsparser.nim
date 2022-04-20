@@ -16,17 +16,13 @@ type
     value: string
     kind: DtKind
 
-  DtsProps* = TableRef[string, seq[DtAttrs]]
-
-  DNode* = object
-    label*: string
-    path*: string
-    values*: TableRef[string, string]
+  DtsProps* = seq[DtAttrs]
+  DtsNodes* = TableRef[string, DtsProps]
 
   ParserState* = object
     key*: string
     curr*: DtAttrs
-    props*: DtsProps
+    props*: DtsNodes
 
 proc `$`*(dts: DtAttrs): string =
   let name = dts.name
@@ -78,9 +74,9 @@ let parser = peg("props", state: ParserState):
   word <- Alpha | {'_', '-'}
   path <- Alnum | {'_', '-', '/', ',', '@', ';', '.', ' '}
 
-proc process*(dts: var ParserState): TableRef[string, DNode] =
+proc process*(dts: var ParserState) =
   echo "process: dts: "
-  result = newTable[string, DNode]()
+  # result = newTable[string, DNode]()
   for k, v in dts.props.pairs():
     echo fmt"node: {k=}"
     for d in v:
@@ -92,7 +88,7 @@ proc parseCmakeDts*(file: string) =
   let cmakeData = file.readFile()
 
   try:
-    var state = ParserState(props: DtsProps())
+    var state = ParserState(props: DtsNodes())
     let res = parser.match(cmakeData, state)
     discard process(state)
     echo res.repr
