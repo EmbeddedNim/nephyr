@@ -1,7 +1,7 @@
 import zconsts
 import general
 
-static: 
+static:
   echo "Board FIXUP: ", BOARD
 
 when BOARD in ["teensy40", "teensy41"]:
