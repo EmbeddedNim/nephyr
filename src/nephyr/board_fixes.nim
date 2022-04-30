@@ -9,7 +9,10 @@ when BOARD in ["teensy40", "teensy41"]:
   ## Change Teensy PinMux to use CS GPIO Pin
   proc board_configuration() {.exportc.} =
     {.emit: """
+    // configure pin mux for LP-SPI CS pins to be a regular gpio pins 
+    // allowing them to be controlled by Zephyr SPI driver and not NXP lpSPI hardware
     IOMUXC_SetPinMux(IOMUXC_GPIO_AD_B0_03_GPIO1_IO03, 0);
+    IOMUXC_SetPinMux(IOMUXC_GPIO_B0_00_GPIO2_IO00, 0);
     """.}
 
   # call zephyr `SYS_INIT` mode
