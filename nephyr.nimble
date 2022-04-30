@@ -5,9 +5,9 @@ author        = "Jaremy J. Creechley"
 description   = "Nim wrapper for Zephyr RTOS"
 license       = "Apache-2.0"
 srcDir        = "src"
-installExt    = @["nim"]
-bin           = @["nephyr"]
-
+# installExt    = @["nim"]
+# bin           = @["nephyr"]
+# skipDirs = @["nephyr"]
 
 # Dependencies
 
