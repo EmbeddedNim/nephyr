@@ -1,1 +1,2 @@
 --os:zephyr
+--d:BOARD:QEMU
