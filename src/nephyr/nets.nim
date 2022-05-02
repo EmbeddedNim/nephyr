@@ -2,11 +2,11 @@ import std/[net, os, tables]
 
 import mcu_utils/logging
 
-import ../zephyr_c/net/znet_linkaddr
-import ../zephyr_c/net/znet_ip
-import ../zephyr_c/net/znet_if
-import ../zephyr_c/net/znet_config
-import ../zephyr_c/net/zipv6
+import zephyr/net/znet_linkaddr
+import zephyr/net/znet_ip
+import zephyr/net/znet_if
+import zephyr/net/znet_config
+import zephyr/net/zipv6
 
 export znet_linkaddr, znet_ip, znet_if, znet_config, zipv6
 

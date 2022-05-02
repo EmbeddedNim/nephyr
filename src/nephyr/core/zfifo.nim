@@ -1,7 +1,7 @@
 import std/options
 
-import ../../zephyr_c/kernel/zk_fifo
-import ../../zephyr_c/kernel/zk_time
+import ../zephyr/kernel/zk_fifo
+import ../zephyr/kernel/zk_time
 
 type
   ZFifoItem*[T] = object

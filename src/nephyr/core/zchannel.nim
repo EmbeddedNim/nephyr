@@ -2,7 +2,7 @@
 from macros import error
 import std/atomics
 
-import ../../zephyr_c/kernel/zk_fifo
+import ../zephyr/kernel/zk_fifo
 
 type
 

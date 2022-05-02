@@ -24,10 +24,10 @@ task test_nim_api_compilation, "compile Nim wrapper apis":
     exec "nim c --compileonly:on " & test
 
 task test_zephyr_c_api, "compile Zephyr wrapper apis":
-  let main_files = "src/zephyr_c/".listFiles()
-  let kernel_files = "src/zephyr_c/kernel/".listFiles()
-  let dt_files = "src/zephyr_c/dt_bindings/".listFiles()
-  let driver_files = "src/zephyr_c/drivers/".listFiles()
+  let main_files = "src/zephyr/".listFiles()
+  let kernel_files = "src/zephyr/kernel/".listFiles()
+  let dt_files = "src/zephyr/dt_bindings/".listFiles()
+  let driver_files = "src/zephyr/drivers/".listFiles()
 
   let all_tests = concat(main_files, kernel_files, dt_files, driver_files)
   dump all_tests

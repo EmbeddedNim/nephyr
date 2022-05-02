@@ -1,4 +1,4 @@
 
-import zephyr_c/zkernel
+import zephyr/zkernel
 
 assert typeof(k_msleep) is proc

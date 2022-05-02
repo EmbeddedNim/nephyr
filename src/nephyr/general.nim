@@ -10,7 +10,7 @@ export strutils
 
 # nephyr modules
 import utils, logs
-import ../zephyr_c/zkernel
+import zephyr/zkernel
 
 export zkernel
 export utils

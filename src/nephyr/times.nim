@@ -1,8 +1,8 @@
 import std/[times, monotimes]
 import mcu_utils/basictypes
 
-import ../zephyr_c/zconfs
-import ../zephyr_c/zkernel
+import zephyr/zconfs
+import zephyr/zkernel
 
 # from std/monotimes import MonoTime
 export times, monotimes

@@ -21,7 +21,7 @@ WIP! The API and package layout are still prone to large changes. That being sai
 
 The library layout is broken into two main portions:
 - Nim apis under `src/nephyr/`
-- C Wrappers under `src/zephyr_c/`
+- C Wrappers under `src/zephyr/`
 
 ## Examples
 

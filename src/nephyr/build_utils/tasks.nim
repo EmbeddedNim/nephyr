@@ -6,7 +6,7 @@ import strformat, tables, sugar
 import os, streams, parsecfg, tables
 
 import json
-import ../../zephyr_c/zconfs
+import ../zephyr/zconfs
 
 if getEnv("BOARD") == "" and commandLineParams()[^1].startsWith("zephyr_"):
   echo "[Nephyr WARNING]: No BOARD variable found. Make sure you source an environment first! "

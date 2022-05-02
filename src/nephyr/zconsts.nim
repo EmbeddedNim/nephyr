@@ -1,5 +1,5 @@
 
-import ../zephyr_c/zconfs
+import zephyr/zconfs
 
 export zconfs
 
