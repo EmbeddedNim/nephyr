@@ -1,12 +1,12 @@
 import macros
 
 import nephyr/general
-import zephyr/cmtoken
-import zephyr/zdevicetree
-import zephyr/drivers/zgpio
-import zephyr/drivers/zspi
-import zephyr/dt_bindings/dt_gpio
-import zephyr/dt_bindings/dt_spi
+import ../zephyr/cmtoken
+import ../zephyr/zdevicetree
+import ../zephyr/drivers/zgpio
+import ../zephyr/drivers/zspi
+import ../zephyr/dt_bindings/dt_gpio
+import ../zephyr/dt_bindings/dt_spi
 
 export zgpio
 export zspi

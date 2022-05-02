@@ -4,11 +4,11 @@ import sets
 
 import nephyr/general
 import nephyr/utils
-import zephyr/zdevicetree
-import zephyr/zdevice
-import zephyr/dt_bindings/dt_gpio
-import zephyr/drivers/zgpio
-import zephyr/cmtoken
+import ../zephyr/zdevicetree
+import ../zephyr/zdevice
+import ../zephyr/dt_bindings/dt_gpio
+import ../zephyr/drivers/zgpio
+import ../zephyr/cmtoken
 
 export zgpio
 export dt_gpio

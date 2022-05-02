@@ -3,10 +3,10 @@ import macros
 
 import nephyr/general
 import nephyr/utils
-import zephyr/zdevicetree
-import zephyr/zdevice
-import zephyr/drivers/zi2c
-import zephyr/cmtoken
+import ../zephyr/zdevicetree
+import ../zephyr/zdevice
+import ../zephyr/drivers/zi2c
+import ../zephyr/cmtoken
 
 import typetraits
 export zi2c

@@ -1,4 +1,4 @@
-import zephyr/zdevice
+import ../zephyr/zdevice
 
 
 proc listAllStaticDevices*(): seq[ptr device] =

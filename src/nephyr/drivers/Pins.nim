@@ -1,5 +1,5 @@
 
-import zephyr/drivers/zgpio
+import ../zephyr/drivers/zgpio
 
 type
   GpioPin* = gpio_pin_t
