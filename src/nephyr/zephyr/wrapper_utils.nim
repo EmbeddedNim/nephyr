@@ -1,5 +1,5 @@
-import cmtoken
-export cmtoken
+import zcmtoken
+export zcmtoken
 
 template BIT*(n: untyped): untyped =
   1 shl n

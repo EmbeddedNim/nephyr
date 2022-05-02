@@ -17,7 +17,7 @@
 ##
 
 import ../wrapper_utils
-import ../cmtoken
+import ../zcmtoken
 import ../drivers/zgpio
 
 const hdr = "<devicetree/gpio.h>"

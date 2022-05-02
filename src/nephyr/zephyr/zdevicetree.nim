@@ -1,6 +1,6 @@
 
-import cmtoken
-export cmtoken
+import zcmtoken
+export zcmtoken
 
 template DT_NODELABEL*(ma: untyped): cminvtoken =
   CM_PROC(DT_NODELABEL, ma)

@@ -1,7 +1,7 @@
 import macros
 
 import nephyr/general
-import ../zephyr/cmtoken
+import ../zephyr/zcmtoken
 import ../zephyr/zdevicetree
 import ../zephyr/drivers/zgpio
 import ../zephyr/drivers/zspi
@@ -11,7 +11,7 @@ import ../zephyr/dt_bindings/dt_spi
 export zgpio
 export zspi
 export dt_gpio, dt_spi
-export utils, cmtoken, zdevice, zdevicetree
+export utils, zcmtoken, zdevice, zdevicetree
 
 type
 

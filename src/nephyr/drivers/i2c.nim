@@ -6,7 +6,7 @@ import nephyr/utils
 import ../zephyr/zdevicetree
 import ../zephyr/zdevice
 import ../zephyr/drivers/zi2c
-import ../zephyr/cmtoken
+import ../zephyr/zcmtoken
 
 import typetraits
 export zi2c

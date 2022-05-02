@@ -8,7 +8,7 @@ import ../zephyr/zdevicetree
 import ../zephyr/zdevice
 import ../zephyr/dt_bindings/dt_gpio
 import ../zephyr/drivers/zgpio
-import ../zephyr/cmtoken
+import ../zephyr/zcmtoken
 
 export zgpio
 export dt_gpio

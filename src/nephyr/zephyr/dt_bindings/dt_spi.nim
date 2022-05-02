@@ -11,7 +11,7 @@
 ##  SPDX-License-Identifier: Apache-2.0
 ##
 import ../wrapper_utils
-import ../cmtoken
+import ../zcmtoken
 import ../drivers/zgpio
 
 const hdr = "<devicetree/spi.h>"
