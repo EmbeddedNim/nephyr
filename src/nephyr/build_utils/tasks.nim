@@ -1,9 +1,9 @@
-when not defined(nimscript):
-  import system/nimscript
+import system/nimscript
 
-import os, strutils, sequtils
-import strformat, tables, sugar
-import os, streams, parsecfg, tables
+import strutils, sequtils
+import tables
+
+import os except getEnv, paramCount, paramStr, existsEnv, fileExists, dirExists, findExe
 
 import json
 import ../zephyr/zconfs
