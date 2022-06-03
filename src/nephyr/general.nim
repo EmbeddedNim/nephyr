@@ -11,6 +11,7 @@ export strutils
 # nephyr modules
 import utils, logs
 import zephyr/zkernel
+import zephyr/kernel/zk_time
 
 export zkernel
 export utils
@@ -39,6 +40,9 @@ type
   SystemInitLevel* = distinct int
   SystemInitPriority* = distinct int
 
+  ThreadPriority* = distinct range[-128..128]
+  BytesSz* = distinct int
+
 var INIT_PRE_KERNEL_1* {.importc: "PRE_KERNEL_1", header: "<init.h>".}: SystemInitLevel
 var INIT_PRE_KERNEL_2* {.importc: "PRE_KERNEL_2", header: "<init.h>".}: SystemInitLevel
 var INIT_POST_KERNEL* {.importc: "POST_KERNEL", header: "<init.h>".}: SystemInitLevel
@@ -52,3 +56,32 @@ template SystemInit*(fn: proc {.cdecl.}, level: SystemInitLevel, priority: Syste
   ## Template to setup a zephyr initialization callback for a given level and priority. 
   {.emit: "/*INCLUDESECTION*/\n#include <init.h>".}
   {.emit: ["/*VARSECTION*/\nSYS_INIT(", fn, ", ", level, ", ", priority, ");"].}
+
+macro zkThread*(p: untyped) = result = p
+
+proc kCreateThread*(
+    thread: var k_thread;
+    function: proc (p1, p2, p3: pointer) {.cdecl.};
+    stack: ptr k_thread_stack_t;
+    stack_size: BytesSz;
+    p1: pointer = nil,
+    p2: pointer = nil,
+    p3: pointer = nil,
+    priority = ThreadPriority 1,
+    options: uint32 = 0;
+    delay: k_timeout_t = K_NO_WAIT
+): k_tid_t =
+  ## convenience wrapper for createThread
+  let entry: k_thread_entry_t = function
+  result =
+    zkernel.k_thread_create(
+      addr thread,
+      stack,
+      stack_size.csize_t,
+      entry,
+      p1, p2, p3,
+      priority.cint,
+      options,
+      delay
+    )
+    

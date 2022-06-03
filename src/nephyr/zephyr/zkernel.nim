@@ -231,8 +231,7 @@ var K_CALLBACK_STATE* {.importc: "K_CALLBACK_STATE", header: "kernel.h".}: int
 proc k_thread_create*(new_thread: ptr k_thread; stack: ptr k_thread_stack_t;
                       stack_size: csize_t; entry: k_thread_entry_t; p1: pointer;
                       p2: pointer; p3: pointer; prio: cint; options: uint32;
-                      delay: k_timeout_t): k_tid_t {.zsyscall,
-    importc: "k_thread_create", header: "kernel.h".}
+                      delay: k_timeout_t): k_tid_t {.importc: "k_thread_create", header: "kernel.h".}
 
 
 

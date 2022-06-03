@@ -30,9 +30,11 @@
 import zconfs
 import zkernel_fixes
 
+const hdr = "<kernel/thread.h>"
+
 when CONFIG_THREAD_MONITOR:
   type
-    z_thread_entry* {.importc: "__thread_entry", header: "thread.h", incompleteStruct, bycopy.} = object
+    z_thread_entry* {.importc: "__thread_entry", header: hdr, incompleteStruct, bycopy.} = object
       pEntry* {.importc: "pEntry".}: k_thread_entry_t
       parameter1* {.importc: "parameter1".}: pointer
       parameter2* {.importc: "parameter2".}: pointer
@@ -41,18 +43,18 @@ when CONFIG_THREAD_MONITOR:
 ##  can be used for creating 'dummy' threads, e.g. for pending on objects
 
 type
-  q_thread* {.importc: "no_name", header: "thread.h", incompleteStruct, bycopy, union.} = object
+  q_thread* {.importc: "no_name", header: hdr, incompleteStruct, bycopy, union.} = object
 
 
-  z_thread_base* {.importc: "_thread_base", header: "thread.h", incompleteStruct, bycopy.} = object
+  z_thread_base* {.importc: "_thread_base", header: hdr, incompleteStruct, bycopy.} = object
 
     # # qnode_dlist* {.importc: "qnode_dlist".}: sys_dnode_t # note part of anonymous C union
     # # qnode_rb* {.importc: "qnode_rb".}: rbnode # note part of anonymous C union
 
     # # C Union
     # # C union elem 1
-    # sched_locked* {.importc: "sched_locked", header: "thread.h".}: uint8 # part of anonymous union / struct
-    # prio* {.importc: "prio", header: "thread.h".}: int8 # part of anonymous union / struct
+    # sched_locked* {.importc: "sched_locked", header: hdr.}: uint8 # part of anonymous union / struct
+    # prio* {.importc: "prio", header: hdr.}: int8 # part of anonymous union / struct
     # # C union elem 2
     # preempt* {.importc: "preempt".}: uint16
     # # end C union 
@@ -85,30 +87,30 @@ type
 # when CONFIG_THREAD_USERSPACE_LOCAL_DATA:
 #   type
 #     _thread_userspace_local_data* {.importc: "_thread_userspace_local_data",
-#                                    header: "thread.h", bycopy.} = object
+#                                    header: hdr, bycopy.} = object
 #       when CONFIG_ERRNO and not CONFIG_ERRNO_IN_TLS:
-#         var errno_var* {.importc: "errno_var", header: "thread.h".}: cint
+#         var errno_var* {.importc: "errno_var", header: hdr.}: cint
 
 # when CONFIG_THREAD_RUNTIME_STATS:
 #   type
 #     k_thread_runtime_stats* {.importc: "k_thread_runtime_stats",
-#                              header: "thread.h", bycopy.} = object
-#       execution_cycles* {.importc: "execution_cycles", header: "thread.h".}: uint64
+#                              header: hdr, bycopy.} = object
+#       execution_cycles* {.importc: "execution_cycles", header: hdr.}: uint64
 
 
 #   type
-#     _thread_runtime_stats* {.importc: "_thread_runtime_stats", header: "thread.h",
+#     _thread_runtime_stats* {.importc: "_thread_runtime_stats", header: hdr,
 #                             bycopy.} = object
 #       when CONFIG_THREAD_RUNTIME_STATS_USE_TIMING_FUNCTIONS: ##  Timestamp when last switched in
-#         var last_switched_in* {.importc: "last_switched_in", header: "thread.h".}: timing_t
+#         var last_switched_in* {.importc: "last_switched_in", header: hdr.}: timing_t
 #       else:
-#         var last_switched_in* {.importc: "last_switched_in", header: "thread.h".}: uint32
+#         var last_switched_in* {.importc: "last_switched_in", header: hdr.}: uint32
 #       stats* {.importc: "stats".}: k_thread_runtime_stats_t
 
 type
-  k_thread_runtime_stats_t* {.importc: "k_thread_runtime_stats_t", header: "thread.h", bycopy.} = object
+  k_thread_runtime_stats_t* {.importc: "k_thread_runtime_stats_t", header: hdr, bycopy.} = object
 
-  z_poller* {.importc: "z_poller", header: "thread.h", incompleteStruct, bycopy.} = object
+  z_poller* {.importc: "z_poller", header: hdr, incompleteStruct, bycopy.} = object
     is_polling* {.importc: "is_polling".}: bool
     mode* {.importc: "mode".}: uint8
 
@@ -119,24 +121,24 @@ type
 ##
 
 type
-  k_thread* {.importc: "k_thread", header: "thread.h", incompleteStruct, bycopy.} = object
+  k_thread* {.importc: "struct k_thread", header: hdr, incompleteStruct, bycopy.} = object
     base* {.importc: "base".}: z_thread_base ## * defined by the architecture, but all archs need these
 
     # callee_saved* {.importc: "callee_saved".}: _callee_saved ## * static thread init data
     # init_data* {.importc: "init_data".}: pointer ## * threads waiting in k_thread_join()
     # join_queue* {.importc: "join_queue".}: _wait_q_t
 
-    # poller* {.importc: "poller", header: "thread.h".}: z_poller
+    # poller* {.importc: "poller", header: hdr.}: z_poller
 
     # when CONFIG_THREAD_MONITOR:
     #   ## * thread entry and parameters description
-    #   entry* {.importc: "entry", header: "thread.h".}: __thread_entry
+    #   entry* {.importc: "entry", header: hdr.}: __thread_entry
     #   ## * next item in list of all threads
-    #   next_thread* {.importc: "next_thread", header: "thread.h".}: ptr k_thread
+    #   next_thread* {.importc: "next_thread", header: hdr.}: ptr k_thread
 
     # when CONFIG_THREAD_NAME:
     #   ## * Thread name
-    #   name* {.importc: "name", header: "thread.h".}: array[CONFIG_THREAD_MAX_NAME_LEN, char]
+    #   name* {.importc: "name", header: hdr.}: array[CONFIG_THREAD_MAX_NAME_LEN, char]
 
     when CONFIG_THREAD_CUSTOM_DATA:
       ## * crude thread-local storage
@@ -152,24 +154,24 @@ type
 
     # when CONFIG_THREAD_STACK_INFO:
     #   ## * Stack Info
-    #   stack_info* {.importc: "stack_info", header: "thread.h".}: _thread_stack_info
+    #   stack_info* {.importc: "stack_info", header: hdr.}: _thread_stack_info
 
     # when CONFIG_USERSPACE:
     #   ## * memory domain info of the thread
-    #   mem_domain_info* {.importc: "mem_domain_info", header: "thread.h".}: _mem_domain_info
+    #   mem_domain_info* {.importc: "mem_domain_info", header: hdr.}: _mem_domain_info
     #   ## * Base address of thread stack
-    #   stack_obj* {.importc: "stack_obj", header: "thread.h".}: ptr k_thread_stack_t
+    #   stack_obj* {.importc: "stack_obj", header: hdr.}: ptr k_thread_stack_t
     #   ## * current syscall frame pointer
-    #   syscall_frame* {.importc: "syscall_frame", header: "thread.h".}: pointer
+    #   syscall_frame* {.importc: "syscall_frame", header: hdr.}: pointer
 
     # when CONFIG_USE_SWITCH:
     #   ##  When using __switch() a few previously arch-specific items
     #   ##  become part of the core OS
     #   ##
     #   ## * z_swap() return value
-    #   swap_retval* {.importc: "swap_retval", header: "thread.h".}: cint
+    #   swap_retval* {.importc: "swap_retval", header: hdr.}: cint
     #   ## * Context handle returned via arch_switch()
-    #   switch_handle* {.importc: "switch_handle", header: "thread.h".}: pointer
+    #   switch_handle* {.importc: "switch_handle", header: hdr.}: pointer
 
     resource_pool* {.importc: "resource_pool".}: pointer ## * resource pool
 
@@ -183,7 +185,7 @@ type
 
     # when CONFIG_DEMAND_PAGING_THREAD_STATS:
     #   ## * Paging statistics
-    #   paging_stats* {.importc: "paging_stats", header: "thread.h".}: k_mem_paging_stats_t
+    #   paging_stats* {.importc: "paging_stats", header: hdr.}: k_mem_paging_stats_t
     # arch* {.importc: "arch".}: _thread_arch ## * arch-specifics: must always be at the end
 
   k_tid_t* = ptr k_thread

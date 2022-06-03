@@ -15,7 +15,8 @@ import ../zsys_clock
 ##
 ##  @return Timeout delay value.
 ##
-proc K_NO_WAIT*(): k_timeout_t {.importc: "K_NO_WAIT", header: "kernel.h".}
+var
+  K_NO_WAIT* {.importc: "$1", header: "kernel.h".}: k_timeout_t
 
 ## *
 ##  @brief Generate timeout delay from nanoseconds.

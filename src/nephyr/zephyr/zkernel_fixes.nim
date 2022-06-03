@@ -9,7 +9,7 @@ proc k_sys_reboot*(kind: cint) {.importc: "sys_reboot", header: "<sys/reboot.h>"
 
 proc printk*(frmt: cstring) {.importc: "$1", varargs, header: "<sys/printk.h>".}
 
-template zsyscall*(fn: untyped) = fn
+macro zsyscall*(fn: untyped) = result = fn
 
 # __syscall k_tid_t k_thread_create(struct k_thread *new_thread,
 # 				  k_thread_stack_t *stack,
@@ -21,7 +21,7 @@ type
 
   k_thread_stack_t* {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
 
-  k_thread_entry_t* {.importc: "$1 ", header: "<kernel.h>", bycopy, incompleteStruct.} = object
+  k_thread_entry_t* {.importc: "$1 ", header: "<kernel.h>".} = proc (p1, p2, p3: pointer) {.cdecl.}
 
   k_thread_proc* = proc (p1, p2, p3: pointer) {.cdecl.}
 
@@ -61,8 +61,6 @@ type
 
   k_mem_block * {.importc: "struct k_mem_block", header: "<kernel.h>", bycopy, incompleteStruct.} = object
 
-# var
-  # K_NO_WAIT* {.importc: "$1", header: "<kernel.h>".}: k_timeout_t
 
 # proc K_MSEC*(ts: int): k_timeout_t {.importc: "$1", header: "<kernel.h>".}
 
