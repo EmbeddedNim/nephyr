@@ -133,6 +133,9 @@ proc K_THREAD_STACK_SIZEOF*(stack: ptr k_thread_stack_t): csize_t {.
 #                      delay: k_timeout_t): k_tid_t {.
 #                         importc: "k_thread_create", header: "<kernel.h>".}
 
+import macros
+macro getSymbolName*(x: typed): string = x.toStrLit
 
-template KDefineStack*(name: static[string], size: static[int]) = 
-  {.emit: "/*TYPESECTION*/ K_KERNEL_STACK_DEFINE($1, $2);" % [$name, $size].}
+template KDefineStack*(name: untyped, size: static[int]) =
+  var name* {.inject, importc, nodecl.}: ptr k_thread_stack_t
+  {.emit: "/*TYPESECTION*/ K_KERNEL_STACK_DEFINE($1, $2);" % [ getSymbolName(name), $size, ] .}
