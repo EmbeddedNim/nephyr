@@ -72,6 +72,23 @@ proc kCreateThread*(
     delay: k_timeout_t = K_NO_WAIT
 ): k_tid_t =
   ## convenience wrapper for createThread
+  ## 
+  ## Usage:
+  ## 
+  ##   # Thread Definition
+  ##   const blinkStackSz = 8192.BytesSz
+  ##   KDefineStack(blinkStack, blinkStackSz.int)
+  ##   var blink {.exportc.}: k_thread
+  ## 
+  ##   # Create and start thread
+  ##   let blinkId =
+  ##     blink.kCreateThread(
+  ##       function = blinkThrFunc,
+  ##       stack = blinkStack,
+  ##       stack_size = blinkStackSz,
+  ##       priority = 2.ThreadPriority,
+  ##     )
+
   let entry: k_thread_entry_t = function
   result =
     zkernel.k_thread_create(
