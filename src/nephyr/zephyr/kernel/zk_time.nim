@@ -274,7 +274,8 @@ proc Z_TIMER_INITIALIZER*(obj: k_timer; expiry: k_timer_cb_t; stop: k_timer_cb_t
 ##  @return N/A
 ##
 type
-  k_timer_expiry_t* = proc (timer: ptr k_timer)
+  k_timer_expiry_t* = proc (timer: ptr k_timer) {.cdecl.}
+
 ## *
 ##  @typedef k_timer_stop_t
 ##  @brief Timer stop function type.
@@ -292,7 +293,7 @@ type
 ##  @return N/A
 ##
 type
-  k_timer_stop_t* = proc (timer: ptr k_timer)
+  k_timer_stop_t* = proc (timer: ptr k_timer) {.cdecl.}
 
 # ## *
 # ##  @brief Statically define and initialize a timer.
