@@ -57,7 +57,11 @@ template SystemInit*(fn: proc {.cdecl.}, level: SystemInitLevel, priority: Syste
   {.emit: "/*INCLUDESECTION*/\n#include <init.h>".}
   {.emit: ["/*VARSECTION*/\nSYS_INIT(", fn, ", ", level, ", ", priority, ");"].}
 
-macro zkThread*(p: untyped) = result = p
+macro zkThread*(p: untyped) =
+  ## pragma for indicating a proc is used as a Zephyr thread 
+  result = p
+
+var kt: k_thread
 
 proc kCreateThread*(
     thread: var k_thread;
@@ -102,3 +106,14 @@ proc kCreateThread*(
       delay
     )
     
+type
+  KStack* = object
+    raw*: ptr k_thread_stack_t
+    size*: int
+
+template KDefineStack*(stack: var KStack, stackArea: untyped, size: static[int]) =
+  # Use Zephyr macro to define a stack area
+  KDefineStackMacro(stackArea, size)
+  # Setup the stack with the address
+  stack.raw = stackArea
+  stack.int = size
