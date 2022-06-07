@@ -1,5 +1,8 @@
 
 import wrapper_utils
+import cdecl
+import cdecl/cdeclapi
+export cdeclapi
 
 export wrapper_utils
 
@@ -115,25 +118,25 @@ when defined(NephyrDebugDList):
 
     return "dlist: " & repr(dlist)
 
-proc K_THREAD_STACK_SIZEOF*(stack: ptr k_thread_stack_t): csize_t {.
-      importc: "$1", header: "<kernel.h>".}
-# proc K_THREAD_STACK_DEFINE*(stack_area: cminvtoken, size: csize_t) {.
-      # importc: "$1", header: "<kernel.h>".}
+proc KDefineStackMacro*(stackArea: CToken, size: static[int]) {.
+  cdeclmacro: "K_KERNEL_STACK_DEFINE", global, cdeclsVar(name -> ptr k_thread_stack_t).} ##\
+    ## Wrapper around Zephyr's `K_KERNEL_STACK_DEFINE` macro. Generally any block
+    ## of memory will work, however it must be word aligned.
+    ## 
+    ## The Zephyr macro also defines extra attributes for the linker so
+    ## this macro can be useful for cases where you want to use Zephyr's
+    ## "proper" stack definition.
 
-# # K thread create
-# proc k_thread_create*(new_thread: ptr k_thread,
-#                      stack: ptr k_thread_stack_t,
-#                      stack_size: csize_t,
-#                      entry: k_thread_proc,
-#                      p1, p2, p3: pointer,
-#                      prio: cint,
-#                      options: uint32,
-#                      delay: k_timeout_t): k_tid_t {.
-#                         importc: "k_thread_create", header: "<kernel.h>".}
+proc K_THREAD_STACK_SIZEOF*(stack: ptr k_thread_stack_t): csize_t {.importc: "$1", header: "<kernel.h>".}
 
-import macros
-macro getSymbolName*(x: typed): string = x.toStrLit
+type
+  KStack* = object
+    raw*: ptr k_thread_stack_t
+    size*: int
 
-template KDefineStack*(name: untyped, size: static[int]) =
-  var name* {.inject, importc, nodecl.}: ptr k_thread_stack_t
-  {.emit: "/*TYPESECTION*/ K_KERNEL_STACK_DEFINE($1, $2);" % [ getSymbolName(name), $size, ] .}
+template KDefineStack*(stack: var KStack, stackArea: untyped, size: static[int]) =
+  # Use Zephyr macro to define a stack area
+  KDefineStackMacro(stackArea, size)
+  # Setup the stack with the address
+  stack.raw = stackArea
+  stack.int = size
