@@ -28,7 +28,6 @@
 ##  @return N/A
 ##
 import zconfs
-import zkernel_fixes
 
 const hdr = "<kernel/thread.h>"
 
