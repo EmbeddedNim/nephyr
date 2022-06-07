@@ -61,7 +61,6 @@ macro zkThread*(p: untyped) =
   ## pragma for indicating a proc is used as a Zephyr thread 
   result = p
 
-var kt: k_thread
 
 proc kCreateThread*(
     thread: var k_thread;
@@ -105,15 +104,57 @@ proc kCreateThread*(
       options,
       delay
     )
-    
+
 type
   KStack* = object
     raw*: ptr k_thread_stack_t
-    size*: int
+    size*: BytesSz
+
+  KThread* = object
+    raw*: k_thread
+
+  KThreadId* = k_tid_t
 
 template KDefineStack*(stack: var KStack, stackArea: untyped, size: static[int]) =
   # Use Zephyr macro to define a stack area
   KDefineStackMacro(stackArea, size)
   # Setup the stack with the address
   stack.raw = stackArea
-  stack.int = size
+  stack.int = size.BytesSz
+
+proc kCreateThread*[T, U, V](
+    thread: var KThread;
+    stack: var KStack;
+    function: proc (p1: ptr T, p2: ptr U, p3: ptr V) {.nimcall.};
+    p1: ptr T = nil,
+    p2: ptr U = nil,
+    p3: ptr V = nil,
+    priority = ThreadPriority 1,
+    options: uint32 = 0;
+    delay: k_timeout_t = K_NO_WAIT
+): KThreadId =
+  ## Convenience wrapper for kCreateThread. Uses Nim types for cleaner code.  
+  ## TODO: test with real code :)
+  ## TODO: pass objects and ref's nicely
+  assert function != nil
+  proc kentry(p1, p2, p3: pointer) {.cdecl.} =
+    function(
+      cast[ptr T](p1),
+      cast[ptr U](p2),
+      cast[ptr V](p3),
+    )
+  
+  let entry: k_thread_entry_t = function
+
+  result =
+    zkernel.k_thread_create(
+      addr thread.raw,
+      stack.raw,
+      stack.size.csize_t,
+      entry,
+      p1, p2, p3,
+      priority.cint,
+      options,
+      delay
+    )
+  
