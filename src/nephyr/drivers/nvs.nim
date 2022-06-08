@@ -1,8 +1,10 @@
 ## NVS: non volatile storage in flash
 ##
 
+const hdr = "<fs/nvs.h>"
+
 type
-  nvs_fs* {.importc: "nvs_fs", header: "nvs.h", bycopy.} = object ##\
+  nvs_fs* {.importc: "nvs_fs", header: hdr, bycopy.} = object ##\
     ## *
     ##  @brief Non-volatile Storage File system structure
     ##
@@ -29,7 +31,7 @@ type
 
 
 proc nvs_init*(fs: ptr nvs_fs; dev_name: cstring): cint {.importc: "nvs_init",
-    header: "nvs.h".} ##\
+    header: hdr.} ##\
   ##  Initializes a NVS file system in flash.
   ##
   ##  @param fs Pointer to file system
@@ -41,7 +43,7 @@ proc nvs_init*(fs: ptr nvs_fs; dev_name: cstring): cint {.importc: "nvs_init",
 
 
 
-proc nvs_clear*(fs: ptr nvs_fs): cint {.importc: "nvs_clear", header: "nvs.h".} ##\
+proc nvs_clear*(fs: ptr nvs_fs): cint {.importc: "nvs_clear", header: hdr.} ##\
   ##  Clears the NVS file system from flash.
   ##  @param fs Pointer to file system
   ##  @retval 0 Success
@@ -51,7 +53,7 @@ proc nvs_clear*(fs: ptr nvs_fs): cint {.importc: "nvs_clear", header: "nvs.h".} 
 
 
 proc nvs_write*(fs: ptr nvs_fs; id: uint16; data: pointer; len: csize): csize {.
-    importc: "nvs_write", header: "nvs.h".} ##\
+    importc: "nvs_write", header: hdr.} ##\
   ##  Write an entry to the file system.
   ##
   ##  @param fs Pointer to file system
@@ -68,7 +70,7 @@ proc nvs_write*(fs: ptr nvs_fs; id: uint16; data: pointer; len: csize): csize {.
 
 
 proc nvs_delete*(fs: ptr nvs_fs; id: uint16): cint {.importc: "nvs_delete",
-    header: "nvs.h".} ##\
+    header: hdr.} ##\
   ##  Delete an entry from the file system
   ##
   ##  @param fs Pointer to file system
@@ -81,7 +83,7 @@ proc nvs_delete*(fs: ptr nvs_fs; id: uint16): cint {.importc: "nvs_delete",
 
 
 proc nvs_read*(fs: ptr nvs_fs; id: uint16; data: pointer; len: csize): csize {.
-    importc: "nvs_read", header: "nvs.h".} ##\
+    importc: "nvs_read", header: hdr.} ##\
   ##  Read an entry from the file system.
   ##
   ##  @param fs Pointer to file system
@@ -100,7 +102,7 @@ proc nvs_read*(fs: ptr nvs_fs; id: uint16; data: pointer; len: csize): csize {.
 
 proc nvs_read_hist*(fs: ptr nvs_fs; id: uint16; data: pointer; len: csize;
                    cnt: uint16): csize {.importc: "nvs_read_hist",
-    header: "nvs.h".} ##\
+    header: hdr.} ##\
   ##  Read a history entry from the file system.
   ##
   ##  @param fs Pointer to file system
@@ -118,7 +120,7 @@ proc nvs_read_hist*(fs: ptr nvs_fs; id: uint16; data: pointer; len: csize;
 
 
 proc nvs_calc_free_space*(fs: ptr nvs_fs): csize {.importc: "nvs_calc_free_space",
-    header: "nvs.h".} ##\
+    header: hdr.} ##\
   ##  Calculate the available free space in the file system.
   ##
   ##  @param fs Pointer to file system
