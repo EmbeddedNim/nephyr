@@ -183,7 +183,7 @@ proc k_work_busy_get*(work: ptr k_work): cint {.importc: "k_work_busy_get",
 ##
 ##  @return true if and only if k_work_busy_get() returns a non-zero value.
 ##
-proc k_work_is_pending*(work: ptr k_work): bool {.inline,
+proc k_work_is_pending*(work: ptr k_work): bool {.
     importc: "k_work_is_pending", header: "kernel.h".}
 
 
@@ -355,7 +355,7 @@ proc k_work_queue_start*(queue: ptr k_work_q; stack: ptr k_thread_stack_t;
 ##
 ##  @return the thread associated with the work queue.
 ##
-proc k_work_queue_thread_get*(queue: ptr k_work_q): k_tid_t {.inline,
+proc k_work_queue_thread_get*(queue: ptr k_work_q): k_tid_t {.
     importc: "k_work_queue_thread_get", header: "kernel.h".}
 
 
@@ -431,7 +431,7 @@ proc k_work_init_delayable*(dwork: ptr k_work_delayable; handler: k_work_handler
 ##
 ##  @return Address of the containing @c k_work_delayable structure.
 ##
-proc k_work_delayable_from_work*(work: ptr k_work): ptr k_work_delayable {.inline,
+proc k_work_delayable_from_work*(work: ptr k_work): ptr k_work_delayable {.
     importc: "k_work_delayable_from_work", header: "kernel.h".}
 
 
@@ -466,7 +466,7 @@ proc k_work_delayable_busy_get*(dwork: ptr k_work_delayable): cint {.
 ##  @return true if and only if k_work_delayable_busy_get() returns a non-zero
 ##  value.
 ##
-proc k_work_delayable_is_pending*(dwork: ptr k_work_delayable): bool {.inline,
+proc k_work_delayable_is_pending*(dwork: ptr k_work_delayable): bool {.
     importc: "k_work_delayable_is_pending", header: "kernel.h".}
 
 
@@ -484,7 +484,7 @@ proc k_work_delayable_is_pending*(dwork: ptr k_work_delayable): bool {.inline,
 ##  expire, or the current tick count if the work is not scheduled.
 ##
 proc k_work_delayable_expires_get*(dwork: ptr k_work_delayable): k_ticks_t {.
-    inline, importc: "k_work_delayable_expires_get", header: "kernel.h".}
+    importc: "k_work_delayable_expires_get", header: "kernel.h".}
 
 
 ## * @brief Get the number of ticks until a scheduled delayable work will be

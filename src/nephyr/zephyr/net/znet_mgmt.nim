@@ -165,7 +165,8 @@ proc net_mgmt_add_event_callback*(cb: ptr net_mgmt_event_callback) {.
 proc net_mgmt_event_notify_with_info*(mgmt_event: uint32; iface: ptr net_if;
                                       info: pointer; length: csize_t) {.
     importc: "net_mgmt_event_notify_with_info", header: "net_mgmt.h".}
-proc net_mgmt_event_notify*(mgmt_event: uint32; iface: ptr net_if) {.inline.} =
+
+proc net_mgmt_event_notify*(mgmt_event: uint32; iface: ptr net_if) =
   net_mgmt_event_notify_with_info(mgmt_event, iface, nil, 0)
 
 ## *

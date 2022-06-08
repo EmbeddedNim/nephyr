@@ -432,7 +432,7 @@ proc spi_transceive*(dev: ptr device; config: ptr spi_config; tx_bufs: ptr spi_b
 ##  @note This function is an helper function calling spi_transceive.
 ##
 proc spi_read*(dev: ptr device; config: ptr spi_config; rx_bufs: ptr spi_buf_set): cint {.
-    inline, importc: "spi_read".} =
+    importc: "spi_read".} =
   return spi_transceive(dev, config, nil, rx_bufs)
 
 ## *
@@ -451,7 +451,7 @@ proc spi_read*(dev: ptr device; config: ptr spi_config; rx_bufs: ptr spi_buf_set
 ##  @note This function is an helper function calling spi_transceive.
 ##
 proc spi_write*(dev: ptr device; config: ptr spi_config; tx_bufs: ptr spi_buf_set): cint {.
-    inline, importc: "spi_write".} =
+    importc: "spi_write".} =
   return spi_transceive(dev, config, tx_bufs, nil)
 
 ##  Doxygen defines this so documentation is generated.

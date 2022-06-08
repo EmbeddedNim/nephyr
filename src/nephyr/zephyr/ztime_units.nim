@@ -24,9 +24,6 @@ proc SYS_TIMEOUT_MS*(ms: int64) {.importc: "SYS_TIMEOUT_MS", header: "time_units
 when defined(CONFIG_TIMER_READS_ITS_FREQUENCY_AT_RUNTIME):
   proc sys_clock_hw_cycles_per_sec_runtime_get*(): cint {.syscall,
       importc: "sys_clock_hw_cycles_per_sec_runtime_get", header: "time_units.h".}
-  proc z_impl_sys_clock_hw_cycles_per_sec_runtime_get*(): cint {.inline.} =
-    var z_clock_hw_cycles_per_sec: cint
-    return z_clock_hw_cycles_per_sec
 
 proc sys_clock_hw_cycles_per_sec*(): cint {.
     importc: "sys_clock_hw_cycles_per_sec", header: "time_units.h".}

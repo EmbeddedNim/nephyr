@@ -457,7 +457,7 @@ proc DEVICE_DECLARE*(name: cminvtoken) {.importc: "DEVICE_DECLARE", header: "dev
 ##  device does not have an associated handle.
 ##
 
-proc device_handle_get*(dev: ptr device): device_handle_t {.inline, importc: "device_handle_get", header: "device".}
+proc device_handle_get*(dev: ptr device): device_handle_t {.importc: "device_handle_get", header: "device".}
 
 
 
@@ -516,7 +516,7 @@ type
 ##
 
 proc device_required_handles_get*(dev: ptr device; count: ptr csize_t): ptr device_handle_t {.
-    inline, importc: "device_required_handles_get", header: "device.h".}
+    importc: "device_required_handles_get", header: "device.h".}
 
 
 
@@ -581,64 +581,8 @@ proc device_get_binding*(name: cstring): ptr device {.syscall,
 
 
 
-## * @brief Get access to the static array of static devices.
-##
-##  @param devices where to store the pointer to the array of
-##  statically allocated devices.  The array must not be mutated
-##  through this pointer.
-##
-##  @return the number of statically allocated devices.
-##
-
-proc z_device_get_all_static*(devices: ptr ptr device): csize_t {.
-    importc: "z_device_get_all_static", header: "device.h".}
-
-
-
-## * @brief Determine whether a device has been successfully initialized.
-##
-##  @param dev pointer to the device in question.
-##
-##  @return true if and only if the device is available for use.
-##
-
-proc z_device_ready*(dev: ptr device): bool {.importc: "z_device_ready",
-    header: "device.h".}
-
-
-
-## * @brief Determine whether a device is ready for use
-##
-##  This is the implementation underlying `device_usable_check()`, without the
-##  overhead of a syscall wrapper.
-##
-##  @param dev pointer to the device in question.
-##
-##  @return a non-positive integer as documented in device_usable_check().
-##
-
-proc z_device_usable_check*(dev: ptr device): cint {.inline,
-    importc: "z_device_usable_check", header: "device.h".}
-
-
-
-## * @brief Determine whether a device is ready for use.
-##
-##  This checks whether a device can be used, returning 0 if it can, and
-##  distinct error values that identify the reason if it cannot.
-##
-##  @retval 0 if the device is usable.
-##  @retval -ENODEV if the device has not been initialized, the device pointer
-##  is NULL or the initialization failed.
-##  @retval other negative error codes to indicate additional conditions that
-##  make the device unusable.
-##
-
 proc device_usable_check*(dev: ptr device): cint {.syscall,
     importc: "device_usable_check", header: "device.h".}
-
-proc z_impl_device_usable_check*(dev: ptr device): cint {.inline,
-    importc: "z_impl_device_usable_check", header: "device.h".}
 
 
 
@@ -660,7 +604,7 @@ proc z_impl_device_usable_check*(dev: ptr device): cint {.inline,
 ##  is passed as argument.
 ##
 
-proc device_is_ready*(dev: ptr device): bool {.inline, importc: "device_is_ready", header: "device.h".}
+proc device_is_ready*(dev: ptr device): bool {.importc: "device_is_ready", header: "device.h".}
 
 
 

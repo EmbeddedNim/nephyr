@@ -198,12 +198,8 @@ type
 ##  @return Return a verdict.
 ##
 
-when defined(CONFIG_NET_IPV6_NBR_CACHE) and defined(CONFIG_NET_NATIVE_IPV6):
-  proc net_ipv6_prepare_for_send*(pkt: ptr net_pkt_alias): net_verdict {.
+proc net_ipv6_prepare_for_send*(pkt: ptr net_pkt_alias): net_verdict {.
       importc: "net_ipv6_prepare_for_send", header: hdr.}
-else:
-  proc net_ipv6_prepare_for_send*(pkt: ptr net_pkt_alias): net_verdict {.inline.} =
-    return NET_OK
 
 ## *
 ##  @brief Look for a neighbor from it's ipaddress on an iface
