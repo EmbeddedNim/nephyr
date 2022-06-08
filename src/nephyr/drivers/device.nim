@@ -15,6 +15,8 @@ proc listAllStaticDevices*(): seq[ptr device] =
   var sdevs: ptr UncheckedArray[ptr device]
   var cnt: csize_t
   cnt = z_device_get_all_static(sdevs)
+  echo "cnt: ", cnt
   newSeq(result, cnt)
   for i in 0..<cnt:
-      result[i] = sdevs[i]
+    echo "dev ptr: ", sdevs[i].pointer.repr
+    result[i] = sdevs[][i]
