@@ -15,7 +15,7 @@ type
     ##  through a runtime.
     ##
     write_block_size* {.importc: "write_block_size".}: csize_t
-    erase_value* {.importc: "erase_value".}: uint8_t ##  Byte value of erased flash
+    erase_value* {.importc: "erase_value".}: uint8 ##  Byte value of erased flash
 
 
 type
@@ -69,7 +69,7 @@ when defined(CONFIG_FLASH_PAGE_LAYOUT):
 
 type
   flash_api_sfdp_read* = proc (dev: ptr device; offset: off_t; data: pointer; len: csize_t): cint
-  flash_api_read_jedec_id* = proc (dev: ptr device; id: ptr uint8_t): cint
+  flash_api_read_jedec_id* = proc (dev: ptr device; id: ptr uint8): cint
   flash_driver_api* {.importc: "flash_driver_api", header: "flash.h", bycopy.} = object
     read* {.importc: "read".}: flash_api_read
     write* {.importc: "write".}: flash_api_write
@@ -168,7 +168,7 @@ type
   flash_pages_info* {.importc: "flash_pages_info", header: "flash.h", bycopy.} = object
     start_offset* {.importc: "start_offset".}: off_t ##  offset from the base of flash address
     size* {.importc: "size".}: csize_t
-    index* {.importc: "index".}: uint32_t
+    index* {.importc: "index".}: uint32
 
 
 when defined(CONFIG_FLASH_PAGE_LAYOUT):
@@ -193,7 +193,7 @@ when defined(CONFIG_FLASH_PAGE_LAYOUT):
   ##
   ##   @return  0 on success, -EINVAL  if page of the index doesn't exist.
   ##
-  proc flash_get_page_info_by_idx*(dev: ptr device; page_index: uint32_t;
+  proc flash_get_page_info_by_idx*(dev: ptr device; page_index: uint32;
                                   info: ptr flash_pages_info): cint {.zsyscall,
       importc: "flash_get_page_info_by_idx", header: "flash.h".}
   ## *
@@ -267,7 +267,7 @@ when defined(CONFIG_FLASH_JESD216_API):
   ##  @retval -ENOTSUP if flash driver doesn't support this function
   ##  @retval negative values for other errors
   ##
-  proc flash_read_jedec_id*(dev: ptr device; id: ptr uint8_t): cint {.syscall,
+  proc flash_read_jedec_id*(dev: ptr device; id: ptr uint8): cint {.syscall,
       importc: "flash_read_jedec_id", header: "flash.h".}
 
 ## *

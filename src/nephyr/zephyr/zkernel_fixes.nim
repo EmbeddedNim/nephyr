@@ -55,12 +55,14 @@ type
   sys_dnode_t* {.importc: "$1", header: "<kernel.h>",
                  bycopy, incompleteStruct.} = dnode
 
-  k_spinlock * {.importc: "struct $1", header: "<spinlock.h>", bycopy, incompleteStruct.} = object
+  k_spinlock* {.importc: "struct $1", header: "<spinlock.h>", bycopy, incompleteStruct.} = object
 
-  k_priv_timeout * {.importc: "struct _timeout", header: "<kernel.h>", bycopy, incompleteStruct.} = object
+  k_priv_timeout* {.importc: "struct _timeout", header: "<kernel.h>", bycopy, incompleteStruct.} = object
 
-  k_mem_block * {.importc: "struct k_mem_block", header: "<kernel.h>", bycopy, incompleteStruct.} = object
+  k_mem_block* {.importc: "struct k_mem_block", header: "<kernel.h>", bycopy, incompleteStruct.} = object
 
+  off_t* = csize ##\
+    ## Offset type size. it's a ssizt_t, aka a signed csize_t in C. For historical reasons this is csize in nim
 
 # proc K_MSEC*(ts: int): k_timeout_t {.importc: "$1", header: "<kernel.h>".}
 
