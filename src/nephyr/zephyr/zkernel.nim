@@ -20,13 +20,13 @@ import zconfs
 import zkernel_fixes
 import zsys_clock
 import zatomic
-import zthread
+import zkernel_thread
 
 export zconfs
 export zkernel_fixes
 export zsys_clock
 export zatomic
-export zthread
+export zkernel_thread
 
 import kernel/zk_sem
 import kernel/zk_fatal

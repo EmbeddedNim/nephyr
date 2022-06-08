@@ -1,5 +1,8 @@
 
 import wrapper_utils
+import cdecl
+import cdecl/cdeclapi
+export cdeclapi
 
 export wrapper_utils
 
@@ -11,12 +14,6 @@ proc printk*(frmt: cstring) {.importc: "$1", varargs, header: "<sys/printk.h>".}
 
 macro zsyscall*(fn: untyped) = result = fn
 
-# __syscall k_tid_t k_thread_create(struct k_thread *new_thread,
-# 				  k_thread_stack_t *stack,
-# 				  size_t stack_size,
-# 				  k_thread_entry_t entry,
-# 				  void *p1, void *p2, void *p3,
-# 				  int prio, uint32_t options, k_timeout_t delay);
 type
 
   k_thread_stack_t* {.importc: "$1", header: "<kernel.h>", bycopy, incompleteStruct.} = object
@@ -61,8 +58,16 @@ type
 
   k_mem_block * {.importc: "struct k_mem_block", header: "<kernel.h>", bycopy, incompleteStruct.} = object
 
+proc KDefineStackMacro*(stackArea: CToken, size: static[int]) {.
+  cdeclmacro: "K_KERNEL_STACK_DEFINE", global, cdeclsVar(name -> ptr k_thread_stack_t).} ##\
+    ## Wrapper around Zephyr's `K_KERNEL_STACK_DEFINE` macro. Generally any block
+    ## of memory will work, however it must be word aligned.
+    ## 
+    ## The Zephyr macro also defines extra attributes for the linker so
+    ## this macro can be useful for cases where you want to use Zephyr's
+    ## "proper" stack definition.
 
-# proc K_MSEC*(ts: int): k_timeout_t {.importc: "$1", header: "<kernel.h>".}
+proc K_THREAD_STACK_SIZEOF*(stack: ptr k_thread_stack_t): csize_t {.importc: "$1", header: "<kernel.h>".}
 
 when defined(NephyrDebugSfList):
   proc sys_sflist_peek_head(list: ptr sys_sflist_t): ptr sys_sfnode_t {.importc: "$1", header: "<kernel.h>".}
@@ -114,26 +119,3 @@ when defined(NephyrDebugDList):
       node = sys_dlist_peek_next(addr val, node)
 
     return "dlist: " & repr(dlist)
-
-proc K_THREAD_STACK_SIZEOF*(stack: ptr k_thread_stack_t): csize_t {.
-      importc: "$1", header: "<kernel.h>".}
-# proc K_THREAD_STACK_DEFINE*(stack_area: cminvtoken, size: csize_t) {.
-      # importc: "$1", header: "<kernel.h>".}
-
-# # K thread create
-# proc k_thread_create*(new_thread: ptr k_thread,
-#                      stack: ptr k_thread_stack_t,
-#                      stack_size: csize_t,
-#                      entry: k_thread_proc,
-#                      p1, p2, p3: pointer,
-#                      prio: cint,
-#                      options: uint32,
-#                      delay: k_timeout_t): k_tid_t {.
-#                         importc: "k_thread_create", header: "<kernel.h>".}
-
-import macros
-macro getSymbolName*(x: typed): string = x.toStrLit
-
-template KDefineStack*(name: untyped, size: static[int]) =
-  var name* {.inject, importc, nodecl.}: ptr k_thread_stack_t
-  {.emit: "/*TYPESECTION*/ K_KERNEL_STACK_DEFINE($1, $2);" % [ getSymbolName(name), $size, ] .}
