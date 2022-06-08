@@ -4,15 +4,17 @@ import ../zdevice
 import ../zkernel
 import ../kernel/zk_locks
 
+const hdr = "<drivers/flash.h>"
+
 when defined(CONFIG_FLASH_PAGE_LAYOUT):
   type
-    flash_pages_layout* {.importc: "flash_pages_layout", header: "flash.h", bycopy.} = object
+    flash_pages_layout* {.importc: "flash_pages_layout", header: hdr, bycopy.} = object
       pages_count* {.importc: "pages_count".}: csize_t ##  count of pages sequence of the same size
       pages_size* {.importc: "pages_size".}: csize_t
 
 
 type
-  flash_parameters* {.importc: "flash_parameters", header: "flash.h", bycopy.} = object ##\
+  flash_parameters* {.importc: "flash_parameters", header: hdr, bycopy.} = object ##\
     ##  Flash memory parameters. Contents of this structure suppose to be
     ##  filled in during flash device initialization and stay constant
     ##  through a runtime.
@@ -73,19 +75,19 @@ when defined(CONFIG_FLASH_PAGE_LAYOUT):
 type
   flash_api_sfdp_read* = proc (dev: ptr device; offset: off_t; data: pointer; len: csize_t): cint
   flash_api_read_jedec_id* = proc (dev: ptr device; id: ptr uint8): cint
-  flash_driver_api* {.importc: "flash_driver_api", header: "flash.h", bycopy.} = object
+  flash_driver_api* {.importc: "flash_driver_api", header: hdr, bycopy.} = object
     read* {.importc: "read".}: flash_api_read
     write* {.importc: "write".}: flash_api_write
     erase* {.importc: "erase".}: flash_api_erase
     when defined(CONFIG_FLASH_PAGE_LAYOUT):
-      page_layout* {.header: "flash.h".}: flash_api_pages_layout
+      page_layout* {.header: hdr.}: flash_api_pages_layout
     when defined(CONFIG_FLASH_JESD216_API):
-      sfdp_read* {.header: "flash.h".}: flash_api_sfdp_read
-      read_jedec_id* {.header: "flash.h".}: flash_api_read_jedec_id
+      sfdp_read* {.header: hdr.}: flash_api_sfdp_read
+      read_jedec_id* {.header: hdr.}: flash_api_read_jedec_id
 
 
 proc flash_read*(dev: ptr device; offset: off_t; data: pointer; len: csize_t): cint {.
-    syscall, importc: "flash_read", header: "flash.h".} ##\
+    syscall, importc: "flash_read", header: hdr.} ##\
       ##   All flash drivers support reads without alignment restrictions on
       ##   the read offset, the read size, or the destination address.
       ##
@@ -102,7 +104,7 @@ proc flash_read*(dev: ptr device; offset: off_t; data: pointer; len: csize_t): c
       
 
 proc flash_write*(dev: ptr device; offset: off_t; data: pointer; len: csize_t): cint {.
-    syscall, importc: "flash_write", header: "flash.h".} ##\
+    syscall, importc: "flash_write", header: hdr.} ##\
       ##   All flash drivers support a source buffer located either in RAM or
       ##   SoC flash, without alignment restrictions on the source address.
       ##   Write size and offset must be multiples of the minimum write block size
@@ -142,7 +144,7 @@ proc flash_write*(dev: ptr device; offset: off_t; data: pointer; len: csize_t): 
 ##
 
 proc flash_erase*(dev: ptr device; offset: off_t; size: csize_t): cint {.
-    importc: "flash_erase", header: "flash.h".}
+    importc: "flash_erase", header: hdr.}
 
 
 ## *
@@ -163,10 +165,10 @@ proc flash_erase*(dev: ptr device; offset: off_t; size: csize_t): cint {.
 ##
 
 proc flash_write_protection_set*(dev: ptr device; enable: bool): cint {.
-    importc: "flash_write_protection_set", header: "flash.h".}
+    importc: "flash_write_protection_set", header: hdr.}
 
 type
-  flash_pages_info* {.importc: "flash_pages_info", header: "flash.h", bycopy.} = object
+  flash_pages_info* {.importc: "flash_pages_info", header: hdr, bycopy.} = object
     start_offset* {.importc: "start_offset".}: off_t ##  offset from the base of flash address
     size* {.importc: "size".}: csize_t
     index* {.importc: "index".}: uint32
@@ -184,7 +186,7 @@ when defined(CONFIG_FLASH_PAGE_LAYOUT):
   ##
   proc flash_get_page_info_by_offs*(dev: ptr device; offset: off_t;
                                    info: ptr flash_pages_info): cint {.zsyscall,
-      importc: "flash_get_page_info_by_offs", header: "flash.h".}
+      importc: "flash_get_page_info_by_offs", header: hdr.}
   ## *
   ##   @brief  Get the size and start offset of flash page of certain index.
   ##
@@ -196,7 +198,7 @@ when defined(CONFIG_FLASH_PAGE_LAYOUT):
   ##
   proc flash_get_page_info_by_idx*(dev: ptr device; page_index: uint32;
                                   info: ptr flash_pages_info): cint {.zsyscall,
-      importc: "flash_get_page_info_by_idx", header: "flash.h".}
+      importc: "flash_get_page_info_by_idx", header: hdr.}
   ## *
   ##   @brief  Get the total number of flash pages.
   ##
@@ -205,7 +207,7 @@ when defined(CONFIG_FLASH_PAGE_LAYOUT):
   ##   @return  Number of flash pages.
   ##
   proc flash_get_page_count*(dev: ptr device): csize_t {.syscall,
-      importc: "flash_get_page_count", header: "flash.h".}
+      importc: "flash_get_page_count", header: hdr.}
   ## *
   ##  @brief Callback type for iterating over flash pages present on a device.
   ##
@@ -231,7 +233,7 @@ when defined(CONFIG_FLASH_PAGE_LAYOUT):
   ##  @param data Private data for callback function
   ##
   proc flash_page_foreach*(dev: ptr device; cb: flash_page_cb; data: pointer) {.
-      importc: "flash_page_foreach", header: "flash.h".}
+      importc: "flash_page_foreach", header: hdr.}
 
 when defined(CONFIG_FLASH_JESD216_API):
   ## *
@@ -255,7 +257,7 @@ when defined(CONFIG_FLASH_JESD216_API):
   ##  @retval negative values for other errors.
   ##
   proc flash_sfdp_read*(dev: ptr device; offset: off_t; data: pointer; len: csize_t): cint {.
-      syscall, importc: "flash_sfdp_read", header: "flash.h".}
+      syscall, importc: "flash_sfdp_read", header: hdr.}
 
   ## *
   ##  @brief Read the JEDEC ID from a compatible flash device.
@@ -269,7 +271,7 @@ when defined(CONFIG_FLASH_JESD216_API):
   ##  @retval negative values for other errors
   ##
   proc flash_read_jedec_id*(dev: ptr device; id: ptr uint8): cint {.syscall,
-      importc: "flash_read_jedec_id", header: "flash.h".}
+      importc: "flash_read_jedec_id", header: hdr.}
 
 ## *
 ##   @brief  Get the minimum write block size supported by the driver
@@ -284,7 +286,7 @@ when defined(CONFIG_FLASH_JESD216_API):
 ##
 
 proc flash_get_write_block_size*(dev: ptr device): csize_t {.syscall,
-    importc: "flash_get_write_block_size", header: "flash.h".}
+    importc: "flash_get_write_block_size", header: hdr.}
 
 ## *
 ##   @brief  Get pointer to flash_parameters structure
@@ -299,5 +301,5 @@ proc flash_get_write_block_size*(dev: ptr device): csize_t {.syscall,
 ##
 
 proc flash_get_parameters*(dev: ptr device): ptr flash_parameters {.syscall,
-    importc: "flash_get_parameters", header: "flash.h".}
+    importc: "flash_get_parameters", header: hdr.}
 
