@@ -9,8 +9,7 @@ type
     ##  @brief Non-volatile Storage File system structure
     ##
     ##  @param offset File system offset in flash
-    ##  @param ate_wra Allocation table entry write address. Addresses are stored as uint32:
-    ##  high 2 bytes correspond to the sector, low 2 bytes are the offset in the sector
+    ##  @param ate_wra Allocation table entry write address. Addresses are stored as uint32: ##  high 2 bytes correspond to the sector, low 2 bytes are the offset in the sector
     ##  @param data_wra Data write address
     ##  @param sector_size File system is split into sectors, each sector must be multiple of pagesize
     ##  @param sector_count Number of sectors in the file systems
