@@ -17,6 +17,7 @@ const CONFIG_NAMES = [
   "ERRNO", 
   "ERRNO_IN_TLS",
   "EVENTFD",
+  "FLASH_PAGE_LAYOUT",
   "FPU_SHARING", 
   "INIT_STACKS", 
   "MPU",
