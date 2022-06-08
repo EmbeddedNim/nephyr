@@ -1,5 +1,8 @@
 import ../zkernel_fixes
 import ../zconfs
+import ../zdevice
+import ../zkernel
+import ../kernel/zk_locks
 
 when defined(CONFIG_FLASH_PAGE_LAYOUT):
   type
@@ -74,13 +77,11 @@ type
     read* {.importc: "read".}: flash_api_read
     write* {.importc: "write".}: flash_api_write
     erase* {.importc: "erase".}: flash_api_erase
-    write_protection* {.importc: "write_protection".}: flash_api_write_protection
-    get_parameters* {.importc: "get_parameters".}: flash_api_get_parameters
     when defined(CONFIG_FLASH_PAGE_LAYOUT):
-      var page_layout* {.header: "flash.h".}: flash_api_pages_layout
+      page_layout* {.header: "flash.h".}: flash_api_pages_layout
     when defined(CONFIG_FLASH_JESD216_API):
-      var sfdp_read* {.header: "flash.h".}: flash_api_sfdp_read
-      var read_jedec_id* {.header: "flash.h".}: flash_api_read_jedec_id
+      sfdp_read* {.header: "flash.h".}: flash_api_sfdp_read
+      read_jedec_id* {.header: "flash.h".}: flash_api_read_jedec_id
 
 
 proc flash_read*(dev: ptr device; offset: off_t; data: pointer; len: csize_t): cint {.
