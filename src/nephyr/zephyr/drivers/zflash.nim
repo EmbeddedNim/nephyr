@@ -168,7 +168,7 @@ proc flash_write_protection_set*(dev: ptr device; enable: bool): cint {.
     importc: "flash_write_protection_set", header: hdr.}
 
 type
-  flash_pages_info* {.importc: "flash_pages_info", header: hdr, bycopy.} = object
+  flash_pages_info* {.importc: "struct flash_pages_info", header: hdr, bycopy.} = object
     start_offset* {.importc: "start_offset".}: off_t ##  offset from the base of flash address
     size* {.importc: "size".}: csize_t
     index* {.importc: "index".}: uint32
