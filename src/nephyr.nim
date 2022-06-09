@@ -26,7 +26,7 @@ macro zephyr_main*(p: untyped): untyped =
     procBody = p[procBodyIdx]
  
   # add `exportc` pragma
-  result[pragmaIdx].add ident "exportc"
+  result[pragmaIdx] = nnkPragma.newTree(ident("exportc"))
 
   # wrap c body
   result[procBodyIdx] = quote do:
