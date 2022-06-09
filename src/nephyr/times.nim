@@ -4,6 +4,11 @@ import mcu_utils/basictypes
 import zephyr/zconfs
 import zephyr/zkernel
 
+import nephyr/general
+import nephyr/zephyr/kernel/zk_time
+
+export general, zk_time
+
 # from std/monotimes import MonoTime
 export times, monotimes
 
@@ -53,3 +58,34 @@ proc delayMillis*(ts: int): bool {.discardable.} =
 #   var remaining = ms.int32
 #   while remaining != 0:
 #     remaining  = k_msleep(remaining)
+
+when defined(linux):
+  type
+    TimerId* = int
+elif defined(zephyr):
+  type
+    TimerId* = ptr k_timer
+
+type
+  TimerFunc* = proc (timerid: TimerId) {.cdecl.}
+
+proc createTimer*(timer: var k_timer, cb: TimerFunc) =
+  if cb != nil:
+    k_timer_init(addr timer, cb, nil)
+
+
+proc start*(timer: var k_timer,
+            duration = -1.Millis,
+            period = -1.Millis) =
+  let
+    dts = if duration.int == -1: K_NO_WAIT else: K_MSEC(duration.int)
+    pts = if period.int == -1: K_NO_WAIT else: K_MSEC(period.int)
+  k_timer_start(addr timer, dts, pts)
+
+proc start*(timer: var k_timer,
+            duration = -1.Micros,
+            period = -1.Micros) =
+  let
+    dts = if duration.int == -1: K_NO_WAIT else: K_USEC(duration.int)
+    pts = if period.int == -1: K_NO_WAIT else: K_USEC(period.int)
+  k_timer_start(addr timer, dts, pts)
