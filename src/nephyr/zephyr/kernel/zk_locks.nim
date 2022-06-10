@@ -95,7 +95,7 @@ when CONFIG_USERSPACE:
 ##  @ingroup mutex_apis
 ##
 type
-  k_mutex* {.importc: "k_mutex", header: "kernel.h", bycopy.} = object
+  k_mutex* {.importc: "struct k_mutex", header: "kernel.h", bycopy.} = object
     wait_q* {.importc: "wait_q".}: z_wait_q_t ## * Mutex wait queue
     ## * Mutex owner
     owner* {.importc: "owner".}: ptr k_thread ## * Current lock count

@@ -14,7 +14,7 @@ export zkernel_fixes, zdevice, zkernel, zk_locks, zflash
 const hdr = "<fs/nvs.h>"
 
 type
-  nvs_fs* {.importc: "nvs_fs", header: hdr, bycopy.} = object ##\
+  nvs_fs* {.importc: "struct nvs_fs", header: hdr, bycopy.} = object ##\
     ## *
     ##  @brief Non-volatile Storage File system structure
     ##
@@ -33,10 +33,9 @@ type
     sector_size* {.importc: "sector_size".}: uint16
     sector_count* {.importc: "sector_count".}: uint16
     ready* {.importc: "ready".}: bool
-    nvs_lock* {.importc: "nvs_lock".}: k_mutex
+    # nvs_lock* {.importc: "nvs_lock".}: k_mutex
     flash_device* {.importc: "flash_device".}: ptr device
     flash_parameters* {.importc: "flash_parameters".}: ptr flash_parameters
-
 
 
 proc nvs_init*(fs: ptr nvs_fs; dev_name: cstring): cint {.importc: "nvs_init",
