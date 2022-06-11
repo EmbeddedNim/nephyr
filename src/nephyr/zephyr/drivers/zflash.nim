@@ -9,15 +9,14 @@ const hdr_flash_map = "<storage/flash_map.h>"
 
 proc FLASH_AREA_OFFSET*(node: cminvtoken): cint {.  importc: "$1", header: hdr_flash_map.}
 
-when defined(CONFIG_FLASH_PAGE_LAYOUT):
-  type
-    flash_pages_layout* {.importc: "flash_pages_layout", header: hdr, bycopy.} = object
-      pages_count* {.importc: "pages_count".}: csize_t ##  count of pages sequence of the same size
-      pages_size* {.importc: "pages_size".}: csize_t
-
+# when defined(CONFIG_FLASH_PAGE_LAYOUT):
+type
+  flash_pages_layout* {.importc: "struct flash_pages_layout", header: hdr, bycopy.} = object
+    pages_count* {.importc: "pages_count".}: csize_t ##  count of pages sequence of the same size
+    pages_size* {.importc: "pages_size".}: csize_t
 
 type
-  flash_parameters* {.importc: "flash_parameters", header: hdr, bycopy.} = object ##\
+  flash_parameters* {.importc: "struct flash_parameters", header: hdr, bycopy.} = object ##\
     ##  Flash memory parameters. Contents of this structure suppose to be
     ##  filled in during flash device initialization and stay constant
     ##  through a runtime.
@@ -77,8 +76,10 @@ when defined(CONFIG_FLASH_PAGE_LAYOUT):
 
 type
   flash_api_sfdp_read* = proc (dev: ptr device; offset: off_t; data: pointer; len: csize_t): cint
+
   flash_api_read_jedec_id* = proc (dev: ptr device; id: ptr uint8): cint
-  flash_driver_api* {.importc: "flash_driver_api", header: hdr, bycopy.} = object
+
+  flash_driver_api* {.importc: "struct flash_driver_api", header: hdr, bycopy.} = object
     read* {.importc: "read".}: flash_api_read
     write* {.importc: "write".}: flash_api_write
     erase* {.importc: "erase".}: flash_api_erase
@@ -303,4 +304,30 @@ proc flash_get_write_block_size*(dev: ptr device): csize_t {.syscall,
 
 proc flash_get_parameters*(dev: ptr device): ptr flash_parameters {.syscall,
     importc: "flash_get_parameters", header: hdr.}
+
+
+when CONFIG_BOOT_FLEXSPI_NOR:
+  type
+    flexspi_nor_config_t* {.importc: "struct flexspi_nor_config_t", header: "<flexspi_nor_config.h>", bycopy.} = object ##\
+        ## flash config for nxp chip families like i.mx 
+      # memConfig* {.importc: "memConfig".}: flexspi_mem_config_t
+      pageSize* {.importc: "pageSize".}: uint32
+      sectorSize* {.importc: "sectorSize".}: uint32
+      ipcmdSerialClkFreq* {.importc: "ipcmdSerialClkFreq".}: uint8
+      isUniformBlockSize* {.importc: "isUniformBlockSize".}: uint8
+      # reserved0* {.importc: "reserved0".}: array[2, uint8_t]
+      serialNorType* {.importc: "serialNorType".}: uint8
+      needExitNoCmdMode* {.importc: "needExitNoCmdMode".}: uint8
+      halfClkForNonReadCmd* {.importc: "halfClkForNonReadCmd".}: uint8
+      needRestoreNoCmdMode* {.importc: "needRestoreNoCmdMode".}: uint8
+      blockSize* {.importc: "blockSize".}: uint32
+      # reserve2* {.importc: "reserve2".}: array[11, uint32_t]
+
+  var Qspiflash_config* {.importc: "Qspiflash_config".}: flexspi_nor_config_t
+else:
+  static:
+    raise newException(Exception, "flexspi")
+
+
+flash_flexspi_nor_config_0
 

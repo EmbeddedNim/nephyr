@@ -97,7 +97,7 @@ type
       ##  Power management data
       pm* {.importc: "pm".}: pm_device
 
-  device* {.importc: "struct device", header: "device.h", bycopy.} = object ##
+  device* {.importc: "struct device", header: "device.h", bycopy, incompleteStruct.} = object ##
       ## *
       ##  @brief Runtime device structure (in ROM) per driver instance
       ##

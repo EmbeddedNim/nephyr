@@ -14,7 +14,7 @@ export zkernel_fixes, zdevice, zkernel, zk_locks, zflash
 const hdr = "<fs/nvs.h>"
 
 type
-  nvs_fs* {.importc: "struct nvs_fs", header: hdr, bycopy.} = object ##\
+  nvs_fs* {.importc: "struct nvs_fs", header: hdr, bycopy, incompleteStruct.} = object ##\
     ## *
     ##  @brief Non-volatile Storage File system structure
     ##

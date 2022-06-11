@@ -46,7 +46,8 @@ macro zephyr_main*(p: untyped): untyped =
       for ste in stes:
         echo "[main]: ", $ste
     echo "unknown error causing reboot"
-    sysReboot()
+    # sysReboot()
+    sysPanic()
 
 
 
