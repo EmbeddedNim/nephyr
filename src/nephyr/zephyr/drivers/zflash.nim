@@ -306,7 +306,7 @@ proc flash_get_parameters*(dev: ptr device): ptr flash_parameters {.syscall,
     importc: "flash_get_parameters", header: hdr.}
 
 
-when CONFIG_BOOT_FLEXSPI_NOR:
+when CONFIG_BOOT_FLEXSPI_NOR or defined(zephyr):
   type
     flexspi_nor_config_t* {.importc: "struct flexspi_nor_config_t", header: "<flexspi_nor_config.h>", bycopy.} = object ##\
         ## flash config for nxp chip families like i.mx 
@@ -323,11 +323,30 @@ when CONFIG_BOOT_FLEXSPI_NOR:
       blockSize* {.importc: "blockSize".}: uint32
       # reserve2* {.importc: "reserve2".}: array[11, uint32_t]
 
+    flexspi_device_config_t* {.importc: "struct flexspi_device_config_t",
+                              bycopy, incompleteStruct.} = object
+      # flexspiRootClk* {.importc: "flexspiRootClk".}: uint32 ## !< FLEXSPI serial root clock.
+      # isSck2Enabled* {.importc: "isSck2Enabled".}: bool ## !< FLEXSPI use SCK2.
+      flashSize* {.importc: "flashSize".}: uint32 ## !< Flash size in KByte.
+      # dataValidTime* {.importc: "dataValidTime".}: uint8 ## !< Data valid time for external device.
+      # columnspace* {.importc: "columnspace".}: uint8 ## !< Column space size.
+      # enableWordAddress* {.importc: "enableWordAddress".}: bool ## !< If enable word address.
+      # enableWriteMask* {.importc: "enableWriteMask".}: bool ## !< Enable/Disable FLEXSPI drive DQS pin as write mask
+
+    flash_flexspi_nor_config* {.importc: "struct flash_flexspi_nor_config",
+                              bycopy, incompleteStruct.} = object
+      controller_label* {.importc: "controller_label".}: cstring
+      # port* {.importc: "port".}: flexspi_port_t
+      config* {.importc: "config".}: flexspi_device_config_t
+      layout* {.importc: "layout".}: flash_pages_layout
+      # flash_parameters* {.importc: "flash_parameters".}: flash_parameters
+
   var Qspiflash_config* {.importc: "Qspiflash_config".}: flexspi_nor_config_t
+
+
 else:
   static:
     raise newException(Exception, "flexspi")
 
 
-flash_flexspi_nor_config_0
 
