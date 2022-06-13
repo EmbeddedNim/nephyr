@@ -306,11 +306,53 @@ proc flash_get_parameters*(dev: ptr device): ptr flash_parameters {.syscall,
     importc: "flash_get_parameters", header: hdr.}
 
 
-when CONFIG_BOOT_FLEXSPI_NOR or defined(zephyr):
+when true: # CONFIG_BOOT_FLEXSPI_NOR or defined(zephyr):
   type
+    flexspi_mem_config_t* {.importc: "struct flexspi_mem_config_t", header: "<flexspi_nor_config.h>", bycopy.} = object
+      # tag* {.importc: "tag".}: uint32
+      # version* {.importc: "version".}: uint32_t
+      # reserved0* {.importc: "reserved0".}: uint32_t
+      # readSampleClkSrc* {.importc: "readSampleClkSrc".}: uint8_t
+      # csHoldTime* {.importc: "csHoldTime".}: uint8_t
+      # csSetupTime* {.importc: "csSetupTime".}: uint8_t
+      # columnAddressWidth* {.importc: "columnAddressWidth".}: uint8_t
+      # deviceModeCfgEnable* {.importc: "deviceModeCfgEnable".}: uint8_t
+      # deviceModeType* {.importc: "deviceModeType".}: uint8_t
+      # waitTimeCfgCommands* {.importc: "waitTimeCfgCommands".}: uint16_t
+      # deviceModeSeq* {.importc: "deviceModeSeq".}: flexspi_lut_seq_t
+      # deviceModeArg* {.importc: "deviceModeArg".}: uint32_t
+      # configCmdEnable* {.importc: "configCmdEnable".}: uint8_t
+      # configModeType* {.importc: "configModeType".}: array[3, uint8_t]
+      # configCmdSeqs* {.importc: "configCmdSeqs".}: array[3, flexspi_lut_seq_t]
+      # reserved1* {.importc: "reserved1".}: uint32_t
+      # configCmdArgs* {.importc: "configCmdArgs".}: array[3, uint32_t]
+      # reserved2* {.importc: "reserved2".}: uint32_t
+      # controllerMiscOption* {.importc: "controllerMiscOption".}: uint32_t
+      # deviceType* {.importc: "deviceType".}: uint8_t
+      # sflashPadType* {.importc: "sflashPadType".}: uint8_t
+      # serialClkFreq* {.importc: "serialClkFreq".}: uint8_t
+      # lutCustomSeqEnable* {.importc: "lutCustomSeqEnable".}: uint8_t
+      # reserved3* {.importc: "reserved3".}: array[2, uint32_t]
+      sflashA1Size* {.importc: "sflashA1Size".}: uint32
+      # sflashA2Size* {.importc: "sflashA2Size".}: uint32_t
+      # sflashB1Size* {.importc: "sflashB1Size".}: uint32_t
+      # sflashB2Size* {.importc: "sflashB2Size".}: uint32_t
+      # csPadSettingOverride* {.importc: "csPadSettingOverride".}: uint32_t
+      # sclkPadSettingOverride* {.importc: "sclkPadSettingOverride".}: uint32_t
+      # dataPadSettingOverride* {.importc: "dataPadSettingOverride".}: uint32_t
+      # dqsPadSettingOverride* {.importc: "dqsPadSettingOverride".}: uint32_t
+      # timeoutInMs* {.importc: "timeoutInMs".}: uint32_t
+      # commandInterval* {.importc: "commandInterval".}: uint32_t
+      # dataValidTime* {.importc: "dataValidTime".}: array[2, uint16_t]
+      # busyOffset* {.importc: "busyOffset".}: uint16_t
+      # busyBitPolarity* {.importc: "busyBitPolarity".}: uint16_t
+      # lookupTable* {.importc: "lookupTable".}: array[64, uint32_t]
+      # lutCustomSeq* {.importc: "lutCustomSeq".}: array[12, flexspi_lut_seq_t]
+      # reserved4* {.importc: "reserved4".}: array[4, uint32_t]
+
     flexspi_nor_config_t* {.importc: "struct flexspi_nor_config_t", header: "<flexspi_nor_config.h>", bycopy.} = object ##\
         ## flash config for nxp chip families like i.mx 
-      # memConfig* {.importc: "memConfig".}: flexspi_mem_config_t
+      memConfig* {.importc: "memConfig".}: flexspi_mem_config_t
       pageSize* {.importc: "pageSize".}: uint32
       sectorSize* {.importc: "sectorSize".}: uint32
       ipcmdSerialClkFreq* {.importc: "ipcmdSerialClkFreq".}: uint8
@@ -339,7 +381,7 @@ when CONFIG_BOOT_FLEXSPI_NOR or defined(zephyr):
       # port* {.importc: "port".}: flexspi_port_t
       config* {.importc: "config".}: flexspi_device_config_t
       layout* {.importc: "layout".}: flash_pages_layout
-      # flash_parameters* {.importc: "flash_parameters".}: flash_parameters
+      flash_parameters* {.importc: "flash_parameters".}: flash_parameters
 
   var Qspiflash_config* {.importc: "Qspiflash_config".}: flexspi_nor_config_t
 
