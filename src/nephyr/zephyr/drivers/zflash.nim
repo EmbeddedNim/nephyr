@@ -12,8 +12,8 @@ proc FLASH_AREA_OFFSET*(node: cminvtoken): cint {.  importc: "$1", header: hdr_f
 # when defined(CONFIG_FLASH_PAGE_LAYOUT):
 type
   flash_pages_layout* {.importc: "struct flash_pages_layout", header: hdr, bycopy.} = object
-    pages_count* {.importc: "pages_count".}: csize_t ##  count of pages sequence of the same size
-    pages_size* {.importc: "pages_size".}: csize_t
+    pages_count* {.importc: "pages_count".}: csize ##  count of pages sequence of the same size
+    pages_size* {.importc: "pages_size".}: csize
 
 type
   flash_parameters* {.importc: "struct flash_parameters", header: hdr, bycopy.} = object ##\
