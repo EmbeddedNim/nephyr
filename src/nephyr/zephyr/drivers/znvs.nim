@@ -27,7 +27,7 @@ type
     ##  @param nvs_lock Mutex
     ##  @param flash_device Flash Device runtime structure
     ##  @param flash_parameters Flash memory parameters structure
-    offset* {.importc: "offset".}: off_t ## 
+    offset* {.importc: "offset".}: off_t ##
     ate_wra* {.importc: "ate_wra".}: uint32
     data_wra* {.importc: "data_wra".}: uint32
     sector_size* {.importc: "sector_size".}: uint16

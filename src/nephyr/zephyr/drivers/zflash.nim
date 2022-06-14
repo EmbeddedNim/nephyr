@@ -15,7 +15,8 @@ proc FLASH_AREA_OFFSET*(node: cminvtoken): cint {.importc: "$1", header: hdr_fla
   ## Note: Be careful to note whether the flash driver expects bits or bytes.
 
 type
-  flash_pages_layout* {.importc: "struct flash_pages_layout", header: hdr, bycopy.} = object
+  flash_pages_layout* {.importc: "struct flash_pages_layout", header: hdr,
+      bycopy.} = object
     pages_count* {.importc: "pages_count".}: csize ##  count of pages sequence of the same size
     pages_size* {.importc: "pages_size".}: csize
 
@@ -30,11 +31,13 @@ type
 
 
 type
-  flash_api_read* = proc (dev: ptr device; offset: off_t; data: pointer; len: csize_t): cint {.cdecl.}
+  flash_api_read* = proc (dev: ptr device; offset: off_t; data: pointer;
+      len: csize_t): cint {.cdecl.}
 
 
 type
-  flash_api_write* = proc (dev: ptr device; offset: off_t; data: pointer; len: csize_t): cint {.cdecl.} ##\
+  flash_api_write* = proc (dev: ptr device; offset: off_t; data: pointer;
+      len: csize_t): cint {.cdecl.} ##\
     ##  @note Any necessary write protection management must be performed by
     ##  the driver, with the driver responsible for ensuring the "write-protect"
     ##  after the operation completes (successfully or not) matches the write-protect
@@ -79,11 +82,13 @@ when defined(CONFIG_FLASH_PAGE_LAYOUT):
 
 
 type
-  flash_api_sfdp_read* = proc (dev: ptr device; offset: off_t; data: pointer; len: csize_t): cint
+  flash_api_sfdp_read* = proc (dev: ptr device; offset: off_t; data: pointer;
+      len: csize_t): cint
 
   flash_api_read_jedec_id* = proc (dev: ptr device; id: ptr uint8): cint
 
-  flash_driver_api* {.importc: "struct flash_driver_api", header: hdr, bycopy.} = object
+  flash_driver_api* {.importc: "struct flash_driver_api", header: hdr,
+      bycopy.} = object
     read* {.importc: "read".}: flash_api_read
     write* {.importc: "write".}: flash_api_write
     erase* {.importc: "erase".}: flash_api_erase
@@ -94,7 +99,8 @@ type
       read_jedec_id* {.header: hdr.}: flash_api_read_jedec_id
 
 
-proc flash_read*(dev: ptr device; offset: off_t; data: pointer; len: csize_t): cint {.
+proc flash_read*(dev: ptr device; offset: off_t; data: pointer;
+    len: csize_t): cint {.
     syscall, importc: "flash_read", header: hdr.} ##\
       ##   All flash drivers support reads without alignment restrictions on
       ##   the read offset, the read size, or the destination address.
@@ -109,9 +115,10 @@ proc flash_read*(dev: ptr device; offset: off_t; data: pointer; len: csize_t): c
 
 
 
-      
 
-proc flash_write*(dev: ptr device; offset: off_t; data: pointer; len: csize_t): cint {.
+
+proc flash_write*(dev: ptr device; offset: off_t; data: pointer;
+    len: csize_t): cint {.
     syscall, importc: "flash_write", header: hdr.} ##\
       ##   All flash drivers support a source buffer located either in RAM or
       ##   SoC flash, without alignment restrictions on the source address.
@@ -176,7 +183,8 @@ proc flash_write_protection_set*(dev: ptr device; enable: bool): cint {.
     importc: "flash_write_protection_set", header: hdr.}
 
 type
-  flash_pages_info* {.importc: "struct flash_pages_info", header: hdr, bycopy.} = object
+  flash_pages_info* {.importc: "struct flash_pages_info", header: hdr,
+      bycopy.} = object
     start_offset* {.importc: "start_offset".}: off_t ##  offset from the base of flash address
     size* {.importc: "size".}: csize_t
     index* {.importc: "index".}: uint32
@@ -262,7 +270,8 @@ when defined(CONFIG_FLASH_JESD216_API):
   ##  @retval -ENOTSUP if the flash driver does not support SFDP access
   ##  @retval negative values for other errors.
   ##
-  proc flash_sfdp_read*(dev: ptr device; offset: off_t; data: pointer; len: csize_t): cint {.
+  proc flash_sfdp_read*(dev: ptr device; offset: off_t; data: pointer;
+      len: csize_t): cint {.
       syscall, importc: "flash_sfdp_read", header: hdr.}
 
   ## *
@@ -312,7 +321,8 @@ proc flash_get_parameters*(dev: ptr device): ptr flash_parameters {.syscall,
 
 when true: # CONFIG_BOOT_FLEXSPI_NOR or defined(zephyr):
   type
-    flexspi_mem_config_t* {.importc: "struct flexspi_mem_config_t", header: "<flexspi_nor_config.h>", bycopy.} = object
+    flexspi_mem_config_t* {.importc: "struct flexspi_mem_config_t",
+        header: "<flexspi_nor_config.h>", bycopy.} = object
       # tag* {.importc: "tag".}: uint32
       # version* {.importc: "version".}: uint32_t
       # reserved0* {.importc: "reserved0".}: uint32_t
@@ -354,8 +364,9 @@ when true: # CONFIG_BOOT_FLEXSPI_NOR or defined(zephyr):
       # lutCustomSeq* {.importc: "lutCustomSeq".}: array[12, flexspi_lut_seq_t]
       # reserved4* {.importc: "reserved4".}: array[4, uint32_t]
 
-    flexspi_nor_config_t* {.importc: "struct flexspi_nor_config_t", header: "<flexspi_nor_config.h>", bycopy.} = object ##\
-        ## flash config for nxp chip families like i.mx 
+    flexspi_nor_config_t* {.importc: "struct flexspi_nor_config_t",
+        header: "<flexspi_nor_config.h>", bycopy.} = object  ##\
+        ## flash config for nxp chip families like i.mx
       memConfig* {.importc: "memConfig".}: flexspi_mem_config_t
       pageSize* {.importc: "pageSize".}: uint32
       sectorSize* {.importc: "sectorSize".}: uint32
