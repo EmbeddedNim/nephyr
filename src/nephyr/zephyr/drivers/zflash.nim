@@ -7,8 +7,6 @@ import ../kernel/zk_locks
 const hdr = "<drivers/flash.h>"
 const hdr_flash_map = "<storage/flash_map.h>"
 
-const hdr_flash_map = "<storage/flash_map.h>"
-
 proc FLASH_AREA_OFFSET*(node: cminvtoken): cint {.importc: "$1", header: hdr_flash_map.} ##\
   ## Zephyr macro to get the flash offset for a partition from the DTS. 
   ## This will return the offset address as listed in the DTS partition, e.g.
