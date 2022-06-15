@@ -105,8 +105,8 @@ proc kCreateThread*(
 
 template staticKThread*(
     name: untyped,
-    function: proc (p1, p2, p3: pointer) {.cdecl.};
-    stackSize: static[BytesSz];
+    entry: proc (p1, p2, p3: pointer) {.cdecl.};
+    stack: static[BytesSz];
     p1: pointer = nil,
     p2: pointer = nil,
     p3: pointer = nil,
@@ -115,17 +115,22 @@ template staticKThread*(
     delay: k_timeout_t = K_NO_WAIT
 ) =
   ## convenience template to setup new thread
-  ## includes creating a static 
-  let entry: k_thread_entry_t = function
+  ## includes creating a static stack
+  ## creates global variables:
+  ##    var nameStack*: ptr k_thread_stack_t
+  ##    var nameThr* {.exportc.}: k_thread
+  ##    var name*: k_tid_t
+  ## 
+  let entryFunc: k_thread_entry_t = entry
 
-  KDefineStack(`name Stack`, stackSz.int)
+  KDefineStack(`name Stack`, stack.int)
   var `name Thr` {.inject, global, exportc.}: k_thread
   let `name` {.inject, used, global.}: k_tid_t =
     zkernel.k_thread_create(
       addr `name Thr`,
       `name Stack`,
-      stack_size.csize_t,
-      entry,
+      stack.csize_t,
+      entryFunc,
       p1, p2, p3,
       priority.cint,
       options,

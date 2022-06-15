@@ -73,6 +73,23 @@ proc createTimer*(timer: var k_timer, cb: TimerFunc) =
   if cb != nil:
     k_timer_init(addr timer, cb, nil)
 
+proc toTimeout*(delay: static[Millis]): k_timeout_t =
+  ## convert Millis to k_timeout_t
+  when delay == -1.Millis: K_NO_WAIT
+  else: K_MSEC(delay.int)
+proc toTimeout*(delay: Millis): k_timeout_t =
+  ## convert Millis to k_timeout_t
+  if delay.int == -1: K_NO_WAIT
+  else: K_MSEC(delay.int)
+
+proc toTimeout*(delay: static[Micros]): k_timeout_t =
+  ## convert Micros to k_timeout_t
+  when delay == -1.Micros: result = K_NO_WAIT
+  else: result = K_USEC(delay.int)
+proc toTimeout*(delay: Micros): k_timeout_t =
+  ## convert Micros to k_timeout_t
+  if delay.int == -1: result = K_NO_WAIT
+  else: result = K_USEC(delay.int)
 
 proc start*(timer: var k_timer,
             duration = -1.Millis,
