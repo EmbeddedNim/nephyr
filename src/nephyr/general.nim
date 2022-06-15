@@ -101,4 +101,34 @@ proc kCreateThread*(
       options,
       delay
     )
-    
+
+
+template staticKThread*(
+    name: untyped,
+    function: proc (p1, p2, p3: pointer) {.cdecl.};
+    stackSize: static[BytesSz];
+    p1: pointer = nil,
+    p2: pointer = nil,
+    p3: pointer = nil,
+    priority = ThreadPriority 1,
+    options: uint32 = 0;
+    delay: k_timeout_t = K_NO_WAIT
+) =
+  ## convenience template to setup new thread
+  ## includes creating a static 
+  let entry: k_thread_entry_t = function
+
+  KDefineStack(`name Stack`, stackSz.int)
+  var `name Thr` {.inject, global, exportc.}: k_thread
+  let `name` {.inject, used, global.}: k_tid_t =
+    zkernel.k_thread_create(
+      addr `name Thr`,
+      `name Stack`,
+      stack_size.csize_t,
+      entry,
+      p1, p2, p3,
+      priority.cint,
+      options,
+      delay
+    )
+
