@@ -104,11 +104,11 @@ when isMainModule:
 
   type 
     ExampleConfigs* = object
-      dac_calib_zero_cha*: int32 
-      dac_calib_gain_cha*: int32 
+      dac_calib_gain*: int32 
+      dac_calib_offset*: int32 
 
       adc_calib_gain*: float32
-      adc_calib_zero*: int32
+      adc_calib_offset*: int32
 
   proc read*[T](nvs: NvsConfig, id: NvsId, item: var T) =
     var buf = nvs.fs[id]
@@ -137,13 +137,10 @@ when isMainModule:
     test "essential truths":
       var nvs = NvsConfig()
 
-      var cfg = ExampleConfigs()
-      cfg.adc_calib_gain = 123
-      cfg.adc_calib_offset = 54
+      var exCfg = ExampleConfigs()
+      exCfg.adc_calib_gain = 123
+      exCfg.adc_calib_offset = 54
 
+      var cfg = ConfigSettings(store: nvs, values: exCfg)
 
-
-      
-
-
-    
+      cfg.loadSettings()
