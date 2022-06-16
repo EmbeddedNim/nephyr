@@ -16,7 +16,7 @@ type
     fs*: nvs_fs
 
 
-proc `$`*(id: NvsId): string {.borrow.}
+proc `$`*(id: NvsId): string = repr(id)
 
 static:
   assert CONFIG_NVS == true, "must config nvs in project config to use this module"
@@ -76,8 +76,10 @@ template initNvs*(
 
 proc readImpl[T](nvs: NvsConfig, id: NvsId, item: var T) =
   let resCnt = nvs_read(nvs.fs.addr, id.uint16, addr(item), sizeof((T)))
-  echo "read resCnt: ", $resCnt, " is neg: ", resCnt < 0
-  if resCnt < 0:
+  if resCnt == -ENOENT:
+    raise newException(KeyError, "missing key")
+  elif resCnt < 0:
+    echo fmt"{$OSErrorCode(resCnt)=}"
     raiseOSError(resCnt.OSErrorCode, "error reading nvs")
   elif resCnt != sizeof(T):
     raise newException(ValueError, "read wrong number of bytes: " & $resCnt & "/" & $sizeof(T))

@@ -20,6 +20,9 @@ export logs
 from os import raiseOSError
 export raiseOSError
 
+from posix import ENOENT, EIO, EAGAIN, EFAULT, EDOM
+export ENOENT, EIO, EAGAIN, EFAULT, EDOM
+
 type
   NephyrError* = object of Exception
 
