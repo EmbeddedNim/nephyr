@@ -38,6 +38,9 @@ task test_zephyr_c_api, "compile Zephyr wrapper apis":
     let cmd = "nim c --compileonly:on " & test
     exec(cmd)
 
+task unit_tests, "unit tests":
+  exec("testament pattern tests/t*.nim")
+
 before test:
   test_zephyr_c_apiTask()
   test_nim_api_compilationTask()

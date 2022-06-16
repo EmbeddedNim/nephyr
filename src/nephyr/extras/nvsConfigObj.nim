@@ -2,42 +2,22 @@
 ## Example usage of NVS
 ## license: Apache-2.0
 
-import macros, strutils, md5, options
+import std/[strutils, md5, options, strformat]
+import std/[macros, macrocache]
 
-import nephyr
-import nephyr/drivers/nvs
+import mcu_utils/logging
 
-import std/macrocache
+# import nephyr
+# import nephyr/drivers/nvs
 
 ## Module for getting and setting global constants that need to be 
 ## written or read from flash memory. This uses the "NVS" flash library 
 ## from the esp-idf. 
 
 type
-  SerialNumber* = object
-    board_major*: int
-    board_minor*: int
-    number*: int
-
-  ConfigSettings*[T] = object
-    nvs*: NvsConfig
+  ConfigSettings*[S, T] = object
+    store*: S
     values*: T
-
-proc `$`*(serial: SerialNumber): string =
-  let 
-    bmajor = serial.board_major.int.intToStr(3)
-    bminor = serial.board_minor.int.intToStr(1)
-    number = serial.number.int.intToStr(4)
-  
-  result = "" & bmajor & bminor & number
-
-proc parseSerialNumber*(serno: int): SerialNumber =
-  serno.toHex(8).parseSerialNumber()
-
-proc toInt*(serial: SerialNumber): int32 =
-  let serstr: string = $serial
-  serstr.parseHexInt().int32
-
 
 ## The code below handles mangling field names to unique id's
 ## for types like ints, floats, strings, etc
@@ -49,8 +29,8 @@ template setField[T: int](val: var T, input: int32) =
 template setField[T: float](val: var T, input: int32) =
   val = cast[float32](input)
 
-proc mangleFieldName*(name: string): NvsId =
-  let nh = toMD5(name)
+proc mangleFieldName*(name: string): int =
+  var nh = toMD5(name)
   copyMem(result.addr, nh.addr, sizeof(result))
 
 template implSetObjectField(obj: object, field: string, val: int32): untyped =
@@ -81,32 +61,42 @@ proc getObjectField*[T: object](obj: var T, field: string): int32 =
 ## Primary "SETTINGS" API
 ## 
 
-proc loadField*[T](settings: var ConfigSettings[T], name: string): int32 =
+proc loadField*[S, T](settings: var ConfigSettings[S, T], name: string): int32 =
   var mname = mangleFieldName(name)
   try:
     var rval = settings.nvs.read(mname, int32)
-    logi("CFG", "name: %s => %s", name, $rval)
+    logDebug(fmt"CFG name: {name} => {rval}")
     setObjectField(settings, name, rval)
   except KeyError:
-    logi("CFG", "skipping name: %s", $name)
+    logDebug("CFG", "skipping name: %s", $name)
 
-proc saveField*[T](settings: var ConfigSettings[T], name: string, val: int32) =
-  logi("CFG", "saving settings ")
+proc saveField*[S, T](settings: var ConfigSettings[S, T], name: string, val: int32) =
   var mName = mangleFieldName(name)
   var oldVal = getObjectField(settings, name)
   var currVal = val
   if currVal != oldVal:
-    logi("CFG", "save setting field: %s(%s) => %d => %d", name.cstring, mName, oldVal, currVal)
-    store.write(mName, val)
+    logDebug("CFG", fmt"save setting field: {name}({$mName}) => {oldVale=} -> {currVal=}")
+    settings.store.write(mName, val)
   else:
-    logi("CFG", "skip setting field: %s(%s) => %d => %d", name.cstring, mName, oldVal, currVal)
+    logDebug("CFG", fmt"skip setting field: {name}({$mName}) => {oldVale=} -> {currVal=}")
 
 
-proc loadSettings*[T](settings: var ConfigSettings[T]) =
+proc loadSettings*[S, T](settings: var ConfigSettings[S, T]) =
   for name, val in settings.fieldPairs:
-    discard settings.load_field(name)
+    discard settings.loadField(name)
 
-proc saveSettings*[T](ns: var ConfigSettings[T]) =
-  logi("CFG", "saving settings ")
+proc saveSettings*[S, T](ns: var ConfigSettings[S, T]) =
+  logDebug("CFG", "saving settings ")
   for name, val in ns.fieldPairs:
-    ns.save_field(name, cast[int32](val))
+    ns.saveField(name, cast[int32](val))
+
+when isMainModule:
+  import unittest
+
+  suite "nvs config object":
+  
+    
+    test "essential truths":
+      # give up and stop if this fails
+      echo "hi"
+    

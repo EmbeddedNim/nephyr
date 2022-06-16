@@ -1,2 +1,2 @@
---os:zephyr
---d:BOARD:QEMU
+
+--gc:arc

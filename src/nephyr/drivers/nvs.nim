@@ -18,8 +18,9 @@ type
 
 proc `$`*(id: NvsId): string = repr(id)
 
-static:
-  assert CONFIG_NVS == true, "must config nvs in project config to use this module"
+when defined(zephyr):
+  static:
+    assert CONFIG_NVS == true, "must config nvs in project config to use this module"
 
 import os, macros
 
