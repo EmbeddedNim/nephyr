@@ -10,43 +10,48 @@ import mcu_utils/[logging, timeutils, allocstats]
 type
   NvsConfig* = ref object
     fs*: nvs_fs
-    flash*: ptr device
 
 static:
   assert CONFIG_NVS == true, "must config nvs in project config to use this module"
 
 proc initNvs*(
     flash: string,
-    sectorCount: int,
-    partitionOffset: ByteSz
+    sectorCount: uint16,
+    partitionOffset: BytesSz,
+    sectorSize = -1.BytesSz,
 ): NvsConfig =
   ## create and initialize an nvs partiton
   result = NvsConfig()
-  result.flash = device_get_binding(flashDevice)
+  let flash_dev = device_get_binding(flash)
 
-  if not device_is_ready(result.flash):
-    raiseZephyrError("Flash device is not ready", 0)
-
-  var info: flash_pages_info
-  check: flash_get_page_info_by_offs(result.flash, result.fs.offset, addr info)
+  if not device_is_ready(flash_dev):
+    raise newException(OSError, "Flash device is not ready")
 
   result.fs.flash_device = flash_dev
-  result.fs.sector_size = Qspiflash_config.sectorSize.uint16
+  result.fs.offset = partitionOffset.cint
   result.fs.sector_count = sectorCount
 
-  check: nvs_init(result.fs.addr, result.flash.name)
+  if sectorSize.int > 0:
+    result.fs.sector_size = sectorSize.uint16
+  else:
+    ## unless overrided, lookup sectorSize
+    var info: flash_pages_info
+    check: flash_get_page_info_by_offs(
+                flash_dev,
+                partitionOffset.cint,
+                addr info)
+    result.fs.sector_size = info.size.uint16
+
+  check: nvs_init(result.fs.addr, flash_dev.name)
 
 template initNvs*(
     flash: string,
-    sectorCount: int,
+    sectorCount: uint16,
     partitionName: static[string],
-    isBits = static[bool] = false,
+    isBits: static[bool] = false,
 ): NvsConfig =
   ## helper template that finds the flash partition offset
-  let offsetRaw = FLASH_AREA_OFFSET(partitionName)
-  let offset: ByteSz = 
-    when isBits:
-      ByteSz(offsetRaw div 8)
-    else:
-      ByteSz(offsetRaw)
-  result = initNvs(flash, sectorCount, offset)
+  let offsetRaw = FLASH_AREA_OFFSET(tok(partitionName))
+  let offset: BytesSz = when isBits: BytesSz(offsetRaw div 8)
+                        else: BytesSz(offsetRaw)
+  initNvs(flash, sectorCount, offset)

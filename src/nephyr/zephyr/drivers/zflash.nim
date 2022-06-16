@@ -4,6 +4,10 @@ import ../zdevice
 import ../zkernel
 import ../kernel/zk_locks
 
+import cdecl
+import cdecl/cdeclapi
+export cdeclapi # this is needed clients to use the declared apis
+
 const hdr = "<drivers/flash.h>"
 const hdr_flash_map = "<storage/flash_map.h>"
 
