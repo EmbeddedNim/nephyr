@@ -109,7 +109,7 @@ proc writeImpl[T](nvs: NvsConfig, id: NvsId, item: ptr T): bool {.discardable.} 
   result = true
 
 proc write*[T](nvs: NvsConfig, id: NvsId, item: ref T) =
-  writeImpl(nvs, id, addr(item[]))
+  writeImpl(nvs, id, unsafeAddr(item[]))
 
 proc write*[T](nvs: NvsConfig, id: NvsId, item: T) =
-  writeImpl(nvs, id, item.addr)
+  writeImpl(nvs, id, item.unsafeAddr)
