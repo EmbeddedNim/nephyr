@@ -17,9 +17,8 @@ export zkernel
 export utils
 export logs
 
-from system import OSError
 from os import raiseOSError
-export raiseOSError, OSError
+export raiseOSError
 
 from posix import ENOENT, EIO, EAGAIN, EFAULT, EDOM
 export ENOENT, EIO, EAGAIN, EFAULT, EDOM
