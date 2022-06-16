@@ -188,7 +188,7 @@ proc flash_write_protection_set*(dev: ptr device; enable: bool): cint {.
 
 type
   flash_pages_info* {.importc: "struct flash_pages_info", header: hdr,
-      bycopy.} = object
+      bycopy, incompleteStruct.} = object
     start_offset* {.importc: "start_offset".}: off_t ##  offset from the base of flash address
     size* {.importc: "size".}: csize_t
     index* {.importc: "index".}: uint32
@@ -369,7 +369,7 @@ when true: # CONFIG_BOOT_FLEXSPI_NOR or defined(zephyr):
       # reserved4* {.importc: "reserved4".}: array[4, uint32_t]
 
     flexspi_nor_config_t* {.importc: "struct flexspi_nor_config_t",
-        header: "<flexspi_nor_config.h>", bycopy.} = object  ##\
+        header: "<flexspi_nor_config.h>", incompleteStruct, bycopy.} = object  ##\
         ## flash config for nxp chip families like i.mx
       memConfig* {.importc: "memConfig".}: flexspi_mem_config_t
       pageSize* {.importc: "pageSize".}: uint32
