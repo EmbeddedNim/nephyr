@@ -102,6 +102,14 @@ proc saveSettings*[T](ns: var ConfigSettings[T]) =
 when isMainModule:
   import unittest
 
+  type 
+    ExampleConfigs* = object
+      dac_calib_zero_cha*: int32 
+      dac_calib_gain_cha*: int32 
+
+      adc_calib_gain*: float32
+      adc_calib_zero*: int32
+
   proc read*[T](nvs: NvsConfig, id: NvsId, item: var T) =
     var buf = nvs.fs[id]
     copyMem(item.addr, buf[0].addr, item.sizeof())
@@ -117,7 +125,6 @@ when isMainModule:
 
   suite "nvs config object":
   
-    
     test "essential truths":
       # give up and stop if this fails
       var nvs = NvsConfig()
@@ -126,5 +133,17 @@ when isMainModule:
       nvs.write(1.NvsId, id1)
       let id1res = nvs.read(1.NvsId, int32)
       check id1 == id1res
+
+    test "essential truths":
+      var nvs = NvsConfig()
+
+      var cfg = ExampleConfigs()
+      cfg.adc_calib_gain = 123
+      cfg.adc_calib_offset = 54
+
+
+
+      
+
 
     
