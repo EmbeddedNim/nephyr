@@ -81,22 +81,21 @@ proc loadField*[T](settings: var ConfigSettings[T], name: string): int32 =
   except KeyError:
     logDebug("CFG", "skipping name: %s", $name)
 
-proc saveField*[T](settings: var ConfigSettings[T], name: string, val: int32) =
+proc saveField*[T](
+    settings: var ConfigSettings[T],
+    name: string,
+    val: int32,
+    oldVal = none(int32)
+) =
   var mName = mangleFieldName(name)
-  var oldVal: int32
-  try:
-    settings.store.read(mName, oldVal)
-  except KeyError:
-    logDebug("CFG", fmt"save setting field: {name}({$mName}) => {oldVal=} -> {val=}")
-    settings.store.write(mName, val)
-    return
+  var shouldWrite = if oldVal.isSome(): val != oldVal.get()
+                    else: true
 
-  if val != oldVal:
+  if shouldWrite:
     logDebug("CFG", fmt"save setting field: {name}({$mName}) => {oldVal=} -> {val=}")
     settings.store.write(mName, val)
   else:
-    logDebug("CFG", fmt"skip setting field: {name}({$mName}) => {oldVal=} -> {val=}")
-
+    logDebug("CFG", fmt"skipping setting field: {name}({$mName}) => {oldVal=} -> {val=}")
 
 proc loadAll*[T](settings: var ConfigSettings[T]) =
   for name, val in settings.values.fieldPairs():
