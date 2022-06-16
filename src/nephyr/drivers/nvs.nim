@@ -10,13 +10,18 @@ import mcu_utils/[logging, timeutils, allocstats]
 import strformat
 
 type
+  NvsId* = distinct uint16
+
   NvsConfig* = ref object
     fs*: nvs_fs
+
+
+proc `$`*(id: NvsId): string {.borrow.}
 
 static:
   assert CONFIG_NVS == true, "must config nvs in project config to use this module"
 
-import os
+import os, macros
 
 proc initNvs*(
     flash: string,
@@ -68,3 +73,33 @@ template initNvs*(
   let offset: BytesSz = when isBits: BytesSz(offsetRaw div 8)
                         else: BytesSz(offsetRaw)
   initNvs(flash, sectorCount, offset)
+
+proc readImpl[T](nvs: NvsConfig, id: NvsId, item: var T) =
+  let resCnt = nvs_read(nvs.fs.addr, id.uint16, addr(item), sizeof((T)))
+  if resCnt < 0:
+    raiseOSError(resCnt.OSErrorCode, "error reading nvs")
+  elif resCnt != sizeof(T):
+    raise newException(ValueError, "read wrong number of bytes: " & $resCnt & "/" & $sizeof(T))
+
+proc read*[T](nvs: NvsConfig, id: NvsId, item: var ref T) =
+  static:
+    error("not tested yet")
+  readImpl(nvs, id, item)
+
+proc read*[T](nvs: NvsConfig, id: NvsId, item: var T) =
+  readImpl(nvs, id, item)
+
+proc writeImpl[T](nvs: NvsConfig, id: NvsId, item: var T) =
+  let resCnt = nvs_write(nvs.fs.addr, id.uint16, addr(item), sizeof((T)))
+  if resCnt < 0:
+    raiseOSError(resCnt.OSErrorCode, "error reading nvs")
+  elif resCnt != sizeof(T):
+    raise newException(ValueError, "read wrong number of bytes: " & $resCnt & "/" & $sizeof(T))
+
+proc write*[T](nvs: NvsConfig, id: NvsId, item: var ref T) =
+  static:
+    error("not implemented yet")
+  writeImpl(nvs, id, item[])
+
+proc write*[T](nvs: NvsConfig, id: NvsId, item: var T) =
+  writeImpl(nvs, id, item)

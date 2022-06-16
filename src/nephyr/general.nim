@@ -17,7 +17,8 @@ export zkernel
 export utils
 export logs
 
-from os import newOSError
+from os import raiseOSError
+export raiseOSError
 
 type
   NephyrError* = object of Exception
