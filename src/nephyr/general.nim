@@ -17,6 +17,18 @@ export zkernel
 export utils
 export logs
 
+type
+  ZephyrError* = object of OSError
+
+template raiseZephyrError(msg, code: int) =
+  raise newException(ZephyrError, msg, code)
+
+template check*(blk: untyped, msg = "error code") =
+  let res =
+    `blk`
+  if res != 0:
+    raiseZephyrError(msg, res)
+
 proc sysReboot*(coldReboot: bool = false) = k_sys_reboot(if coldReboot: 1 else: 0)
 proc sysPanic*(reason: k_fatal_error_reason | cuint) = k_fatal_halt(reason.cuint)
 proc sysPanic*() = k_fatal_halt(K_ERR_KERNEL_PANIC.cuint)
@@ -28,7 +40,6 @@ template sysUsbEnable*(arg: pointer = nil, check = false) =
   logWarn("sysUsbEnable:error: ", res)
   if check:
     doCheck(res)
-
 
 proc hwinfo_get_device_id*(buffer: cstring, length: csize_t) {.importc: "$1", header: "<drivers/hwinfo.h>".}
 
