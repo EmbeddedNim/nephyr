@@ -24,7 +24,7 @@ else:
 
 
 type
-  ConfigSettings*[T] = object
+  ConfigSettings*[T] = ref object
     store*: NvsConfig
     values*: T
 
@@ -67,8 +67,9 @@ template implGetObjectField(obj: object, field: string): untyped =
 proc getObjectField*[T: object](obj: var T, field: string): int32 =
   implGetObjectField(obj, field)
 
-## Primary "SETTINGS" API
-## 
+## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+## Public API
+## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 proc loadField*[T](settings: var ConfigSettings[T], name: string): int32 =
   var mname = mangleFieldName(name)
@@ -90,15 +91,19 @@ proc saveField*[T](settings: var ConfigSettings[T], name: string, val: int32) =
     logDebug("CFG", fmt"skip setting field: {name}({$mName}) => {oldVale=} -> {currVal=}")
 
 
-proc loadSettings*[T](settings: var ConfigSettings[T]) =
+proc loadAll*[T](settings: var ConfigSettings[T]) =
   for name, val in settings.fieldPairs:
     discard settings.loadField(name)
 
-proc saveSettings*[T](ns: var ConfigSettings[T]) =
+proc saveAll*[T](ns: var ConfigSettings[T]) =
   logDebug("CFG", "saving settings ")
   for name, val in ns.fieldPairs:
     ns.saveField(name, cast[int32](val))
 
+proc newConfigSettings*[T](nvs: NvsConfig, config: T): ConfigSettings[T] =
+  new(result)
+  result.store = nvs
+  result.values = config
 
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ## Unit Tests
@@ -147,6 +152,6 @@ when isMainModule:
       exCfg.adc_calib_gain = 123
       exCfg.adc_calib_offset = 54
 
-      var cfg = ConfigSettings(store: nvs, values: exCfg)
+      var settings = newConfigSettings(nvs, exCfg)
 
-      cfg.loadSettings()
+      settings.loadAll()
