@@ -3,7 +3,6 @@
 ## license: Apache-2.0
 
 import macros, strutils, md5, options
-import json
 
 import nephyr
 import nephyr/drivers/nvs
@@ -14,12 +13,13 @@ import std/macrocache
 ## written or read from flash memory. This uses the "NVS" flash library 
 ## from the esp-idf. 
 
-
 type
   SerialNumber* = object
     board_major*: int
     board_minor*: int
     number*: int
+
+  ConfigSettings*[T] = object
 
 proc `$`*(serial: SerialNumber): string =
   let 
@@ -27,14 +27,7 @@ proc `$`*(serial: SerialNumber): string =
     bminor = serial.board_minor.int.intToStr(1)
     number = serial.number.int.intToStr(4)
   
-  "" & bmajor & bminor & number
-
-proc parseSerialNumber*(raw_serno: string): SerialNumber =
-  let serno = raw_serno.replace("0x", "")
-  assert serno.len() == 8
-  result.board_major = parseInt(serno[0..2])
-  result.board_minor = parseInt(serno[3..3])
-  result.number = parseInt(serno[4..7])
+  result = "" & bmajor & bminor & number
 
 proc parseSerialNumber*(serno: int): SerialNumber =
   serno.toHex(8).parseSerialNumber()
@@ -44,28 +37,9 @@ proc toInt*(serial: SerialNumber): int32 =
   serstr.parseHexInt().int32
 
 
-type 
-
-  ConfigSettings* = object
-    # Object with all possible configuration settings
-    # Note only values that are changed from the defaults
-    # are written the NVS flash. 
-    
-    serial_number*: int32
-    reading_time*: int32
-    
-    dac_calib_zero_cha*: int32 
-    dac_calib_gain_cha*: int32 
-
-    adc_calib_gain*: float32
-    adc_calib_zero*: int32
-
-
-## The code below is a bit ugly, it's to handle putting in different 
-## types like ints, floats, strings, etc
+## The code below handles mangling field names to unique id's
+## for types like ints, floats, strings, etc
 ## 
-## Don't read too closely, it may produce a headache. Read
-## the "public api" after this section ;) 
 
 template setField[T: int](val: var T, input: int32) =
   val = input
@@ -105,11 +79,7 @@ proc getObjectField*[T: object](obj: var T, field: string): int32 =
 ## Primary "SETTINGS" API
 ## 
 
-var
-  SETTINGS*: ConfigSettings
-  store: NvsConfig
-
-proc load_field*(settings: var ConfigSettings, name: string): int32 =
+proc loadField*(settings: var ConfigSettings, name: string): int32 =
   var mname = mangleFieldName(name)
   try:
     var rval = store.read(mname, int32)
@@ -118,7 +88,7 @@ proc load_field*(settings: var ConfigSettings, name: string): int32 =
   except KeyError:
     logi("CFG", "skipping name: %s", $name)
 
-proc save_field*(settings: var ConfigSettings, name: string, val: int32) =
+proc saveField*(settings: var ConfigSettings, name: string, val: int32) =
   logi("CFG", "saving settings ")
   var mName = mangleFieldName(name)
   var oldVal = getObjectField(settings, name)
@@ -130,17 +100,6 @@ proc save_field*(settings: var ConfigSettings, name: string, val: int32) =
     logi("CFG", "skip setting field: %s(%s) => %d => %d", name.cstring, mName, oldVal, currVal)
 
 
-proc config_settings_default*(): ConfigSettings =
-  # set up the default values for the ConfigSettings type
-
-  result = ConfigSettings(
-    dac_calib_zero_cha: -100, 
-    dac_calib_gain_cha: 194, 
-
-    adc_calib_gain: 3.452e-3,
-    adc_calib_zero: 0,
-  )
- 
 proc loadSettings*(settings: var ConfigSettings) =
   for name, val in settings.fieldPairs:
     discard settings.load_field(name)
