@@ -108,8 +108,8 @@ proc writeImpl[T](nvs: NvsConfig, id: NvsId, item: ptr T): bool {.discardable.} 
     raise newException(ValueError, "wrote wrong number of bytes: " & $resCnt & "/" & $sizeof(T))
   result = true
 
-proc write*[T](nvs: NvsConfig, id: NvsId, item: var ref T) =
+proc write*[T](nvs: NvsConfig, id: NvsId, item: ref T) =
   writeImpl(nvs, id, addr(item[]))
 
-proc write*[T](nvs: NvsConfig, id: NvsId, item: var T) =
+proc write*[T](nvs: NvsConfig, id: NvsId, item: T) =
   writeImpl(nvs, id, item.addr)
