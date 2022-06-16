@@ -91,6 +91,10 @@ proc read*[T](nvs: NvsConfig, id: NvsId, item: var ref T) =
 proc read*[T](nvs: NvsConfig, id: NvsId, item: var T) =
   readImpl(nvs, id, item.addr)
 
+proc read*[T](nvs: NvsConfig, id: NvsId, kind: typedesc[ref T]): ref T =
+  new(result)
+  readImpl(nvs, id, result[].addr)
+
 proc read*[T](nvs: NvsConfig, id: NvsId, kind: typedesc[T]): T =
   readImpl(nvs, id, result.addr)
 
