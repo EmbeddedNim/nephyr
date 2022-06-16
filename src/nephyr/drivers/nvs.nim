@@ -76,6 +76,7 @@ template initNvs*(
 
 proc readImpl[T](nvs: NvsConfig, id: NvsId, item: var T) =
   let resCnt = nvs_read(nvs.fs.addr, id.uint16, addr(item), sizeof((T)))
+  echo "read resCnt: ", $resCnt, " is neg: ", resCnt < 0
   if resCnt < 0:
     raiseOSError(resCnt.OSErrorCode, "error reading nvs")
   elif resCnt != sizeof(T):
@@ -88,6 +89,9 @@ proc read*[T](nvs: NvsConfig, id: NvsId, item: var ref T) =
 
 proc read*[T](nvs: NvsConfig, id: NvsId, item: var T) =
   readImpl(nvs, id, item)
+
+proc read*[T](nvs: NvsConfig, id: NvsId, kind: typedesc[T]): T =
+  readImpl(nvs, id, result)
 
 proc writeImpl[T](nvs: NvsConfig, id: NvsId, item: var T) =
   let resCnt = nvs_write(nvs.fs.addr, id.uint16, addr(item), sizeof((T)))

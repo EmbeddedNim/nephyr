@@ -69,7 +69,7 @@ proc nvs_clear*(fs: ptr nvs_fs): cint {.importc: "nvs_clear", header: hdr.} ##\
 
 
 
-proc nvs_write*(fs: ptr nvs_fs; id: uint16; data: pointer; len: csize): csize {.
+proc nvs_write*(fs: ptr nvs_fs; id: uint16; data: pointer; len: int): int {.
     importc: "nvs_write", header: hdr.} ##\
   ##  Write an entry to the file system.
   ##
@@ -99,7 +99,7 @@ proc nvs_delete*(fs: ptr nvs_fs; id: uint16): cint {.importc: "nvs_delete",
 
 
 
-proc nvs_read*(fs: ptr nvs_fs; id: uint16; data: pointer; len: csize): csize {.
+proc nvs_read*(fs: ptr nvs_fs; id: uint16; data: pointer; len: int): int {.
     importc: "nvs_read", header: hdr.} ##\
   ##  Read an entry from the file system.
   ##
@@ -117,8 +117,8 @@ proc nvs_read*(fs: ptr nvs_fs; id: uint16; data: pointer; len: csize): csize {.
 
 
 
-proc nvs_read_hist*(fs: ptr nvs_fs; id: uint16; data: pointer; len: csize;
-                   cnt: uint16): csize {.importc: "nvs_read_hist",
+proc nvs_read_hist*(fs: ptr nvs_fs; id: uint16; data: pointer; len: int;
+                   cnt: uint16): int {.importc: "nvs_read_hist",
     header: hdr.} ##\
   ##  Read a history entry from the file system.
   ##
@@ -136,7 +136,7 @@ proc nvs_read_hist*(fs: ptr nvs_fs; id: uint16; data: pointer; len: csize;
 
 
 
-proc nvs_calc_free_space*(fs: ptr nvs_fs): csize {.importc: "nvs_calc_free_space",
+proc nvs_calc_free_space*(fs: ptr nvs_fs): int {.importc: "nvs_calc_free_space",
     header: hdr.} ##\
   ##  Calculate the available free space in the file system.
   ##
