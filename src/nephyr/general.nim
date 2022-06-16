@@ -125,8 +125,6 @@ template staticKThread*(
   ##    var nameThr* {.exportc.}: k_thread
   ##    var name*: k_tid_t
   ## 
-  let entryFunc: k_thread_entry_t = entry
-
   KDefineStack(`name Stack`, stack.int)
   var `name Thr` {.inject, global, exportc.}: k_thread
   let `name` {.inject, used, global.}: k_tid_t =
@@ -134,7 +132,7 @@ template staticKThread*(
       addr `name Thr`,
       `name Stack`,
       stack.csize_t,
-      entryFunc,
+      entry,
       p1, p2, p3,
       priority.cint,
       options,
