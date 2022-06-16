@@ -45,7 +45,6 @@ proc initNvs*(
   echo fmt"fs info: {result.fs.offset=}"
   echo fmt"fs info: {result.fs.sector_count=}"
 
-  os.sleep(200)
   if sectorSize.int > 0:
     result.fs.sector_size = sectorSize.uint16
     echo fmt"calling flash info: {result.fs.sector_size=}"

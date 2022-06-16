@@ -2,21 +2,30 @@
 ## Example usage of NVS
 ## license: Apache-2.0
 
-import std/[strutils, md5, options, strformat]
+import std/[strutils, md5, options, strformat, tables]
 import std/[macros, macrocache]
 
 import mcu_utils/logging
 
-# import nephyr
-# import nephyr/drivers/nvs
-
 ## Module for getting and setting global constants that need to be 
 ## written or read from flash memory. This uses the "NVS" flash library 
 ## from the esp-idf. 
+when defined(testing):
+  type
+    NvsId* = distinct uint16
+    NvsConfig* = ref object
+      fs*: Table[NvsId, array[128, byte]]
+
+  proc `==`*(a, b: NvsId): bool {.borrow.}
+
+else:
+  import nephyr
+  import nephyr/drivers/nvs
+
 
 type
-  ConfigSettings*[S, T] = object
-    store*: S
+  ConfigSettings*[T] = object
+    store*: NvsConfig
     values*: T
 
 ## The code below handles mangling field names to unique id's
@@ -61,7 +70,7 @@ proc getObjectField*[T: object](obj: var T, field: string): int32 =
 ## Primary "SETTINGS" API
 ## 
 
-proc loadField*[S, T](settings: var ConfigSettings[S, T], name: string): int32 =
+proc loadField*[T](settings: var ConfigSettings[T], name: string): int32 =
   var mname = mangleFieldName(name)
   try:
     var rval = settings.nvs.read(mname, int32)
@@ -70,7 +79,7 @@ proc loadField*[S, T](settings: var ConfigSettings[S, T], name: string): int32 =
   except KeyError:
     logDebug("CFG", "skipping name: %s", $name)
 
-proc saveField*[S, T](settings: var ConfigSettings[S, T], name: string, val: int32) =
+proc saveField*[T](settings: var ConfigSettings[T], name: string, val: int32) =
   var mName = mangleFieldName(name)
   var oldVal = getObjectField(settings, name)
   var currVal = val
@@ -81,11 +90,11 @@ proc saveField*[S, T](settings: var ConfigSettings[S, T], name: string, val: int
     logDebug("CFG", fmt"skip setting field: {name}({$mName}) => {oldVale=} -> {currVal=}")
 
 
-proc loadSettings*[S, T](settings: var ConfigSettings[S, T]) =
+proc loadSettings*[T](settings: var ConfigSettings[T]) =
   for name, val in settings.fieldPairs:
     discard settings.loadField(name)
 
-proc saveSettings*[S, T](ns: var ConfigSettings[S, T]) =
+proc saveSettings*[T](ns: var ConfigSettings[T]) =
   logDebug("CFG", "saving settings ")
   for name, val in ns.fieldPairs:
     ns.saveField(name, cast[int32](val))
@@ -93,10 +102,29 @@ proc saveSettings*[S, T](ns: var ConfigSettings[S, T]) =
 when isMainModule:
   import unittest
 
+  proc read*[T](nvs: NvsConfig, id: NvsId, item: var T) =
+    var buf = nvs.fs[id]
+    copyMem(item.addr, buf[0].addr, item.sizeof())
+
+  proc read*[T](nvs: NvsConfig, id: NvsId, tp: typedesc[T]): T =
+    read(nvs, id, result)
+
+  proc write*[T](nvs: NvsConfig, id: NvsId, item: T) =
+    var buf: array[128, byte]
+    var val = item
+    copyMem(buf[0].addr, val.addr, item.sizeof())
+    nvs.fs[id] = buf
+
   suite "nvs config object":
   
     
     test "essential truths":
       # give up and stop if this fails
-      echo "hi"
+      var nvs = NvsConfig()
+
+      let id1 = 1234'i32
+      nvs.write(1.NvsId, id1)
+      let id1res = nvs.read(1.NvsId, int32)
+      check id1 == id1res
+
     
