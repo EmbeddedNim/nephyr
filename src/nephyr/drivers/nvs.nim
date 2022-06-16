@@ -95,12 +95,15 @@ proc read*[T](nvs: NvsConfig, id: NvsId, item: var T) =
 proc read*[T](nvs: NvsConfig, id: NvsId, kind: typedesc[T]): T =
   readImpl(nvs, id, result)
 
-proc writeImpl[T](nvs: NvsConfig, id: NvsId, item: var T) =
+proc writeImpl[T](nvs: NvsConfig, id: NvsId, item: var T): bool {.discardable.} =
   let resCnt = nvs_write(nvs.fs.addr, id.uint16, addr(item), sizeof((T)))
   if resCnt < 0:
     raiseOSError(resCnt.OSErrorCode, "error reading nvs")
+  elif resCnt == 0:
+    return false
   elif resCnt != sizeof(T):
-    raise newException(ValueError, "read wrong number of bytes: " & $resCnt & "/" & $sizeof(T))
+    raise newException(ValueError, "wrote wrong number of bytes: " & $resCnt & "/" & $sizeof(T))
+  result = true
 
 proc write*[T](nvs: NvsConfig, id: NvsId, item: var ref T) =
   static:
