@@ -20,6 +20,8 @@ type
     number*: int
 
   ConfigSettings*[T] = object
+    nvs*: NvsConfig
+    values*: T
 
 proc `$`*(serial: SerialNumber): string =
   let 
@@ -48,8 +50,8 @@ template setField[T: float](val: var T, input: int32) =
   val = cast[float32](input)
 
 proc mangleFieldName*(name: string): NvsId =
-  let nh: string = $toMD5(name)
-  copyMem(result.addr, nh.cstring, sizeof(result))
+  let nh = toMD5(name)
+  copyMem(result.addr, nh.addr, sizeof(result))
 
 template implSetObjectField(obj: object, field: string, val: int32): untyped =
   block fieldFound:
@@ -79,16 +81,16 @@ proc getObjectField*[T: object](obj: var T, field: string): int32 =
 ## Primary "SETTINGS" API
 ## 
 
-proc loadField*(settings: var ConfigSettings, name: string): int32 =
+proc loadField*[T](settings: var ConfigSettings[T], name: string): int32 =
   var mname = mangleFieldName(name)
   try:
-    var rval = store.read(mname, int32)
+    var rval = settings.nvs.read(mname, int32)
     logi("CFG", "name: %s => %s", name, $rval)
     setObjectField(settings, name, rval)
   except KeyError:
     logi("CFG", "skipping name: %s", $name)
 
-proc saveField*(settings: var ConfigSettings, name: string, val: int32) =
+proc saveField*[T](settings: var ConfigSettings[T], name: string, val: int32) =
   logi("CFG", "saving settings ")
   var mName = mangleFieldName(name)
   var oldVal = getObjectField(settings, name)
@@ -100,15 +102,11 @@ proc saveField*(settings: var ConfigSettings, name: string, val: int32) =
     logi("CFG", "skip setting field: %s(%s) => %d => %d", name.cstring, mName, oldVal, currVal)
 
 
-proc loadSettings*(settings: var ConfigSettings) =
+proc loadSettings*[T](settings: var ConfigSettings[T]) =
   for name, val in settings.fieldPairs:
     discard settings.load_field(name)
 
-proc saveSettings*(ns: var ConfigSettings) =
+proc saveSettings*[T](ns: var ConfigSettings[T]) =
   logi("CFG", "saving settings ")
   for name, val in ns.fieldPairs:
     ns.save_field(name, cast[int32](val))
-
-proc cfg_settings*() =
-  logi("CFG", "cfg settings")
-  SETTINGS = config_settings_default()
