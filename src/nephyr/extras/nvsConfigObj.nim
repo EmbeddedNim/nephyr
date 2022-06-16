@@ -38,7 +38,7 @@ template setField[T: int](val: var T, input: int32) =
 template setField[T: float](val: var T, input: int32) =
   val = cast[float32](input)
 
-proc mangleFieldName*(name: string): int =
+proc mangleFieldName*(name: string): NvsId =
   var nh = toMD5(name)
   copyMem(result.addr, nh.addr, sizeof(result))
 
@@ -74,9 +74,9 @@ proc getObjectField*[T: object](obj: var T, field: string): int32 =
 proc loadField*[T](settings: var ConfigSettings[T], name: string): int32 =
   var mname = mangleFieldName(name)
   try:
-    var rval = settings.nvs.read(mname, int32)
+    var rval = settings.store.read(mname, int32)
     logDebug(fmt"CFG name: {name} => {rval}")
-    setObjectField(settings, name, rval)
+    setObjectField(settings.values, name, rval)
   except KeyError:
     logDebug("CFG", "skipping name: %s", $name)
 
@@ -92,12 +92,12 @@ proc saveField*[T](settings: var ConfigSettings[T], name: string, val: int32) =
 
 
 proc loadAll*[T](settings: var ConfigSettings[T]) =
-  for name, val in settings.fieldPairs:
+  for name, val in settings.values.fieldPairs():
     discard settings.loadField(name)
 
 proc saveAll*[T](ns: var ConfigSettings[T]) =
   logDebug("CFG", "saving settings ")
-  for name, val in ns.fieldPairs:
+  for name, val in ns.values.fieldPairs():
     ns.saveField(name, cast[int32](val))
 
 proc newConfigSettings*[T](nvs: NvsConfig, config: T): ConfigSettings[T] =
@@ -148,10 +148,20 @@ when isMainModule:
     test "essential truths":
       var nvs = NvsConfig()
 
-      var exCfg = ExampleConfigs()
-      exCfg.adc_calib_gain = 123
-      exCfg.adc_calib_offset = 54
+      # pre-make fields to simulate flash values
+      let fld1 = mangleFieldName("dac_calib_gain")
+      let fld2 = mangleFieldName("dac_calib_offset")
+      nvs.write(fld1, 31415)
+      nvs.write(fld2, 2718)
 
+      var exCfg = ExampleConfigs()
       var settings = newConfigSettings(nvs, exCfg)
 
+      # check default 0
+      check settings.values.dac_calib_gain == 0
+      check settings.values.dac_calib_offset == 0
+
+      # check loaded
       settings.loadAll()
+      check settings.values.dac_calib_gain == 31415
+      check settings.values.dac_calib_offset == 2718
