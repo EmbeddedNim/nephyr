@@ -74,29 +74,28 @@ template initNvs*(
                         else: BytesSz(offsetRaw)
   initNvs(flash, sectorCount, offset)
 
-proc readImpl[T](nvs: NvsConfig, id: NvsId, item: var T) =
-  let resCnt = nvs_read(nvs.fs.addr, id.uint16, addr(item), sizeof((T)))
+template readImpl[T](nvs: NvsConfig, id: NvsId, item: ptr T) =
+  let resCnt = nvs_read(nvs.fs.addr, id.uint16, item, sizeof((T)))
   if resCnt == -ENOENT:
     raise newException(KeyError, "missing key")
   elif resCnt < 0:
-    echo fmt"{$OSErrorCode(resCnt)=}"
     raiseOSError(resCnt.OSErrorCode, "error reading nvs")
   elif resCnt != sizeof(T):
     raise newException(ValueError, "read wrong number of bytes: " & $resCnt & "/" & $sizeof(T))
 
 proc read*[T](nvs: NvsConfig, id: NvsId, item: var ref T) =
-  static:
-    error("not tested yet")
-  readImpl(nvs, id, item)
+  if item == nil:
+    new(item)
+  readImpl(nvs, id, addr(item[]))
 
 proc read*[T](nvs: NvsConfig, id: NvsId, item: var T) =
-  readImpl(nvs, id, item)
+  readImpl(nvs, id, item.addr)
 
 proc read*[T](nvs: NvsConfig, id: NvsId, kind: typedesc[T]): T =
-  readImpl(nvs, id, result)
+  readImpl(nvs, id, result.addr)
 
-proc writeImpl[T](nvs: NvsConfig, id: NvsId, item: var T): bool {.discardable.} =
-  let resCnt = nvs_write(nvs.fs.addr, id.uint16, addr(item), sizeof((T)))
+proc writeImpl[T](nvs: NvsConfig, id: NvsId, item: ptr T): bool {.discardable.} =
+  let resCnt = nvs_write(nvs.fs.addr, id.uint16, item, sizeof((T)))
   if resCnt < 0:
     raiseOSError(resCnt.OSErrorCode, "error reading nvs")
   elif resCnt == 0:
@@ -106,9 +105,7 @@ proc writeImpl[T](nvs: NvsConfig, id: NvsId, item: var T): bool {.discardable.} 
   result = true
 
 proc write*[T](nvs: NvsConfig, id: NvsId, item: var ref T) =
-  static:
-    error("not implemented yet")
-  writeImpl(nvs, id, item[])
+  writeImpl(nvs, id, addr(item[]))
 
 proc write*[T](nvs: NvsConfig, id: NvsId, item: var T) =
-  writeImpl(nvs, id, item)
+  writeImpl(nvs, id, item.addr)
