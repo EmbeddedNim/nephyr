@@ -99,6 +99,12 @@ proc saveSettings*[T](ns: var ConfigSettings[T]) =
   for name, val in ns.fieldPairs:
     ns.saveField(name, cast[int32](val))
 
+
+## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+## Unit Tests
+## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+##
+
 when isMainModule:
   import unittest
 
