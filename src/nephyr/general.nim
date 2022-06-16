@@ -22,12 +22,6 @@ from os import newOSError
 type
   NephyrError* = object of Exception
 
-template check*(blk: untyped, msg = "error code") =
-  let res =
-    `blk`
-  if res != 0:
-    raise newOSError(res, msg)
-
 proc sysReboot*(coldReboot: bool = false) = k_sys_reboot(if coldReboot: 1 else: 0)
 proc sysPanic*(reason: k_fatal_error_reason | cuint) = k_fatal_halt(reason.cuint)
 proc sysPanic*() = k_fatal_halt(K_ERR_KERNEL_PANIC.cuint)

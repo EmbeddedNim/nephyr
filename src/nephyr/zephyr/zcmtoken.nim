@@ -74,7 +74,10 @@ macro `tok`*(token: untyped): cminvtoken =
       token[0].strVal
     elif token.kind == nnkRStrLit:
       token.strVal
+    elif token.kind == nnkStrLit:
+      token.strVal
     else:
+      echo "tok args: ", token.treeRepr
       error("tok must be used like 'tok\"MYCTOKEN\"' or 'tok`MYCTOKEN`' ", token)
       raise newException(ValueError, "tok error")
   
