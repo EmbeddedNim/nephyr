@@ -39,7 +39,7 @@ task test_zephyr_c_api, "compile Zephyr wrapper apis":
     exec(cmd)
 
 task unit_tests, "unit tests":
-  exec("testament pattern tests/t*.nim")
+  exec("nim c -r tests/unit_tests/t_nvs_cfg_obj.nim")
 
 before test:
   test_zephyr_c_apiTask()
