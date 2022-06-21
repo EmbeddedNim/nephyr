@@ -6,7 +6,7 @@ import ../kernel/zk_locks
 
 import ./zflash
 
-export zkernel_fixes, zdevice, zkernel, zk_locks, zflash
+export zkernel_fixes, zdevice, zkernel, zk_locks
 
 ## NVS: non volatile storage in flash
 ##

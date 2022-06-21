@@ -10,10 +10,7 @@ import mcu_utils/logging
 ## Module for getting and setting global constants that need to be 
 ## written or read from flash memory. This uses the "NVS" flash library 
 ## from the esp-idf. 
-when not TESTING:
-  import nephyr
-  import nephyr/drivers/nvs
-
+import ../drivers/nvs
 
 type
   ConfigSettings*[T] = ref object

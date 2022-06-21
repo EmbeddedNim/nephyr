@@ -1,9 +1,8 @@
 import std/options
 
-import nephyr
-import nephyr/general
-import nephyr/zephyr/[zdevice, zdevicetree]
-import nephyr/zephyr/drivers/[zflash, znvs]
+import ../general
+import ../zephyr/[zdevice, zdevicetree]
+import ../zephyr/drivers/[zflash, znvs]
 
 import mcu_utils/[logging, timeutils, allocstats]
 
@@ -37,19 +36,19 @@ proc initNvs*(
   if not device_is_ready(flash_dev):
     raise newException(OSError, "Flash device is not ready")
 
-  echo fmt"fs_dev: {flash_dev.name=}"
+  logDebug fmt"fs_dev: {flash_dev.name=}"
 
   result.fs.flash_device = flash_dev
   result.fs.offset = partitionOffset.cint
   result.fs.sector_count = sectorCount
-  echo fmt"fs info: {result.fs.offset=}"
-  echo fmt"fs info: {result.fs.sector_count=}"
+  logDebug fmt"fs info: {result.fs.offset=}"
+  logDebug fmt"fs info: {result.fs.sector_count=}"
 
   if sectorSize.int > 0:
     result.fs.sector_size = sectorSize.uint16
-    echo fmt"calling flash info: {result.fs.sector_size=}"
+    logDebug fmt"calling flash info: {result.fs.sector_size=}"
   else:
-    echo fmt"calling flash info: "
+    logDebug fmt"calling flash info: "
     ## unless overrided, lookup sectorSize
     var info: flash_pages_info
     check: flash_get_page_info_by_offs(
@@ -57,9 +56,9 @@ proc initNvs*(
                 partitionOffset.cint,
                 addr info)
     result.fs.sector_size = info.size.uint16
-    echo fmt"calling flash info: {result.fs.sector_size=}"
+    logDebug fmt"calling flash info: {result.fs.sector_size=}"
 
-  echo fmt"calling nvs_init "
+  logDebug fmt"calling nvs_init "
   check: nvs_init(result.fs.addr, flash_dev.name)
 
 template initNvs*(

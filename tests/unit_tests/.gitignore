@@ -3,3 +3,4 @@ test
 *-log.txt
 !t*
 t*.nim
+t_nvs_cfg_obj
