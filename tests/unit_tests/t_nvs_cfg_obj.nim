@@ -1,15 +1,36 @@
 import std/[tables, strformat]
 import unittest
 
+import mcu_utils/[logging, timeutils, allocstats]
+
 include nephyr/extras/nvsConfigObj
 
 type 
+  CalibConsts* = object
+    a*: float32
+    b*: float32
+    c*: float32
+
   ExampleConfigs* = object
     dac_calib_gain*: int32 
     dac_calib_offset*: int32 
 
     adc_calib_gain*: float32
     adc_calib_offset*: int32
+    adc_calibs*: CalibConsts
+
+proc testComplexObj(nvs: NvsConfig) =
+
+  var settings = newConfigSettings(nvs, ExampleConfigs())
+
+  # check default 0
+  check settings.values.dac_calib_gain == 0
+  check settings.values.dac_calib_offset == 0
+
+  # check loaded
+  settings.loadAll()
+  check settings.values.dac_calib_gain == 31415
+  check settings.values.dac_calib_offset == 2718
 
 suite "nvs config object":
 
@@ -43,6 +64,10 @@ suite "nvs config object":
     check settings.values.dac_calib_gain == 31415
     check settings.values.dac_calib_offset == 2718
 
+  test "complex load":
+    logAllocStats(lvlInfo):
+      testComplexObj(nvs)
+
   test "basic store":
     var settings = newConfigSettings(nvs, ExampleConfigs())
 
@@ -61,3 +86,7 @@ suite "nvs config object":
 
     check fld1Val == 1111
     check fld2Val == 2222
+  
+
+var nvs = NvsConfig()
+nvs.testComplexObj()

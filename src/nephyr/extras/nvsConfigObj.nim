@@ -60,10 +60,10 @@ proc getObjectField*[T: object](obj: var T, field: string): int32 =
 ## Public API
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-proc loadField*[T](settings: var ConfigSettings[T], name: string): int32 =
+proc loadField*[T, V](settings: var ConfigSettings[T], name: string, typ: typedesc[V]): V =
   var mname = mangleFieldName(name)
   try:
-    var rval = settings.store.read(mname, int32)
+    var rval = settings.store.read(mname, typ)
     logDebug(fmt"CFG name: {name} => {rval}")
     setObjectField(settings.values, name, rval)
   except KeyError:
