@@ -31,16 +31,17 @@ proc mangleFieldName*(name: string): NvsId =
   var nh = toMD5(name)
   copyMem(result.addr, nh.addr, sizeof(result))
 
-template implSetObjectField(obj: object, field: string, val: int32): untyped =
+template implSetObjectField[V](obj: object, field: string, val: V) =
   block fieldFound:
     for objField, objVal in fieldPairs(obj):
       if objField == field:
-        setField(objVal, val)
+        objField = val
+        # setField(objVal, val)
         # objVal = val
         break fieldFound
     raise newException(ValueError, "unexpected field: " & field)
 
-proc setObjectField*[T: object](obj: var T, field: string, val: int32) =
+proc setObjectField*[T: object, V](obj: var T, field: string, val: V) =
   # inside a generic proc to avoid side-effects and reduce code size.
   expandMacros: # to see what it generates
     implSetObjectField(obj, field, val)
@@ -86,8 +87,8 @@ proc saveField*[T](
     logDebug("CFG", fmt"skipping setting field: {name}({$mName}) => {oldVal=} -> {val=}")
 
 proc loadAll*[T](settings: var ConfigSettings[T]) =
-  for name, val in settings.values.fieldPairs():
-    discard settings.loadField(name)
+  for name, valTyp in settings.values.fieldPairs():
+    discard settings.loadField(name, typeof valTyp)
 
 proc saveAll*[T](ns: var ConfigSettings[T]) =
   logDebug("CFG", "saving settings ")
