@@ -39,8 +39,8 @@ suite "nvs basic config object":
     nvs.write(fld2, 2718)
 
   test "ensure stable hash":
-    check mangleFieldName("abracadabra") == 33604.Hash
-    check mangleFieldName("hello world") == 54474.Hash
+    check mangleFieldName("abracadabra") == -5600162842546114722.Hash
+    check mangleFieldName("hello world") == -3218706494461838991.Hash
 
   test "essential truths":
     # give up and stop if this fails
