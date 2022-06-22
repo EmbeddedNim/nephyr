@@ -113,4 +113,3 @@ suite "nvs complex config object":
     check settings.values.adc_calibs.a == 1137
     check settings.values.adc_calibs.b == 136
     check settings.values.adc_calibs.c == 662607015
-

@@ -59,7 +59,7 @@ proc toNvsId*(hs: Hash, index: int = 0): NvsId =
 ##           "dac_calib_gain", " "])
 ##   ...
 
-proc loadField*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
+proc loadFieldValue*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
   try:
     let rval = store.read(keyId, typeof(value))
     value = rval
@@ -67,15 +67,15 @@ proc loadField*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
   except KeyError:
     result = false
 
-proc saveField*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
+proc saveFieldValue*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
   try:
     store.write(keyId, value)
     result = true
   except KeyError:
     result = false
 
-template loadField*[T, V](
-    settings: var ConfigSettings[T], 
+template loadField*[V](
+    store: NvsConfig,
     base: string,
     index: int,
     name: string,
@@ -83,14 +83,14 @@ template loadField*[T, V](
 ) =
   const baseHash: Hash = mangleFieldName(base, name)
   let keyId = baseHash.toNvsId()
-  let res = loadField(settings.store, keyid, value)
+  let res = loadFieldValue(store, keyid, value)
   if res:
     logDebug("CFG name:", name, keyId, " => ", value)
   else:
     logDebug("CFG", "skipping name: ", keyId, name)
 
-template saveField*[T, V](
-    settings: var ConfigSettings[T], 
+template saveField*[V](
+    store: NvsConfig,
     base: string,
     index: int,
     name: string,
@@ -98,24 +98,29 @@ template saveField*[T, V](
 ) =
   const baseHash: Hash = mangleFieldName(base, name)
   let keyId = baseHash.toNvsId()
-  let res = saveField(settings.store, keyid, value)
+  let res = saveFieldValue(store, keyid, value)
   if res:
     logDebug("CFG name:", name, keyId, " => ", value)
   else:
     logDebug("CFG", "skipping name: ", keyId, name)
 
-
-proc loadAll*[T](settings: var ConfigSettings[T], index: int = 0) =
+proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: string) =
   expandMacros:
     const baseName = $(distinctBase(T))
-    for field, value in settings.values.fieldPairs():
-      loadField(settings, baseName, index, field, value)
+    for field, value in values.fieldPairs():
+      when typeof(value) is object:
+        loadAllImpl(store, value, index, prefix = baseName & "/")
+      else:
+        loadField(store, baseName, index, field, value)
+
+proc loadAll*[T](settings: var ConfigSettings[T], index: int = 0) =
+  loadAllImpl(settings.store, settings.values, index, prefix = "")
 
 proc saveAll*[T](settings: var ConfigSettings[T], index: int = 9) =
   expandMacros:
     const baseName = $(distinctBase(T))
     for field, value in settings.values.fieldPairs():
-      saveField(settings, baseName, index, field, value)
+      saveField(settings.store, baseName, index, field, value)
 
 
 proc newConfigSettings*[T](nvs: NvsConfig, config: T): ConfigSettings[T] =
