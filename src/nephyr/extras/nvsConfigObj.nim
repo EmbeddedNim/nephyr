@@ -41,7 +41,7 @@ template loadField*[T, V](
     field: untyped,
     typ: typedesc[V]
 ): V =
-  const keyId: NvsId = mangleFieldName(name)
+  const keyId: NvsId = mangleFieldName(name, index)
   try:
     let rval = settings.store.read(keyId, typ)
     logDebug("CFG name:", name, keyId, " => ", rval)
