@@ -21,11 +21,8 @@ type
 ## for types like ints, floats, strings, etc
 ## 
 
-template setField[T: int](val: var T, input: int32) =
+template setField[V](val: var V, input: V) =
   val = input
-
-template setField[T: float](val: var T, input: int32) =
-  val = cast[float32](input)
 
 proc mangleFieldName*(name: string): NvsId =
   var nh = toMD5(name)
@@ -35,8 +32,8 @@ template implSetObjectField[V](obj: object, field: string, val: V) =
   block fieldFound:
     for objField, objVal in fieldPairs(obj):
       if objField == field:
-        objField = val
-        # setField(objVal, val)
+        when objVal is typeof(val):
+          setField(objVal, val)
         # objVal = val
         break fieldFound
     raise newException(ValueError, "unexpected field: " & field)
