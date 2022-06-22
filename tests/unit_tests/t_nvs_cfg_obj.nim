@@ -66,7 +66,7 @@ suite "nvs basic config object":
 
     # check default 0
     settings.values.dac_calib_gain = 1111
-    # settings.values.dac_calib_offset = 2222
+    settings.values.dac_calib_offset = 2222
 
     # check loaded
     settings.saveAll()
