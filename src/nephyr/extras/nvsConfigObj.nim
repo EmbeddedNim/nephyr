@@ -26,6 +26,7 @@ template setField[V](val: var V, input: V) =
   val = input
 
 proc mangleFieldName*(name: string): Hash {.compileTime.} =
+  echo "MANGLEFIELDNAME: ", name
   result = hashIgnoreStyle(name)
 proc mangleFieldName*(base, name: string): Hash {.compileTime.} =
   mangleFieldName(base & "/" & name)
