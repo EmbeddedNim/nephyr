@@ -32,8 +32,8 @@ suite "nvs basic config object":
   setup:
     var nvs = NvsConfig()
     # pre-make fields to simulate flash values
-    let fld1 = mangleFieldName("dac_calib_gain").toNvsId()
-    let fld2 = mangleFieldName("dac_calib_offset").toNvsId()
+    let fld1 = mangleFieldName("ExampleConfigs/dac_calib_gain").toNvsId()
+    let fld2 = mangleFieldName("ExampleConfigs/dac_calib_offset").toNvsId()
     nvs.write(fld1, 31415)
     nvs.write(fld2, 2718)
 
