@@ -89,6 +89,12 @@ suite "nvs complex config object":
     let fld2 = mangleFieldName("ExampleComplexConfigs/dac_calib_offset").toNvsId
     nvs.write(fld1, 31415)
     nvs.write(fld2, 2718)
+    let fldA1 = mangleFieldName("ExampleComplexConfigs/adc_calibs/a").toNvsId
+    let fldA2 = mangleFieldName("ExampleComplexConfigs/adc_calibs/b").toNvsId
+    let fldA3 = mangleFieldName("ExampleComplexConfigs/adc_calibs/c").toNvsId
+    nvs.write(fldA1, 1137) # fine structure constant
+    nvs.write(fldA2, 136) # hydrogen eV
+    nvs.write(fldA3, 662607015) # planck 
 
   test "load values":
     var settings = newConfigSettings(nvs, ExampleComplexConfigs())
@@ -104,4 +110,7 @@ suite "nvs complex config object":
     settings.loadAll()
     check settings.values.dac_calib_gain == 31415
     check settings.values.dac_calib_offset == 2718
+    check settings.values.adc_calibs.a == 1137
+    check settings.values.adc_calibs.b == 136
+    check settings.values.adc_calibs.c == 662607015
 
