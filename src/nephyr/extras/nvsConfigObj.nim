@@ -111,7 +111,7 @@ proc loadAll*[T](settings: var ConfigSettings[T], index: int = 0) =
     for field, value in settings.values.fieldPairs():
       loadField(settings, baseName, index, field, value)
 
-proc saveAll*[T](ns: var ConfigSettings[T]) =
+proc saveAll*[T](settings: var ConfigSettings[T], index: int = 9) =
   expandMacros:
     const baseName = $(distinctBase(T))
     for field, value in settings.values.fieldPairs():
