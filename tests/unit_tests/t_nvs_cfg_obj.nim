@@ -107,6 +107,3 @@ suite "nvs complex config object":
     check settings.values.dac_calib_gain == 31415
     check settings.values.dac_calib_offset == 2718
 
-
-
-
