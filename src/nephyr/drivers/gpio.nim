@@ -2,8 +2,8 @@ import bitops
 import macros
 import sets
 
-import nephyr/general
-import nephyr/utils
+import ../general
+import ../utils
 import ../zephyr/zdevicetree
 import ../zephyr/zdevice
 import ../zephyr/dt_bindings/dt_gpio
