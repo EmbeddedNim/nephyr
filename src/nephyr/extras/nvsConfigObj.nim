@@ -2,7 +2,7 @@
 ## Example usage of NVS
 ## license: Apache-2.0
 
-import std/[strutils, md5, options, strformat, tables]
+import std/[strutils, hashes, options, strformat, tables]
 import std/[macros, macrocache]
 
 import mcu_utils/logging
@@ -25,7 +25,8 @@ template setField[V](val: var V, input: V) =
   val = input
 
 proc mangleFieldName*(name: string): NvsId =
-  var nh = toMD5(name)
+  var nh = hash(name)
+  static: assert sizeof(nh) >= sizeof(result)
   copyMem(result.addr, nh.addr, sizeof(result))
 
 template implSetObjectField[V](obj: object, field: string, val: V) =
