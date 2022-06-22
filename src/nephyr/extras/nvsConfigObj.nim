@@ -1,16 +1,15 @@
-
 ## Example usage of NVS
 ## license: Apache-2.0
+
+## Module for getting and setting global constants that need to be 
+## written or read from flash memory. This uses the "NVS" flash library 
+## from Zephyr. 
 
 import std/[strutils, hashes, options, strformat, tables]
 import std/[macros, macrocache, typetraits]
 
-import cdecl/cdeclapi
 import mcu_utils/logging
 
-## Module for getting and setting global constants that need to be 
-## written or read from flash memory. This uses the "NVS" flash library 
-## from the esp-idf. 
 import ../drivers/nvs
 
 type
@@ -22,9 +21,6 @@ type
 ## for types like ints, floats, strings, etc
 ## 
 
-template setField[V](val: var V, input: V) =
-  val = input
-
 proc mangleFieldName*(name: string): Hash {.compileTime.} =
   echo "MANGLEFIELDNAME: ", name
   result = hashIgnoreStyle(name)
@@ -33,7 +29,6 @@ proc mangleFieldName*(base, name: string): Hash {.compileTime.} =
 proc toNvsId*(hs: Hash, index: int = 0): NvsId =
   let hn = int(hs !& index)
   result = NvsId(cast[uint16](hn mod high(int16)))
-
 
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ## Public API
