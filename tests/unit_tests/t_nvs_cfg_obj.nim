@@ -24,6 +24,7 @@ type
 
     adc_calib_gain*: float32
     adc_calib_offset*: int32
+    # adc_vs*: (int, float32) # not implemented yet
     adc_calibs*: CalibConsts
 
 
