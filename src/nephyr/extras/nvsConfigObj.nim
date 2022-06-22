@@ -37,9 +37,38 @@ proc toNvsId*(hs: Hash, index: int = 0): NvsId =
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 ## Public API
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+## 
+## `loadAll` essnetially just unrolls the loop at compile time. 
+## For each field the loop produces code somewhat the below example. 
+## It's not too different from making a large function doing this
+## for each field. 
+## 
+##   const
+##     baseName = "ExampleConfigs"
+##   ...
+##   const
+##     baseHash`gensym51: Hash = 5931869128195016125
+##   let keyId`gensym51 = toNvsId(5931869128195016125, 0)
+##   let res`gensym51 = loadFieldName(settings.store, keyId`gensym51,
+##                                    settings.values.dac_calib_gain)
+##   if res`gensym51:
+##     echo(["CFG name:", " ", "dac_calib_gain", " ", keyId`gensym51, " ", " => ",
+##           " ", settings.values.dac_calib_gain, " "])
+##   else:
+##     echo(["CFG", " ", "skipping name: ", " ", keyId`gensym51, " ",
+##           "dac_calib_gain", " "])
+##   ...
+
+proc loadField*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
+  try:
+    let rval = store.read(keyId, typeof(value))
+    value = rval
+    result = true
+  except KeyError:
+    result = false
 
 template loadField*[T, V](
-    obj: var T,
+    settings: var ConfigSettings[T], 
     base: string,
     index: int,
     name: string,
@@ -47,18 +76,18 @@ template loadField*[T, V](
 ) =
   const baseHash: Hash = mangleFieldName(base, name)
   let keyId = baseHash.toNvsId()
-  try:
-    let rval = settings.store.read(keyId, typeof(value))
-    logDebug("CFG name:", name, keyId, " => ", rval)
-    value = rval
-  except KeyError:
+  let res = loadField(settings.store, keyid, value)
+  if res:
+    logDebug("CFG name:", name, keyId, " => ", value)
+  else:
     logDebug("CFG", "skipping name: ", keyId, name)
+
 
 proc loadAll*[T](settings: var ConfigSettings[T], index: int = 0) =
   expandMacros:
     const baseName = $(distinctBase(T))
     for field, value in settings.values.fieldPairs():
-      loadField(settings.values, baseName, index, field, value)
+      loadField(settings, baseName, index, field, value)
 
 proc saveAll*[T](ns: var ConfigSettings[T]) =
   discard
