@@ -25,9 +25,11 @@ type
 template setField[V](val: var V, input: V) =
   val = input
 
-proc mangleFieldName*(name: string, index: int): NvsId {.compileTime.} =
-  let hs = hashIgnoreStyle(name) !& index
-  result = NvsId(cast[uint16](hs mod high(int16)))
+proc mangleFieldName*(name: string): Hash {.compileTime.} =
+  result = hashIgnoreStyle(name)
+proc toNvsid*(hs: Hash, index: int = 0): NvsId =
+  let hn = int(hs !& index)
+  result = NvsId(cast[uint16](hn mod high(int16)))
 
 
 ## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -36,21 +38,20 @@ proc mangleFieldName*(name: string, index: int): NvsId {.compileTime.} =
 
 template loadField*[T, V](
     obj: var T,
-    index: int,
     name: string,
-    field: untyped,
-    typ: typedesc[V]
-): V =
-  const keyId: NvsId = mangleFieldName(name, index)
+    index: int,
+    field: V,
+) =
+  const baseHash: Hash = mangleFieldName(base, name)
+  let keyId = NvsId(baseid.uint16 !& index)
   try:
-    let rval = settings.store.read(keyId, typ)
+    let rval = settings.store.read(keyId, typeof(field))
     logDebug("CFG name:", name, keyId, " => ", rval)
-    obj.field = rval
+    field = rval
   except KeyError:
     logDebug("CFG", "skipping name: ", keyId, name)
 
-
-proc loadAll*[T](settings: var ConfigSettings[T], index = 0) =
+proc loadAll*[T](settings: var ConfigSettings[T], index: int = 0) =
   for field, value in settings.values.fieldPairs():
     loadField(settings.values, index, field, value)
 

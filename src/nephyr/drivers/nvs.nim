@@ -1,10 +1,10 @@
-import std/options
+import std/[options]
 
 import ../general
 import ../zephyr/[zdevice, zdevicetree]
 import ../zephyr/drivers/[zflash, znvs]
 
-import mcu_utils/[logging, timeutils, allocstats]
+import mcu_utils/[logging, timeutils]
 
 import strformat
 
