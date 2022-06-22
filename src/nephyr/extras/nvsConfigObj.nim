@@ -68,7 +68,7 @@ proc loadFieldValue*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
   except KeyError:
     result = false
 
-proc saveFieldValue*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
+proc saveFieldValue*[V](store: NvsConfig, keyId: NvsId, value: V): bool =
   try:
     store.write(keyId, value)
     result = true
@@ -105,54 +105,32 @@ template saveField*[V](
   else:
     logDebug("CFG", "skipping name: ", keyId, name)
 
-proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: string) =
+proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[string]) =
   expandMacros:
-    const baseName = $(distinctBase(T))
+    const baseName = prefix & "/" & $(distinctBase(T))
     for field, value in values.fieldPairs():
       when typeof(value) is object:
-        loadAllImpl(store, value, index, prefix = baseName & "/")
+        loadAllImpl(store, value, index, prefix = baseName)
       else:
         loadField(store, baseName, index, field, value)
 
 proc loadAll*[T](settings: var ConfigSettings[T], index: int = 0) =
   loadAllImpl(settings.store, settings.values, index, prefix = "")
 
-proc saveAll*[T](settings: var ConfigSettings[T], index: int = 9) =
+proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
   expandMacros:
-    const baseName = $(distinctBase(T))
-    for field, value in settings.values.fieldPairs():
-      saveField(settings.store, baseName, index, field, value)
+    const baseName = prefix & "/" & $(distinctBase(T))
+    for field, value in values.fieldPairs():
+      when typeof(value) is object:
+        saveAllImpl(store, value, index, prefix = baseName)
+      else:
+        saveField(store, baseName, index, field, value)
+
+proc saveAll*[T](settings: ConfigSettings[T], index: int = 9) =
+  saveAllImpl(settings.store, settings.values, index, prefix = "")
 
 
 proc newConfigSettings*[T](nvs: NvsConfig, config: T): ConfigSettings[T] =
   new(result)
   result.store = nvs
   result.values = config
-
-when false:
-  proc saveField*[T](
-      settings: var ConfigSettings[T],
-      name: string,
-      val: int32,
-      oldVal = none(int32)
-  ) =
-    expandMacros:
-      var mName = mangleFieldName(name)
-      var shouldWrite = if oldVal.isSome(): val != oldVal.get()
-                        else: true
-
-      if shouldWrite:
-        logDebug("CFG", fmt"save setting field: {name}({$mName}) => {oldVal=} -> {val=}")
-        settings.store.write(mName, val)
-      else:
-        logDebug("CFG", fmt"skipping setting field: {name}({$mName}) => {oldVal=} -> {val=}")
-  
-  template implSetObjectField[V](obj: object, field: string, val: V) =
-    block fieldFound:
-      for objField, objVal in fieldPairs(obj):
-        if objField == field:
-          when objVal is typeof(val):
-            setField(objVal, val)
-          # objVal = val
-          break fieldFound
-      raise newException(ValueError, "unexpected field: " & field)

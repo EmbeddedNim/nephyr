@@ -32,8 +32,8 @@ suite "nvs basic config object":
   setup:
     var nvs = NvsConfig()
     # pre-make fields to simulate flash values
-    let fld1 = mangleFieldName("ExampleConfigs/dac_calib_gain").toNvsId()
-    let fld2 = mangleFieldName("ExampleConfigs/dac_calib_offset").toNvsId()
+    let fld1 = mangleFieldName("/ExampleConfigs/dac_calib_gain").toNvsId()
+    let fld2 = mangleFieldName("/ExampleConfigs/dac_calib_offset").toNvsId()
     nvs.write(fld1, 31415)
     nvs.write(fld2, 2718)
 
@@ -85,13 +85,13 @@ suite "nvs complex config object":
     var nvs = NvsConfig()
 
     # pre-make fields to simulate flash values
-    let fld1 = mangleFieldName("ExampleComplexConfigs/dac_calib_gain").toNvsId
-    let fld2 = mangleFieldName("ExampleComplexConfigs/dac_calib_offset").toNvsId
+    let fld1 = mangleFieldName("/ExampleComplexConfigs/dac_calib_gain").toNvsId
+    let fld2 = mangleFieldName("/ExampleComplexConfigs/dac_calib_offset").toNvsId
     nvs.write(fld1, 31415)
     nvs.write(fld2, 2718)
-    let fldA1 = mangleFieldName("ExampleComplexConfigs/adc_calibs/a").toNvsId
-    let fldA2 = mangleFieldName("ExampleComplexConfigs/adc_calibs/b").toNvsId
-    let fldA3 = mangleFieldName("ExampleComplexConfigs/adc_calibs/c").toNvsId
+    let fldA1 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/a").toNvsId
+    let fldA2 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/b").toNvsId
+    let fldA3 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/c").toNvsId
     nvs.write(fldA1, 1137) # fine structure constant
     nvs.write(fldA2, 136) # hydrogen eV
     nvs.write(fldA3, 662607015) # planck 
