@@ -33,14 +33,14 @@ suite "nvs basic config object":
     var nvs = NvsConfig()
 
     # pre-make fields to simulate flash values
-    let fld1 = mangleFieldName("dac_calib_gain")
-    let fld2 = mangleFieldName("dac_calib_offset")
+    let fld1 = mangleFieldName("dac_calib_gain").toNvsId()
+    let fld2 = mangleFieldName("dac_calib_offset").toNvsId()
     nvs.write(fld1, 31415)
     nvs.write(fld2, 2718)
 
   test "ensure stable hash":
-    check mangleFieldName("abracadabra") == 33604.NvsId
-    check mangleFieldName("hello world") == 54474.NvsId
+    check mangleFieldName("abracadabra") == 33604.Hash
+    check mangleFieldName("hello world") == 54474.Hash
 
   test "essential truths":
     # give up and stop if this fails
@@ -87,8 +87,8 @@ suite "nvs complex config object":
     var nvs = NvsConfig()
 
     # pre-make fields to simulate flash values
-    let fld1 = mangleFieldName("dac_calib_gain")
-    let fld2 = mangleFieldName("dac_calib_offset")
+    let fld1 = mangleFieldName("dac_calib_gain").toNvsId
+    let fld2 = mangleFieldName("dac_calib_offset").toNvsId
     nvs.write(fld1, 31415)
     nvs.write(fld2, 2718)
 

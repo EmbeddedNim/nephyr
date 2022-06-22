@@ -27,7 +27,9 @@ template setField[V](val: var V, input: V) =
 
 proc mangleFieldName*(name: string): Hash {.compileTime.} =
   result = hashIgnoreStyle(name)
-proc toNvsid*(hs: Hash, index: int = 0): NvsId =
+proc mangleFieldName*(base, name: string): Hash {.compileTime.} =
+  mangleFieldName(base & "/" & name)
+proc toNvsId*(hs: Hash, index: int = 0): NvsId =
   let hn = int(hs !& index)
   result = NvsId(cast[uint16](hn mod high(int16)))
 
@@ -38,22 +40,25 @@ proc toNvsid*(hs: Hash, index: int = 0): NvsId =
 
 template loadField*[T, V](
     obj: var T,
-    name: string,
+    base: string,
     index: int,
-    field: V,
+    name: string,
+    value: V,
 ) =
   const baseHash: Hash = mangleFieldName(base, name)
-  let keyId = NvsId(baseid.uint16 !& index)
+  let keyId = baseHash.toNvsId()
   try:
-    let rval = settings.store.read(keyId, typeof(field))
+    let rval = settings.store.read(keyId, typeof(value))
     logDebug("CFG name:", name, keyId, " => ", rval)
-    field = rval
+    value = rval
   except KeyError:
     logDebug("CFG", "skipping name: ", keyId, name)
 
 proc loadAll*[T](settings: var ConfigSettings[T], index: int = 0) =
-  for field, value in settings.values.fieldPairs():
-    loadField(settings.values, index, field, value)
+  expandMacros:
+    const baseName = symbolName(T)
+    for field, value in settings.values.fieldPairs():
+      loadField(settings.values, baseName, index, field, value)
 
 proc saveAll*[T](ns: var ConfigSettings[T]) =
   discard
