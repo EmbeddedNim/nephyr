@@ -120,6 +120,7 @@ proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[
         loadField(store, baseName, index, field, value)
 
 proc loadAll*[T](settings: var ConfigSettings[T], index: int = 0) =
+  ## loads all fields for an object
   loadAllImpl(settings.store, settings.values, index, prefix = "")
 
 proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
@@ -141,6 +142,7 @@ proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[stri
         saveField(store, baseName, index, field, value)
 
 proc saveAll*[T](settings: ConfigSettings[T], index: int = 9) =
+  ## loads all fields for an object
   saveAllImpl(settings.store, settings.values, index, prefix = "")
 
 proc newConfigSettings*[T](nvs: NvsConfig, config: T): ConfigSettings[T] =
