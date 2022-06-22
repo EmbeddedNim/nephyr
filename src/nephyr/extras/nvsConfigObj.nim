@@ -107,10 +107,14 @@ template saveField*[V](
 
 proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[string]) =
   expandMacros:
-    const baseName = prefix & "/" & $(distinctBase(T))
+    const baseName =
+      if prefix == "": prefix & "/" & $(distinctBase(T))
+      else: prefix
+
+    echo "LOADALLIMPL: ", $typeof(values), " basename: ", baseName
     for field, value in values.fieldPairs():
       when typeof(value) is object:
-        loadAllImpl(store, value, index, prefix = baseName)
+        loadAllImpl(store, value, index, prefix = baseName & "/" & field)
       else:
         loadField(store, baseName, index, field, value)
 
@@ -119,16 +123,18 @@ proc loadAll*[T](settings: var ConfigSettings[T], index: int = 0) =
 
 proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
   expandMacros:
-    const baseName = prefix & "/" & $(distinctBase(T))
+    const baseName =
+      if prefix == "": prefix & "/" & $(distinctBase(T))
+      else: prefix
+    echo "SAVEALLIMPL: ", $typeof(values), " basename: ", baseName
     for field, value in values.fieldPairs():
       when typeof(value) is object:
-        saveAllImpl(store, value, index, prefix = baseName)
+        saveAllImpl(store, value, index, prefix = baseName & "/" & field)
       else:
         saveField(store, baseName, index, field, value)
 
 proc saveAll*[T](settings: ConfigSettings[T], index: int = 9) =
   saveAllImpl(settings.store, settings.values, index, prefix = "")
-
 
 proc newConfigSettings*[T](nvs: NvsConfig, config: T): ConfigSettings[T] =
   new(result)

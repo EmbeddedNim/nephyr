@@ -7,9 +7,9 @@ include nephyr/extras/nvsConfigObj
 
 type 
   CalibConsts* = object
-    a*: float32
-    b*: float32
-    c*: float32
+    a*: int32
+    b*: int32
+    c*: int32
 
   ExampleConfigs* = object
     dac_calib_gain*: int32 
@@ -113,3 +113,4 @@ suite "nvs complex config object":
     check settings.values.adc_calibs.a == 1137
     check settings.values.adc_calibs.b == 136
     check settings.values.adc_calibs.c == 662607015
+
