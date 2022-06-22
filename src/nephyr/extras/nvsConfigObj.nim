@@ -3,7 +3,7 @@
 ## license: Apache-2.0
 
 import std/[strutils, hashes, options, strformat, tables]
-import std/[macros, macrocache]
+import std/[macros, macrocache, typetraits]
 
 import cdecl/cdeclapi
 import mcu_utils/logging
@@ -56,7 +56,7 @@ template loadField*[T, V](
 
 proc loadAll*[T](settings: var ConfigSettings[T], index: int = 0) =
   expandMacros:
-    const baseName = symbolName(T)
+    const baseName = $(distinctBase(T))
     for field, value in settings.values.fieldPairs():
       loadField(settings.values, baseName, index, field, value)
 
