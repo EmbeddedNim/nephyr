@@ -110,10 +110,9 @@ proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[
     for field, value in values.fieldPairs():
       when typeof(value) is object:
         loadAllImpl(store, value, index, prefix = baseName & "/" & field)
-      elif typeof(value) is tuple:
-        static: error("not implemented yet")
-      elif typeof(value) is ref:
-        static: error("not implemented yet")
+      elif typeof(value) is tuple: static: error("not implemented yet")
+      elif typeof(value) is ref: static: error("not implemented yet")
+      elif typeof(value) is array: static: error("not implemented yet")
       else:
         loadField(store, baseName, index, field, value)
 
@@ -129,10 +128,9 @@ proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[stri
     for field, value in values.fieldPairs():
       when typeof(value) is object:
         saveAllImpl(store, value, index, prefix = baseName & "/" & field)
-      elif typeof(value) is tuple:
-        static: error("not implemented yet")
-      elif typeof(value) is ref:
-        static: error("not implemented yet")
+      elif typeof(value) is tuple: static: error("not implemented yet")
+      elif typeof(value) is ref: static: error("not implemented yet")
+      elif typeof(value) is array: static: error("not implemented yet")
       else:
         saveField(store, baseName, index, field, value)
 
