@@ -13,10 +13,10 @@ type
 
   ExampleConfigs* = object
     dac_calib_gain*: int32 
-    # dac_calib_offset*: int32 
+    dac_calib_offset*: int32 
 
     adc_calib_gain*: float32
-    # adc_calib_offset*: int32
+    adc_calib_offset*: int32
 
   ExampleComplexConfigs* = object
     dac_calib_gain*: int32 
@@ -54,12 +54,12 @@ suite "nvs basic config object":
 
     # check default 0
     check settings.values.dac_calib_gain == 0
-    # check settings.values.dac_calib_offset == 0
+    check settings.values.dac_calib_offset == 0
 
     # check loaded
     settings.loadAll()
     check settings.values.dac_calib_gain == 31415
-    # check settings.values.dac_calib_offset == 2718
+    check settings.values.dac_calib_offset == 2718
 
   test "basic store":
     var settings = newConfigSettings(nvs, ExampleConfigs())
