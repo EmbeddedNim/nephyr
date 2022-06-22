@@ -67,6 +67,13 @@ proc loadField*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
   except KeyError:
     result = false
 
+proc saveField*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
+  try:
+    store.write(keyId, value)
+    result = true
+  except KeyError:
+    result = false
+
 template loadField*[T, V](
     settings: var ConfigSettings[T], 
     base: string,
@@ -82,6 +89,21 @@ template loadField*[T, V](
   else:
     logDebug("CFG", "skipping name: ", keyId, name)
 
+template saveField*[T, V](
+    settings: var ConfigSettings[T], 
+    base: string,
+    index: int,
+    name: string,
+    value: V,
+) =
+  const baseHash: Hash = mangleFieldName(base, name)
+  let keyId = baseHash.toNvsId()
+  let res = saveField(settings.store, keyid, value)
+  if res:
+    logDebug("CFG name:", name, keyId, " => ", value)
+  else:
+    logDebug("CFG", "skipping name: ", keyId, name)
+
 
 proc loadAll*[T](settings: var ConfigSettings[T], index: int = 0) =
   expandMacros:
@@ -90,10 +112,11 @@ proc loadAll*[T](settings: var ConfigSettings[T], index: int = 0) =
       loadField(settings, baseName, index, field, value)
 
 proc saveAll*[T](ns: var ConfigSettings[T]) =
-  discard
-  # logDebug("CFG", "saving settings ")
-  # for name, val in ns.values.fieldPairs():
-    # ns.saveField(name, cast[int32](val))
+  expandMacros:
+    const baseName = $(distinctBase(T))
+    for field, value in settings.values.fieldPairs():
+      saveField(settings, baseName, index, field, value)
+
 
 proc newConfigSettings*[T](nvs: NvsConfig, config: T): ConfigSettings[T] =
   new(result)
