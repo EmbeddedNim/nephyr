@@ -24,8 +24,6 @@ type
 
     adc_calib_gain*: float32
     adc_calib_offset*: int32
-    # adc_vs*: (int, float32) # TODO: implement
-    # adc_vs*: array[12, int] # TODO: implement
     adc_calibs*: CalibConsts
 
 
