@@ -25,9 +25,7 @@ template setField[V](val: var V, input: V) =
   val = input
 
 proc mangleFieldName*(name: string): NvsId =
-  var nh = hash(name)
-  static: assert sizeof(nh) >= sizeof(result)
-  copyMem(result.addr, nh.addr, sizeof(result))
+  result = NvsId(cast[uint16](hashIgnoreStyle(name) mod high(int16)))
 
 template implSetObjectField[V](obj: object, field: string, val: V) =
   block fieldFound:

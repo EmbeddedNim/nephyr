@@ -38,6 +38,9 @@ suite "nvs basic config object":
     nvs.write(fld1, 31415)
     nvs.write(fld2, 2718)
 
+  test "ensure stable hash":
+    check mangleFieldName("abracadabra") == 33604.NvsId
+    check mangleFieldName("hello world") == 54474.NvsId
 
   test "essential truths":
     # give up and stop if this fails
