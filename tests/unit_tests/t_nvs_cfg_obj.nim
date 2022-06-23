@@ -93,6 +93,12 @@ suite "nvs basic config object":
     var fld4Val = nvs.read(fld4, int32)
     check fld3Val - 3.34e-1 < 1.0e-6
     check fld4Val == 89032
+
+  test "key collision":
+    ## This should print out a key collision warning
+    let doesCompile = compiles(checkAllFields(ExampleConfigs, 0, prefix = ""))
+    check not doesCompile
+
   
 suite "nvs complex config object":
 
@@ -154,4 +160,3 @@ suite "nvs complex config object":
     check fldA2Val == -2121
     check fldA3Val - 89.4324 < 1.0e-5
   
-
