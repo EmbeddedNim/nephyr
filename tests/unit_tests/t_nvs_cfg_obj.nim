@@ -34,12 +34,12 @@ suite "nvs basic config object":
   setup:
     var nvs = initNvsMock[NvsConfig]()
     # pre-make fields to simulate flash values
-    let fld1 = mangleFieldName("/ExampleConfigs/dac_calib_gain").toNvsId()
-    let fld2 = mangleFieldName("/ExampleConfigs/dac_calib_offset").toNvsId()
+    let fld1 = mangleFieldName("/ExampleConfigs/dac_calib_gain").toNvsId(0)
+    let fld2 = mangleFieldName("/ExampleConfigs/dac_calib_offset").toNvsId(0)
     nvs.write(fld1, 31415'i32)
     nvs.write(fld2, 2718'i32)
-    let fld3 = mangleFieldName("/ExampleConfigs/adc_calib_gain").toNvsId()
-    let fld4 = mangleFieldName("/ExampleConfigs/adc_calib_offset").toNvsId()
+    let fld3 = mangleFieldName("/ExampleConfigs/adc_calib_gain").toNvsId(0)
+    let fld4 = mangleFieldName("/ExampleConfigs/adc_calib_offset").toNvsId(0)
     nvs.write(fld3, 3.1415'f32)
     nvs.write(fld4, 2718'i32)
     echo fmt"{fld1.repr=}"
@@ -95,8 +95,8 @@ suite "nvs basic config object":
     check fld4Val == 89032
 
   test "key collision":
-    ## This should print out a key collision warning
-    let doesCompile = compiles(checkAllFields(ExampleConfigs, 0, prefix = ""))
+    # checkAllFields(ExampleConfigs, 0, prefix = "", overrideTest = true)
+    let doesCompile = compiles(checkAllFields(ExampleConfigs, 0, prefix = "", overrideTest = true))
     check not doesCompile
 
   
@@ -106,13 +106,13 @@ suite "nvs complex config object":
     var nvs = initNvsMock[NvsConfig]()
 
     # pre-make fields to simulate flash values
-    let fld1 = mangleFieldName("/ExampleComplexConfigs/dac_calib_gain").toNvsId
-    let fld2 = mangleFieldName("/ExampleComplexConfigs/dac_calib_offset").toNvsId
+    let fld1 = mangleFieldName("/ExampleComplexConfigs/dac_calib_gain").toNvsId(0)
+    let fld2 = mangleFieldName("/ExampleComplexConfigs/dac_calib_offset").toNvsId(0)
     nvs.write(fld1, 31415'i32)
     nvs.write(fld2, 2718'i32)
-    let fldA1 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/a").toNvsId
-    let fldA2 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/b").toNvsId
-    let fldA3 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/c").toNvsId
+    let fldA1 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/a").toNvsId(0)
+    let fldA2 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/b").toNvsId(0)
+    let fldA3 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/c").toNvsId(0)
     nvs.write(fldA1, 1137'i32) # fine structure constant
     nvs.write(fldA2, 136'i32) # hydrogen eV
     nvs.write(fldA3, 6.62607015e-34'f32) # planck 
