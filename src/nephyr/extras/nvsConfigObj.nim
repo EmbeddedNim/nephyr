@@ -100,18 +100,18 @@ template saveField*[V](
   else:
     logDebug("CFG", "skipping name: ", keyId, name)
 
+template makeBaseName(prefix: string, typ: untyped): string =
+  if prefix == "": prefix & "/" & $(distinctBase(typ))
+  else: prefix
+
 proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[string]) =
   expandMacros:
-    const baseName =
-      if prefix == "": prefix & "/" & $(distinctBase(T))
-      else: prefix
+    const baseName = makeBaseName(prefix, T)
 
     echo "LOADALLIMPL: ", $typeof(values), " basename: ", baseName
     for field, value in values.fieldPairs():
-      when typeof(value) is object:
+      when typeof(value) is object or typeof(value) is tuple:
         loadAllImpl(store, value, index, prefix = baseName & "/" & field)
-      elif typeof(value) is tuple:
-        static: error("not implemented yet")
       elif typeof(value) is ref:
         static: error("not implemented yet")
       elif typeof(value) is array:
@@ -125,15 +125,11 @@ proc loadAll*[T](settings: var ConfigSettings[T], index: int = 0) =
 
 proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
   expandMacros:
-    const baseName =
-      if prefix == "": prefix & "/" & $(distinctBase(T))
-      else: prefix
+    const baseName = makeBaseName(prefix, T)
     echo "SAVEALLIMPL: ", $typeof(values), " basename: ", baseName
     for field, value in values.fieldPairs():
-      when typeof(value) is object:
+      when typeof(value) is object or typeof(value) is tuple:
         saveAllImpl(store, value, index, prefix = baseName & "/" & field)
-      elif typeof(value) is tuple:
-        static: error("not implemented yet")
       elif typeof(value) is ref:
         static: error("not implemented yet")
       elif typeof(value) is array:

@@ -74,11 +74,12 @@ template initNvs*(
   initNvs(flash, sectorCount, offset)
 
 template readImpl[T](nvs: NvsConfig, id: NvsId, item: ptr T) =
-  let resCnt = nvs_read(nvs.fs.addr, id.uint16, item, sizeof((T)))
+  echo fmt"writeImpl: {typeof(T).repr=} {sizeof(T).repr=}"
+  let resCnt = nvs_read(nvs.fs.addr, id.uint16, item.pointer, sizeof(T).cint)
   if resCnt == -ENOENT:
     raise newException(KeyError, "missing key")
   elif resCnt < 0:
-    raiseOSError(resCnt.OSErrorCode, "error reading nvs")
+    raiseOSError(OSErrorCode(resCnt), "error reading nvs")
   elif resCnt != sizeof(T):
     raise newException(ValueError, "read wrong number of bytes: " & $resCnt & "/" & $sizeof(T))
 
@@ -98,9 +99,10 @@ proc read*[T](nvs: NvsConfig, id: NvsId, kind: typedesc[T]): T =
   readImpl(nvs, id, result.addr)
 
 proc writeImpl[T](nvs: NvsConfig, id: NvsId, item: ptr T): bool {.discardable.} =
-  let resCnt = nvs_write(nvs.fs.addr, id.uint16, item, sizeof((T)))
+  echo fmt"writeImpl: {typeof(T).repr=} {sizeof(T).repr=}"
+  let resCnt = nvs_write(nvs.fs.addr, id.uint16, item.pointer, sizeof(T).cint)
   if resCnt < 0:
-    raiseOSError(resCnt.OSErrorCode, "error reading nvs")
+    raiseOSError(OSErrorCode(resCnt), "error reading nvs")
   elif resCnt == 0:
     return false
   elif resCnt != sizeof(T):
