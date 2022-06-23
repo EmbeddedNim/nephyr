@@ -42,7 +42,7 @@ suite "nvs basic config object":
     let fld3 = mangleFieldName("/ExampleConfigs/adc_calib_gain").toNvsId()
     let fld4 = mangleFieldName("/ExampleConfigs/adc_calib_offset").toNvsId()
     nvs.write(fld3, 3.1415'f32)
-    nvs.write(fld4, 2718)
+    nvs.write(fld4, 2718'i32)
     echo fmt"{fld1.repr=}"
     echo fmt"{fld2.repr=}"
     echo fmt"{fld3.repr=}"
