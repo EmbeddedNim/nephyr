@@ -117,6 +117,12 @@ suite "nvs complex config object":
     nvs.write(fldA2, 136'i32) # hydrogen eV
     nvs.write(fldA3, 6.62607015e-34'f32) # planck 
 
+    let fldI11 = mangleFieldName("/ExampleComplexConfigs/dac_calib_gain").toNvsId(1)
+    let fldI12 = mangleFieldName("/ExampleComplexConfigs/dac_calib_offset").toNvsId(1)
+    let fldI1A1 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/a").toNvsId(1)
+    let fldI1A2 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/b").toNvsId(1)
+    let fldI1A3 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/c").toNvsId(1)
+
   test "load values":
     var settings = newConfigSettings(nvs, ExampleComplexConfigs())
 
@@ -136,7 +142,7 @@ suite "nvs complex config object":
     check settings.values.adc_calibs.c - 6.62607015e-34'f32 < 1.0e-6
 
   test "save values":
-    var settings = newConfigSettings(nvs, ExampleComplexConfigs())
+    var settings = newConfigSettings(nvs, ExampleComplexConfigs(), 1)
 
     settings.values.dac_calib_gain = 1111
     settings.values.dac_calib_offset = 2222
@@ -148,14 +154,14 @@ suite "nvs complex config object":
     # check loaded
     settings.saveAll()
 
-    var fld1Val = nvs.read(fld1, int32)
-    var fld2Val = nvs.read(fld2, int32)
+    var fld1Val = nvs.read(fldI11, int32)
+    var fld2Val = nvs.read(fldI12, int32)
     check fld1Val == 1111
     check fld2Val == 2222
   
-    var fldA1Val = nvs.read(fldA1, int32)
-    var fldA2Val = nvs.read(fldA2, int32)
-    var fldA3Val = nvs.read(fldA3, float32)
+    var fldA1Val = nvs.read(fldI1A1, int32)
+    var fldA2Val = nvs.read(fldI1A2, int32)
+    var fldA3Val = nvs.read(fldI1A3, float32)
     check fldA1Val == 2137
     check fldA2Val == -2121
     check fldA3Val - 89.4324 < 1.0e-5
