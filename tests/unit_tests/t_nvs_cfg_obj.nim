@@ -4,7 +4,7 @@ import unittest
 import mcu_utils/[logging, timeutils, allocstats]
 
 import nephyr/zephyr/drivers/[zflash, znvs]
-include nephyr/extras/nvsConfigObj
+include nephyr/extras/nvs_config_obj
 
 type 
   CalibConsts* = object
