@@ -166,3 +166,28 @@ suite "nvs complex config object":
     check fldA2Val == -2121
     check fldA3Val - 89.4324 < 1.0e-5
   
+  test "save values":
+    var settings = newConfigSettings(nvs, ExampleComplexConfigs(), 1)
+
+    settings.values.dac_calib_gain = 1111
+    settings.values.dac_calib_offset = 2222
+
+    settings.values.adc_calibs.a = 2137
+    settings.values.adc_calibs.b = -2121
+    settings.values.adc_calibs.c = 89.4324
+
+    # check loaded
+    settings.saveAll()
+
+    var fld1Val = nvs.read(fldI11, int32)
+    var fld2Val = nvs.read(fldI12, int32)
+    check fld1Val == 1111
+    check fld2Val == 2222
+  
+    var fldA1Val = nvs.read(fldI1A1, int32)
+    var fldA2Val = nvs.read(fldI1A2, int32)
+    var fldA3Val = nvs.read(fldI1A3, float32)
+    check fldA1Val == 2137
+    check fldA2Val == -2121
+    check fldA3Val - 89.4324 < 1.0e-5
+  
