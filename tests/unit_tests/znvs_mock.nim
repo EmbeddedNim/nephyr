@@ -2,6 +2,8 @@
 
 import std/[tables, strformat]
 
+import mcu_utils/[logging]
+
 import nephyr/zephyr/zkernel_fixes
 import nephyr/zephyr/zdevice
 # import nephyr/zephyr/drivers/zflash
@@ -31,16 +33,13 @@ proc nvs_mount*(fs: ptr nvs_fs): cint =
   result = 0
 
 proc nvs_write*(fs: ptr nvs_fs; id: uint16; data: pointer; len: cint): cint =
-  echo fmt"nvs_write: {fs.pointer.repr=} {id=} {data.repr=} {len=}"
   var buf: array[128, byte]
   copyMem(buf[0].addr, len.unsafeAddr, 1)
   copyMem(buf[1].addr, data, len)
   fs.data[id] = buf
-  echo fmt"nvs_write: {fs.pointer.repr=} {id=} {data.repr=} {len=}"
 
 proc nvs_read*(fs: ptr nvs_fs; id: uint16; data: pointer; len: cint): cint =
   var buf = fs.data[id]
   copyMem(result.addr, buf[0].addr, 1)
   copyMem(data, buf[1].addr, len)
-  echo fmt"nvs_read: {fs.pointer.repr=} {id=} {data.repr=} {len=} {result=}"
 

@@ -36,19 +36,19 @@ proc initNvs*(
   if not device_is_ready(flash_dev):
     raise newException(OSError, "Flash device is not ready")
 
-  logDebug fmt"fs_dev: {flash_dev.name=}"
+  logExtraDebug fmt"fs_dev: {flash_dev.name=}"
 
   result.fs.flash_device = flash_dev
   result.fs.offset = partitionOffset.cint
   result.fs.sector_count = sectorCount
-  logDebug fmt"fs info: {result.fs.offset=}"
-  logDebug fmt"fs info: {result.fs.sector_count=}"
+  logExtraDebug fmt"fs info: {result.fs.offset=}"
+  logExtraDebug fmt"fs info: {result.fs.sector_count=}"
 
   if sectorSize.int > 0:
     result.fs.sector_size = sectorSize.uint16
-    logDebug fmt"calling flash info: {result.fs.sector_size=}"
+    logExtraDebug fmt"calling flash info: {result.fs.sector_size=}"
   else:
-    logDebug fmt"calling flash info: "
+    logExtraDebug fmt"calling flash info: "
     ## unless overrided, lookup sectorSize
     var info: flash_pages_info
     check: flash_get_page_info_by_offs(
@@ -56,9 +56,9 @@ proc initNvs*(
                 partitionOffset.cint,
                 addr info)
     result.fs.sector_size = info.size.uint16
-    logDebug fmt"calling flash info: {result.fs.sector_size=}"
+    logExtraDebug fmt"calling flash info: {result.fs.sector_size=}"
 
-  logDebug fmt"calling nvs_init "
+  logExtraDebug fmt"calling nvs_init "
   check: nvs_init(result.fs.addr, flash_dev.name)
 
 template initNvs*(
@@ -74,7 +74,6 @@ template initNvs*(
   initNvs(flash, sectorCount, offset)
 
 template readImpl[T](nvs: NvsConfig, id: NvsId, item: ptr T) =
-  echo fmt"writeImpl: {typeof(T).repr=} {sizeof(T).repr=}"
   let resCnt = nvs_read(nvs.fs.addr, id.uint16, item.pointer, sizeof(T).cint)
   if resCnt == -ENOENT:
     raise newException(KeyError, "missing key")
@@ -99,7 +98,6 @@ proc read*[T](nvs: NvsConfig, id: NvsId, kind: typedesc[T]): T =
   readImpl(nvs, id, result.addr)
 
 proc writeImpl[T](nvs: NvsConfig, id: NvsId, item: ptr T): bool {.discardable.} =
-  echo fmt"writeImpl: {typeof(T).repr=} {sizeof(T).repr=}"
   let resCnt = nvs_write(nvs.fs.addr, id.uint16, item.pointer, sizeof(T).cint)
   if resCnt < 0:
     raiseOSError(OSErrorCode(resCnt), "error reading nvs")

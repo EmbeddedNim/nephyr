@@ -6,7 +6,6 @@ import mcu_utils/[logging, timeutils, allocstats]
 import nephyr/zephyr/drivers/[zflash, znvs]
 include nephyr/extras/nvsConfigObj
 
-
 type 
   CalibConsts* = object
     a*: int32
