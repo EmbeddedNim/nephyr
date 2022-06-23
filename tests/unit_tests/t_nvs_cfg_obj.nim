@@ -78,18 +78,21 @@ suite "nvs basic config object":
 
     settings.values.dac_calib_gain = 1111
     settings.values.dac_calib_offset = 2222
+    settings.values.adc_calib_gain = 3.34e-1
+    settings.values.adc_calib_offset = 89032
 
     # check loaded
     settings.saveAll()
 
-    var fld1Val: int32
-    nvs.read(fld1, fld1Val)
-
-    var fld2Val: int32
-    nvs.read(fld2, fld2Val)
-
+    var fld1Val = nvs.read(fld1, int32)
+    var fld2Val = nvs.read(fld2, int32)
     check fld1Val == 1111
     check fld2Val == 2222
+  
+    var fld3Val = nvs.read(fld3, float32)
+    var fld4Val = nvs.read(fld4, int32)
+    check fld3Val - 3.34e-1 < 1.0e-6
+    check fld4Val == 89032
   
 suite "nvs complex config object":
 
@@ -132,15 +135,23 @@ suite "nvs complex config object":
     settings.values.dac_calib_gain = 1111
     settings.values.dac_calib_offset = 2222
 
+    settings.values.adc_calibs.a = 2137
+    settings.values.adc_calibs.b = -2121
+    settings.values.adc_calibs.c = 89.4324
+
     # check loaded
     settings.saveAll()
 
-    var fld1Val: int32
-    nvs.read(fld1, fld1Val)
-
-    var fld2Val: int32
-    nvs.read(fld2, fld2Val)
-
+    var fld1Val = nvs.read(fld1, int32)
+    var fld2Val = nvs.read(fld2, int32)
     check fld1Val == 1111
     check fld2Val == 2222
+  
+    var fldA1Val = nvs.read(fldA1, int32)
+    var fldA2Val = nvs.read(fldA2, int32)
+    var fldA3Val = nvs.read(fldA3, float32)
+    check fldA1Val == 2137
+    check fldA2Val == -2121
+    check fldA3Val - 89.4324 < 1.0e-5
+  
 
