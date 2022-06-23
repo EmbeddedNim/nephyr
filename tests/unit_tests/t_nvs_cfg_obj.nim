@@ -129,18 +129,18 @@ suite "nvs complex config object":
   test "save values":
     var settings = newConfigSettings(nvs, ExampleComplexConfigs())
 
-    # check default 0
-    check settings.values.dac_calib_gain == 0
-    check settings.values.dac_calib_offset == 0
-    check settings.values.adc_calibs.a == 0
-    check settings.values.adc_calibs.b == 0
-    check settings.values.adc_calibs.c == 0
+    settings.values.dac_calib_gain = 1111
+    settings.values.dac_calib_offset = 2222
 
     # check loaded
-    settings.loadAll()
-    check settings.values.dac_calib_gain == 31415
-    check settings.values.dac_calib_offset == 2718
-    check settings.values.adc_calibs.a == 1137
-    check settings.values.adc_calibs.b == 136
-    check settings.values.adc_calibs.c - 6.62607015e-34'f32 < 1.0e-6
+    settings.saveAll()
+
+    var fld1Val: int32
+    nvs.read(fld1, fld1Val)
+
+    var fld2Val: int32
+    nvs.read(fld2, fld2Val)
+
+    check fld1Val == 1111
+    check fld2Val == 2222
 
