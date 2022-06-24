@@ -176,6 +176,7 @@ suite "nvs complex config object":
   
   test "save values":
     var settings = newConfigSettings(nvs, ExampleComplexConfigs(), 1)
+    
 
     settings.values.dac_calib_gain = 1111
     settings.values.dac_calib_offset = 2222
