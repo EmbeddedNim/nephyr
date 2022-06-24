@@ -148,8 +148,10 @@ proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[
   const baseName = makeBaseName(prefix, T)
   # echo "LOADALLIMPL: ", $typeof(values), " basename: ", baseName
   for field, value in values.fieldPairs():
-    when typeof(value) is object or typeof(value) is tuple:
+    when typeof(value) is object:
       loadAllImpl(store, value, index, prefix = baseName & "/" & field)
+    elif typeof(value) is tuple:
+      loadField(store, baseName, index, field, value)
     elif typeof(value) is ref:
       static: error("not implemented yet")
     elif typeof(value) is array:
@@ -168,8 +170,10 @@ proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[stri
   const baseName = makeBaseName(prefix, T)
   # echo "SAVEALLIMPL: ", $typeof(values), " basename: ", baseName
   for field, value in values.fieldPairs():
-    when typeof(value) is object or typeof(value) is tuple:
+    when typeof(value) is object:
       saveAllImpl(store, value, index, prefix = baseName & "/" & field)
+    elif typeof(value) is tuple:
+      saveField(store, baseName, index, field, value)
     elif typeof(value) is ref:
       static: error("not implemented yet")
     elif typeof(value) is array:
