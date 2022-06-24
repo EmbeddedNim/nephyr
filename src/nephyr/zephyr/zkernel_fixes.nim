@@ -61,7 +61,7 @@ type
 
   k_mem_block* {.importc: "struct k_mem_block", header: "<kernel.h>", bycopy, incompleteStruct.} = object
 
-  off_t* = csize ##\
+  off_t* = cint ##\
     ## Offset type size. it's a ssizt_t, aka a signed csize_t in C. For historical reasons this is csize in nim
 
 # proc K_MSEC*(ts: int): k_timeout_t {.importc: "$1", header: "<kernel.h>".}
