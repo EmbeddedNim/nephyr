@@ -172,8 +172,6 @@ template doForAllFields(store, values, doAllImpl, doField, baseName: untyped) =
     elif typeof(value) is ref:
       static: error("not implemented yet")
     elif typeof(value) is array:
-      static:
-        warning("obj arr not implemented yet: " & repr(genericParams(typeof(value))) )
       when isObject(value):
         static:
           error("obj arr not implemented yet" )
