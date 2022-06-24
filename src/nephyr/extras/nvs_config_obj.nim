@@ -127,6 +127,8 @@ template makeBaseName(prefix: string, typ: untyped): string =
   if prefix == "": prefix & "/" & $(distinctBase(typ))
   else: prefix
 
+proc getObj[T: ref](v: typedesc[T]): T =
+  result = T()
 proc getObj[T](v: typedesc[T]): T =
   discard
 
@@ -188,13 +190,29 @@ proc saveAll*[T](settings: ConfigSettings[T], index: static[int] = 0) =
   checkAllFields(T, index, prefix = "")
   saveAllImpl(settings.store, settings.values, idx, prefix = "")
 
+proc diffAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
+  const baseName = makeBaseName(prefix, T)
+  echo "DIFFALLIMPL: ", $typeof(values), " basename: ", baseName
+  for field, value in values.fieldPairs():
+    when typeof(value) is object:
+      saveAllImpl(store, value, index, prefix = baseName & "/" & field)
+    elif typeof(value) is tuple:
+      saveField(store, baseName, index, field, value)
+    elif typeof(value) is ref:
+      static: error("not implemented yet")
+    elif typeof(value) is array:
+      static: error("not implemented yet")
+    else:
+      saveField(store, baseName, index, field, value)
+
 proc mdiffs*[T](settings: ConfigSettings[T], values: T, index: static[int] = 0) =
   discard
 
-proc isDiff*[T](settings: ConfigSettings[T], values: T, index: static[int] = 0) =
+proc isDiff*[T](settings: ConfigSettings[T], index: static[int] = 0) =
   ## checks if diff
   ## 
-  loadAllImpl(settings.store, values, index, prefix = "")
+  var previous = getObj[T]()
+  diffAllImpl(settings.store, previous, index, prefix = "")
 
 proc newConfigSettings*[T](nvs: NvsConfig, config: T, index: static[int] = 0): ConfigSettings[T] =
   new(result)
