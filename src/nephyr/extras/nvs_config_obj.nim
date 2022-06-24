@@ -175,6 +175,13 @@ template checkAllFields*[T](overrideTest: static[bool], values: typedesc[T], ind
   var vals = getObj(values)
   doForAllFields(store, vals, checkAllFields, checkFieldTmpl, baseName)
 
+## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+## Public API
+## ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+## Implements a wrapper on top of NVS. 
+## 
+## 
+
 template checkAllFields*[T](overrideTest: static[bool], value: T, index: static[int], prefix: static[string]) =
   const store = false
   checkAllFields(store, typeof value, index, prefix)
