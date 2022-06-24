@@ -166,17 +166,8 @@ template checkAllFields*[T](overrideTest: static[bool], value: T, index: static[
 proc diffAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
   echo "DIFFALLIMPL: ", $typeof(values), " basename: ", baseName
-  for field, value in values.fieldPairs():
-    when typeof(value) is object:
-      saveAllImpl(store, value, index, prefix = baseName & "/" & field)
-    elif typeof(value) is tuple:
-      saveField(store, baseName, index, field, value)
-    elif typeof(value) is ref:
-      static: error("not implemented yet")
-    elif typeof(value) is array:
-      static: error("not implemented yet")
-    else:
-      saveField(store, baseName, index, field, value)
+  forAllFields(store, values, diffAllImpl, diffField, baseName, emptyWrapper)
+  
 
 proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
