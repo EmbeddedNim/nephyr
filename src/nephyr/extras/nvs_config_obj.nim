@@ -19,7 +19,6 @@ type
     store*: NvsConfig
     values*: T
     index*: int
-    diffed: bool
 
 ## The code below handles mangling field names to unique id's
 ## for types like ints, floats, strings, etc
@@ -63,23 +62,23 @@ template makeBaseName(prefix: string, typ: untyped): string =
 proc getObj[T: ref](v: typedesc[T]): T = result = T()
 proc getObj[T](v: typedesc[T]): T = discard
 
-proc loadFieldValue*[T, V](cfg: ConfigSettings[T], keyId: NvsId, value: var V): bool =
+proc loadFieldValue*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
   try:
-    let rval = cfg.store.read(keyId, typeof(value))
+    let rval = store.read(keyId, typeof(value))
     value = rval
     result = true
   except KeyError:
     result = false
 
-proc saveFieldValue*[T, V](cfg: ConfigSettings[T], keyId: NvsId, value: V): bool =
+proc saveFieldValue*[V](store: NvsConfig, keyId: NvsId, value: V): bool =
   try:
-    cfg.store.write(keyId, value)
+    store.write(keyId, value)
     result = true
   except KeyError:
     result = false
 
-template loadField*[T, V](
-    cfg: ConfigSettings[T],
+template loadField*[V](
+    store: NvsConfig,
     base: string,
     index: int,
     name: string,
@@ -87,14 +86,14 @@ template loadField*[T, V](
 ) =
   const baseHash: Hash = mangleFieldName(base & "/" & name)
   let keyId = baseHash.toNvsId(index)
-  let res = loadFieldValue(cfg, keyid, value)
+  let res = loadFieldValue(store, keyid, value)
   if res:
     logDebug("CFG name:", name, keyId, " => ", value)
   else:
     logDebug("CFG", "skipping name: ", keyId, name)
 
-template saveField*[T, V](
-    cfg: ConfigSettings[T],
+template saveField*[V](
+    store: NvsConfig,
     base: string,
     index: int,
     name: string,
@@ -102,14 +101,14 @@ template saveField*[T, V](
 ) =
   const baseHash: Hash = mangleFieldName(base & "/" & name)
   let keyId = baseHash.toNvsId(index)
-  let res = saveFieldValue(cfg, keyid, value)
+  let res = saveFieldValue(store, keyid, value)
   if res:
     logDebug("CFG name:", name, keyId, " => ", value)
   else:
     logDebug("CFG", "skipping name: ", keyId, name)
 
-template diffField*[T, V](
-    cfg: ConfigSettings[T],
+template diffField*[V](
+    store: NvsConfig,
     base: string,
     index: int,
     name: string,
@@ -118,11 +117,11 @@ template diffField*[T, V](
   const baseHash: Hash = mangleFieldName(base & "/" & name)
   let keyId = baseHash.toNvsId(index)
   var previous: T
-  let res = loadFieldValue(cfg, keyid, previous)
+  let res = loadFieldValue(store, keyid, previous)
   if res:
     logDebug("CFG diff name:", name, keyId, " => ", value)
   else:
-    logDebug("CFG", "diff skipping name: ", keyId, name)
+    logDebug("CFG", "diffskipping name: ", keyId, name)
 
 proc checkField*(
     overrideTest: static[bool],
@@ -147,42 +146,42 @@ proc checkField*(
   if not found:
     keyTableCheck[$keyId] = newLit(name)
 
-template doForAllFields(cfg, values, doAllImpl, doField, baseName: untyped) =
+template doForAllFields(store, values, doAllImpl, doField, baseName: untyped) =
   ## template to handle recursively apply `doAllImpl` and `doField` for 
   ## all fields in `values` object 
   for field, value in values.fieldPairs():
     when typeof(value) is object:
-      doAllImpl(cfg, value, index, prefix = baseName & "/" & field)
+      doAllImpl(store, value, index, prefix = baseName & "/" & field)
     elif typeof(value) is tuple:
-      doField(cfg, baseName, index, field, value)
+      doField(store, baseName, index, field, value)
     elif typeof(value) is ref:
       static: error("not implemented yet")
     elif typeof(value) is array:
       static: error("not implemented yet")
     else:
-      doField(cfg, baseName, index, field, value)
+      doField(store, baseName, index, field, value)
 
 template checkFieldTmpl( overrideTest, base, index, name, value: untyped) =
   static:
     checkField(overrideTest, base, index, name)
 
-proc diffAllImpl[T, V](cfg: ConfigSettings[T], values: V, index: int, prefix: static[string]) =
-  const baseName = makeBaseName(prefix, V)
+proc diffAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
+  const baseName = makeBaseName(prefix, T)
   echo "DIFFALLIMPL: ", $typeof(values), " basename: ", baseName
-  doForAllFields(cfg, values, diffAllImpl, diffField, baseName)
+  doForAllFields(store, values, diffAllImpl, diffField, baseName)
   
-proc loadAllImpl[T, V](cfg: ConfigSettings[T], values: var V, index: int, prefix: static[string]) =
-  const baseName = makeBaseName(prefix, V)
+proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[string]) =
+  const baseName = makeBaseName(prefix, T)
   # echo "LOADALLIMPL: ", $typeof(values), " basename: ", baseName
-  doForAllFields(cfg, values, loadAllImpl, loadField, baseName)
+  doForAllFields(store, values, loadAllImpl, loadField, baseName)
 
-proc saveAllImpl[T, V](cfg: ConfigSettings[T], values: V, index: int, prefix: static[string]) =
-  const baseName = makeBaseName(prefix, V)
+proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
+  const baseName = makeBaseName(prefix, T)
   # echo "SAVEALLIMPL: ", $typeof(values), " basename: ", baseName
-  doForAllFields(cfg, values, saveAllImpl, saveField, baseName)
+  doForAllFields(store, values, saveAllImpl, saveField, baseName)
 
-template checkAllFields*[V](overrideTest: static[bool], values: typedesc[V], index: static[int], prefix: static[string]) =
-  const baseName = makeBaseName(prefix, V)
+template checkAllFields*[T](overrideTest: static[bool], values: typedesc[T], index: static[int], prefix: static[string]) =
+  const baseName = makeBaseName(prefix, T)
   const store = false
   var vals = getObj(values)
   doForAllFields(store, vals, checkAllFields, checkFieldTmpl, baseName)
@@ -203,21 +202,21 @@ proc loadAll*[T](settings: var ConfigSettings[T], index: static[int] = 0) =
   ## 
   let idx = if index != 0: index else: settings.index
   checkAllFields(false, T, index, prefix = "")
-  loadAllImpl(settings, settings.values, idx, prefix = "")
+  loadAllImpl(settings.store, settings.values, idx, prefix = "")
 
 proc saveAll*[T](settings: ConfigSettings[T], index: static[int] = 0) =
   ## saves all fields for an object into an nvs store
   ## 
   let idx = if index != 0: index else: settings.index
   checkAllFields(false, T, index, prefix = "")
-  saveAllImpl(settings, settings.values, idx, prefix = "")
+  saveAllImpl(settings.store, settings.values, idx, prefix = "")
 
 proc isDiff*[T](settings: ConfigSettings[T], index: static[int] = 0): bool =
   ## checks if diff
   ## 
   let idx = if index != 0: index else: settings.index
   var previous: T = getObj(T)
-  diffAllImpl(settings, previous, idx, prefix = "")
+  diffAllImpl(settings.store, previous, idx, prefix = "")
 
 proc newConfigSettings*[T](nvs: NvsConfig, config: T, index: static[int] = 0): ConfigSettings[T] =
   new(result)
