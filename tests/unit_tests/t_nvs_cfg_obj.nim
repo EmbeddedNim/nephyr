@@ -119,12 +119,12 @@ suite "nvs complex config object":
     nvs.write(fldA2, 136'i32) # hydrogen eV
     nvs.write(fldA3, 6.62607015e-34'f32) # planck 
 
-    let fldI11 = mangleFieldName("/ExampleComplexConfigs/dac_calib_gain").toNvsId(1)
-    let fldI12 = mangleFieldName("/ExampleComplexConfigs/dac_calib_offset").toNvsId(1)
-    let fldI13 = mangleFieldName("/ExampleComplexConfigs/some_tuple").toNvsId(1)
-    let fldI1A1 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/a").toNvsId(1)
-    let fldI1A2 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/b").toNvsId(1)
-    let fldI1A3 = mangleFieldName("/ExampleComplexConfigs/adc_calibs/c").toNvsId(1)
+    let fldI11  {.used.} = mangleFieldName("/ExampleComplexConfigs/dac_calib_gain").toNvsId(1)
+    let fldI12  {.used.} = mangleFieldName("/ExampleComplexConfigs/dac_calib_offset").toNvsId(1)
+    let fldI13  {.used.} = mangleFieldName("/ExampleComplexConfigs/some_tuple").toNvsId(1)
+    let fldI1A1 {.used.} = mangleFieldName("/ExampleComplexConfigs/adc_calibs/a").toNvsId(1)
+    let fldI1A2 {.used.} = mangleFieldName("/ExampleComplexConfigs/adc_calibs/b").toNvsId(1)
+    let fldI1A3 {.used.} = mangleFieldName("/ExampleComplexConfigs/adc_calibs/c").toNvsId(1)
 
   test "load values":
     var settings = newConfigSettings(nvs, ExampleComplexConfigs())

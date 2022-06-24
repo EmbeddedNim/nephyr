@@ -55,6 +55,15 @@ proc toNvsId*(hs: Hash, index: int): NvsId =
 ##           "dac_calib_gain", " "])
 ##   ...
 
+template makeBaseName(prefix: string, typ: untyped): string =
+  if prefix == "": prefix & "/" & $(distinctBase(typ))
+  else: prefix
+
+proc getObj[T: ref](v: typedesc[T]): T =
+  result = T()
+proc getObj[T](v: typedesc[T]): T =
+  discard
+
 proc loadFieldValue*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
   try:
     let rval = store.read(keyId, typeof(value))
@@ -75,7 +84,7 @@ template loadField*[V](
     base: string,
     index: int,
     name: string,
-    value: V,
+    value: var V,
 ) =
   const baseHash: Hash = mangleFieldName(base & "/" & name)
   let keyId = baseHash.toNvsId(index)
@@ -123,14 +132,18 @@ proc checkField*(
   if not found:
     keyTableCheck[$keyId] = newLit(name)
 
-template makeBaseName(prefix: string, typ: untyped): string =
-  if prefix == "": prefix & "/" & $(distinctBase(typ))
-  else: prefix
-
-proc getObj[T: ref](v: typedesc[T]): T =
-  result = T()
-proc getObj[T](v: typedesc[T]): T =
-  discard
+template forAllFields(store, values, doAllImpl, doField, baseName: untyped) =
+  for field, value in values.fieldPairs():
+    when typeof(value) is object:
+      doAllImpl(store, value, index, prefix = baseName & "/" & field)
+    elif typeof(value) is tuple:
+      doField(store, baseName, index, field, value)
+    elif typeof(value) is ref:
+      static: error("not implemented yet")
+    elif typeof(value) is array:
+      static: error("not implemented yet")
+    else:
+      doField(store, baseName, index, field, value)
 
 template checkAllFields*[T](values: typedesc[T], index: static[int], prefix: static[string], overrideTest = false) =
   const baseName = makeBaseName(prefix, T)
@@ -146,50 +159,6 @@ template checkAllFields*[T](values: typedesc[T], index: static[int], prefix: sta
       static:
         checkField(baseName, index, field, overrideTest)
 
-proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[string]) =
-  const baseName = makeBaseName(prefix, T)
-  # echo "LOADALLIMPL: ", $typeof(values), " basename: ", baseName
-  for field, value in values.fieldPairs():
-    when typeof(value) is object:
-      loadAllImpl(store, value, index, prefix = baseName & "/" & field)
-    elif typeof(value) is tuple:
-      loadField(store, baseName, index, field, value)
-    elif typeof(value) is ref:
-      static: error("not implemented yet")
-    elif typeof(value) is array:
-      static: error("not implemented yet")
-    else:
-      loadField(store, baseName, index, field, value)
-
-proc loadAll*[T](settings: var ConfigSettings[T], index: static[int] = 0) =
-  ## loads all fields for an object from an nvs store
-  ## 
-  let idx = if index != 0: index else: settings.index
-  checkAllFields(T, index, prefix = "")
-  loadAllImpl(settings.store, settings.values, idx, prefix = "")
-
-proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
-  const baseName = makeBaseName(prefix, T)
-  # echo "SAVEALLIMPL: ", $typeof(values), " basename: ", baseName
-  for field, value in values.fieldPairs():
-    when typeof(value) is object:
-      saveAllImpl(store, value, index, prefix = baseName & "/" & field)
-    elif typeof(value) is tuple:
-      saveField(store, baseName, index, field, value)
-    elif typeof(value) is ref:
-      static: error("not implemented yet")
-    elif typeof(value) is array:
-      static: error("not implemented yet")
-    else:
-      saveField(store, baseName, index, field, value)
-
-proc saveAll*[T](settings: ConfigSettings[T], index: static[int] = 0) =
-  ## saves all fields for an object into an nvs store
-  ## 
-  let idx = if index != 0: index else: settings.index
-  checkAllFields(T, index, prefix = "")
-  saveAllImpl(settings.store, settings.values, idx, prefix = "")
-
 proc diffAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
   echo "DIFFALLIMPL: ", $typeof(values), " basename: ", baseName
@@ -204,6 +173,30 @@ proc diffAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[stri
       static: error("not implemented yet")
     else:
       saveField(store, baseName, index, field, value)
+
+proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[string]) =
+  const baseName = makeBaseName(prefix, T)
+  # echo "LOADALLIMPL: ", $typeof(values), " basename: ", baseName
+  forAllFields(store, values, loadAllImpl, loadField, baseName)
+
+proc loadAll*[T](settings: var ConfigSettings[T], index: static[int] = 0) =
+  ## loads all fields for an object from an nvs store
+  ## 
+  let idx = if index != 0: index else: settings.index
+  checkAllFields(T, index, prefix = "")
+  loadAllImpl(settings.store, settings.values, idx, prefix = "")
+
+proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
+  const baseName = makeBaseName(prefix, T)
+  # echo "SAVEALLIMPL: ", $typeof(values), " basename: ", baseName
+  forAllFields(store, values, saveAllImpl, saveField, baseName)
+
+proc saveAll*[T](settings: ConfigSettings[T], index: static[int] = 0) =
+  ## saves all fields for an object into an nvs store
+  ## 
+  let idx = if index != 0: index else: settings.index
+  checkAllFields(T, index, prefix = "")
+  saveAllImpl(settings.store, settings.values, idx, prefix = "")
 
 proc mdiffs*[T](settings: ConfigSettings[T], values: T, index: static[int] = 0) =
   discard
