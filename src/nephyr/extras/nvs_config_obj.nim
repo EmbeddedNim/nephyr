@@ -72,7 +72,7 @@ proc loadFieldValue*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
     value = rval
     result = true
   except KeyError:
-    logDebug("CFG loadFieldValue: ", keyId)
+    logExtraDebug("CFG loadFieldValue: ", keyId)
     result = false
 
 proc saveFieldValue*[V](store: NvsConfig, keyId: NvsId, value: V): bool =
@@ -93,9 +93,9 @@ template loadField*[V](
   let keyId = baseHash.toNvsId(index)
   let res = loadFieldValue(store, keyid, value)
   if res:
-    logDebug("CFG laodField: name:", name, keyId, " => ", value)
+    logExtraDebug("CFG laodField: name:", name, keyId, " => ", value)
   else:
-    logDebug("CFG", "loadField: skipping name: ", keyId, name)
+    logExtraDebug("CFG", "loadField: skipping name: ", keyId, name)
 
 template saveField*[V](
     store: NvsConfig,
@@ -108,9 +108,9 @@ template saveField*[V](
   let keyId = baseHash.toNvsId(index)
   let res = saveFieldValue(store, keyid, value)
   if res:
-    logDebug("CFG saveField: name:", name, keyId, " => ", value)
+    logExtraDebug("CFG saveField: name:", name, keyId, " => ", value)
   else:
-    logDebug("CFG", "saveField: skipping name: ", keyId, name)
+    logExtraDebug("CFG", "saveField: skipping name: ", keyId, name)
 
 template diffField*[V](
     diffs: var DiffStore,
@@ -124,12 +124,12 @@ template diffField*[V](
   var previous = getObj(typeof V)
   let res = loadFieldValue(diffs.store, keyid, previous)
   if res:
-    logDebug("CFG diff name:", name, keyId, " => ", value, " prev: ", previous)
+    logExtraDebug("CFG diff name:", name, keyId, " => ", value, " prev: ", previous)
     if previous != value:
-      logDebug("CFG diff CHANGED:", name, keyId, " => ", value)
+      logExtraDebug("CFG diff CHANGED:", name, keyId, " => ", value)
       diffs.changed = true
   else:
-    logDebug("CFG", "diff skipping name: ", keyId, name)
+    logExtraDebug("CFG", "diff skipping name: ", keyId, name)
     # diffs.changed = true
 
 proc checkField*(
@@ -176,17 +176,14 @@ template checkFieldTmpl( overrideTest, base, index, name, value: untyped) =
 
 proc diffAllImpl[T](store: var DiffStore, values: T, index: int, prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
-  echo "DIFFALLIMPL: ", $typeof(values), " basename: ", baseName
   doForAllFields(store, values, diffAllImpl, diffField, baseName)
   
 proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
-  # echo "LOADALLIMPL: ", $typeof(values), " basename: ", baseName
   doForAllFields(store, values, loadAllImpl, loadField, baseName)
 
 proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
-  # echo "SAVEALLIMPL: ", $typeof(values), " basename: ", baseName
   doForAllFields(store, values, saveAllImpl, saveField, baseName)
 
 template checkAllFields*[T](overrideTest: static[bool], values: typedesc[T], index: static[int], prefix: static[string]) =

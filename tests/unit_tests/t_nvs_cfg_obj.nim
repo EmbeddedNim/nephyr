@@ -42,10 +42,10 @@ suite "nvs basic config object":
     let fld4 = mangleFieldName("/ExampleConfigs/adc_calib_offset").toNvsId(0)
     nvs.write(fld3, 3.1415'f32)
     nvs.write(fld4, 2718'i32)
-    echo fmt"{fld1.repr=}"
-    echo fmt"{fld2.repr=}"
-    echo fmt"{fld3.repr=}"
-    echo fmt"{fld4.repr=}"
+    logDebug fmt"{fld1.repr=}"
+    logDebug fmt"{fld2.repr=}"
+    logDebug fmt"{fld3.repr=}"
+    logDebug fmt"{fld4.repr=}"
 
   test "ensure stable hash":
     check mangleFieldName("abracadabra") == -5600162842546114722.Hash
@@ -136,12 +136,12 @@ suite "nvs complex config object":
     nvs.write(fldA2, 136'i32) # hydrogen eV
     nvs.write(fldA3, 6.62607015e-34'f32) # planck 
 
-    let fldI11  {.used.} = mangleFieldName("/ExampleComplexConfigs/dac_calib_gain").toNvsId(1)
-    let fldI12  {.used.} = mangleFieldName("/ExampleComplexConfigs/dac_calib_offset").toNvsId(1)
-    let fldI13  {.used.} = mangleFieldName("/ExampleComplexConfigs/some_tuple").toNvsId(1)
-    let fldI1A1 {.used.} = mangleFieldName("/ExampleComplexConfigs/adc_calibs/a").toNvsId(1)
-    let fldI1A2 {.used.} = mangleFieldName("/ExampleComplexConfigs/adc_calibs/b").toNvsId(1)
-    let fldI1A3 {.used.} = mangleFieldName("/ExampleComplexConfigs/adc_calibs/c").toNvsId(1)
+    let fldI11  {.used.} = mangleFieldName("/ExampleComplexConfigs/dac_calib_gain").toNvsId(100)
+    let fldI12  {.used.} = mangleFieldName("/ExampleComplexConfigs/dac_calib_offset").toNvsId(100)
+    let fldI13  {.used.} = mangleFieldName("/ExampleComplexConfigs/some_tuple").toNvsId(100)
+    let fldI1A1 {.used.} = mangleFieldName("/ExampleComplexConfigs/adc_calibs/a").toNvsId(100)
+    let fldI1A2 {.used.} = mangleFieldName("/ExampleComplexConfigs/adc_calibs/b").toNvsId(100)
+    let fldI1A3 {.used.} = mangleFieldName("/ExampleComplexConfigs/adc_calibs/c").toNvsId(100)
 
   test "load values":
     var settings = newConfigSettings(nvs, ExampleComplexConfigs())
@@ -164,7 +164,7 @@ suite "nvs complex config object":
     check settings.values.adc_calibs.c - 6.62607015e-34'f32 < 1.0e-6
 
   test "save values":
-    var settings = newConfigSettings(nvs, ExampleComplexConfigs(), 1)
+    var settings = newConfigSettings(nvs, ExampleComplexConfigs(), 100)
 
     settings.values.dac_calib_gain = 1111
     settings.values.dac_calib_offset = 2222
@@ -192,15 +192,15 @@ suite "nvs complex config object":
     check fldA3Val - 89.4324 < 1.0e-5
   
   test "diff values":
-    var settings = newConfigSettings(nvs, ExampleComplexConfigs(), 1)
+    var settings = newConfigSettings(nvs, ExampleComplexConfigs(), 0)
 
+    check settings.values.dac_calib_gain == 0
     settings.loadAll()
+    check settings.values.dac_calib_gain == 31415
     let noHasDiff = settings.isDiff()
-    echo "noHasDiff: ", repr(noHasDiff)
     check noHasDiff == false
 
     settings.values.dac_calib_gain = 1111
-    settings.values.dac_calib_offset = 2222
 
     settings.values.adc_calibs.a = 2137
     settings.values.adc_calibs.b = -2121
@@ -208,5 +208,4 @@ suite "nvs complex config object":
 
     ## check loaded
     let hasDiff = settings.isDiff()
-    echo "hasDiff: ", repr(hasDiff)
     check hasDiff == true
