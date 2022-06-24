@@ -134,7 +134,9 @@ proc checkField*(
   if not found:
     keyTableCheck[$keyId] = newLit(name)
 
-template forAllFields(store, values, doAllImpl, doField, baseName: untyped) =
+template doForAllFields(store, values, doAllImpl, doField, baseName: untyped) =
+  ## template to handle recursively apply `doAllImpl` and `doField` for 
+  ## all fields in `values` object 
   for field, value in values.fieldPairs():
     when typeof(value) is object:
       doAllImpl(store, value, index, prefix = baseName & "/" & field)
@@ -155,7 +157,7 @@ template checkAllFields*[T](overrideTest: static[bool], values: typedesc[T], ind
   const baseName = makeBaseName(prefix, T)
   const store = false
   var vals = getObj(values)
-  forAllFields(store, vals, checkAllFields, checkFieldTmpl, baseName)
+  doForAllFields(store, vals, checkAllFields, checkFieldTmpl, baseName)
 
 template checkAllFields*[T](overrideTest: static[bool], value: T, index: static[int], prefix: static[string]) =
   const store = false
@@ -165,13 +167,13 @@ template checkAllFields*[T](overrideTest: static[bool], value: T, index: static[
 proc diffAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
   echo "DIFFALLIMPL: ", $typeof(values), " basename: ", baseName
-  forAllFields(store, values, diffAllImpl, diffField, baseName)
+  doForAllFields(store, values, diffAllImpl, diffField, baseName)
   
 
 proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
   # echo "LOADALLIMPL: ", $typeof(values), " basename: ", baseName
-  forAllFields(store, values, loadAllImpl, loadField, baseName)
+  doForAllFields(store, values, loadAllImpl, loadField, baseName)
 
 proc loadAll*[T](settings: var ConfigSettings[T], index: static[int] = 0) =
   ## loads all fields for an object from an nvs store
@@ -183,7 +185,7 @@ proc loadAll*[T](settings: var ConfigSettings[T], index: static[int] = 0) =
 proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
   # echo "SAVEALLIMPL: ", $typeof(values), " basename: ", baseName
-  forAllFields(store, values, saveAllImpl, saveField, baseName)
+  doForAllFields(store, values, saveAllImpl, saveField, baseName)
 
 proc saveAll*[T](settings: ConfigSettings[T], index: static[int] = 0) =
   ## saves all fields for an object into an nvs store
