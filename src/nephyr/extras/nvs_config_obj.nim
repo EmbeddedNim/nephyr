@@ -149,9 +149,25 @@ template doForAllFields(store, values, doAllImpl, doField, baseName: untyped) =
     else:
       doField(store, baseName, index, field, value)
 
-template checkFieldTmpl*( overrideTest, base, index, name, value: untyped) =
+template checkFieldTmpl( overrideTest, base, index, name, value: untyped) =
   static:
     checkField(overrideTest, base, index, name)
+
+
+proc diffAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
+  const baseName = makeBaseName(prefix, T)
+  echo "DIFFALLIMPL: ", $typeof(values), " basename: ", baseName
+  doForAllFields(store, values, diffAllImpl, diffField, baseName)
+  
+proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[string]) =
+  const baseName = makeBaseName(prefix, T)
+  # echo "LOADALLIMPL: ", $typeof(values), " basename: ", baseName
+  doForAllFields(store, values, loadAllImpl, loadField, baseName)
+
+proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
+  const baseName = makeBaseName(prefix, T)
+  # echo "SAVEALLIMPL: ", $typeof(values), " basename: ", baseName
+  doForAllFields(store, values, saveAllImpl, saveField, baseName)
 
 template checkAllFields*[T](overrideTest: static[bool], values: typedesc[T], index: static[int], prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
@@ -163,18 +179,6 @@ template checkAllFields*[T](overrideTest: static[bool], value: T, index: static[
   const store = false
   checkAllFields(store, typeof value, index, prefix)
 
-
-proc diffAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
-  const baseName = makeBaseName(prefix, T)
-  echo "DIFFALLIMPL: ", $typeof(values), " basename: ", baseName
-  doForAllFields(store, values, diffAllImpl, diffField, baseName)
-  
-
-proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[string]) =
-  const baseName = makeBaseName(prefix, T)
-  # echo "LOADALLIMPL: ", $typeof(values), " basename: ", baseName
-  doForAllFields(store, values, loadAllImpl, loadField, baseName)
-
 proc loadAll*[T](settings: var ConfigSettings[T], index: static[int] = 0) =
   ## loads all fields for an object from an nvs store
   ## 
@@ -182,20 +186,12 @@ proc loadAll*[T](settings: var ConfigSettings[T], index: static[int] = 0) =
   checkAllFields(false, T, index, prefix = "")
   loadAllImpl(settings.store, settings.values, idx, prefix = "")
 
-proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
-  const baseName = makeBaseName(prefix, T)
-  # echo "SAVEALLIMPL: ", $typeof(values), " basename: ", baseName
-  doForAllFields(store, values, saveAllImpl, saveField, baseName)
-
 proc saveAll*[T](settings: ConfigSettings[T], index: static[int] = 0) =
   ## saves all fields for an object into an nvs store
   ## 
   let idx = if index != 0: index else: settings.index
   checkAllFields(false, T, index, prefix = "")
   saveAllImpl(settings.store, settings.values, idx, prefix = "")
-
-proc mdiffs*[T](settings: ConfigSettings[T], values: T, index: static[int] = 0) =
-  discard
 
 proc isDiff*[T](settings: ConfigSettings[T], index: static[int] = 0) =
   ## checks if diff
