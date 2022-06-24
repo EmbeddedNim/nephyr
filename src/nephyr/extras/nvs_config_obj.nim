@@ -72,6 +72,7 @@ proc loadFieldValue*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
     value = rval
     result = true
   except KeyError:
+    logDebug("CFG loadFieldValue: ", keyId)
     result = false
 
 proc saveFieldValue*[V](store: NvsConfig, keyId: NvsId, value: V): bool =
@@ -92,9 +93,9 @@ template loadField*[V](
   let keyId = baseHash.toNvsId(index)
   let res = loadFieldValue(store, keyid, value)
   if res:
-    logDebug("CFG name:", name, keyId, " => ", value)
+    logDebug("CFG laodField: name:", name, keyId, " => ", value)
   else:
-    logDebug("CFG", "skipping name: ", keyId, name)
+    logDebug("CFG", "loadField: skipping name: ", keyId, name)
 
 template saveField*[V](
     store: NvsConfig,
@@ -107,9 +108,9 @@ template saveField*[V](
   let keyId = baseHash.toNvsId(index)
   let res = saveFieldValue(store, keyid, value)
   if res:
-    logDebug("CFG name:", name, keyId, " => ", value)
+    logDebug("CFG saveField: name:", name, keyId, " => ", value)
   else:
-    logDebug("CFG", "skipping name: ", keyId, name)
+    logDebug("CFG", "saveField: skipping name: ", keyId, name)
 
 template diffField*[V](
     diffs: var DiffStore,
@@ -123,12 +124,13 @@ template diffField*[V](
   var previous = getObj(typeof V)
   let res = loadFieldValue(diffs.store, keyid, previous)
   if res:
-    logDebug("CFG diff name:", name, keyId, " => ", value)
+    logDebug("CFG diff name:", name, keyId, " => ", value, " prev: ", previous)
+    if previous != value:
+      logDebug("CFG diff CHANGED:", name, keyId, " => ", value)
+      diffs.changed = true
   else:
     logDebug("CFG", "diff skipping name: ", keyId, name)
-    diffs.changed = true
-  if previous != value:
-    diffs.changed = true
+    # diffs.changed = true
 
 proc checkField*(
     overrideTest: static[bool],
@@ -222,9 +224,8 @@ proc isDiff*[T](settings: ConfigSettings[T], index: static[int] = 0): bool =
   ## checks if diff
   ## 
   let idx = if index != 0: index else: settings.index
-  var previous: T = getObj(T)
   var diffStore = DiffStore(store: settings.store)
-  diffAllImpl(diffStore, previous, idx, prefix = "")
+  diffAllImpl(diffStore, settings.values, idx, prefix = "")
   result = diffStore.changed
 
 proc newConfigSettings*[T](nvs: NvsConfig, config: T, index: static[int] = 0): ConfigSettings[T] =

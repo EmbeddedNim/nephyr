@@ -93,6 +93,24 @@ suite "nvs basic config object":
     check fld3Val - 3.34e-1 < 1.0e-6
     check fld4Val == 89032
 
+  test "diff values":
+    var settings = newConfigSettings(nvs, ExampleConfigs())
+
+    settings.loadAll()
+    let noHasDiff = settings.isDiff()
+    echo "noHasDiff: ", repr(noHasDiff)
+    check noHasDiff == false
+
+    settings.values.dac_calib_gain = 1111
+    settings.values.dac_calib_offset = 2222
+    settings.values.adc_calib_gain = 3.34e-1
+    settings.values.adc_calib_offset = 89032
+
+    # check loaded
+    let hasDiff = settings.isDiff()
+    echo "hasDiff: ", repr(hasDiff)
+    check hasDiff == true
+
   test "key collision":
     # checkAllFields(ExampleConfigs, 0, prefix = "", overrideTest = true)
     let doesCompile = compiles(checkAllFields(ExampleConfigs, 0, prefix = "", overrideTest = true))
@@ -176,6 +194,11 @@ suite "nvs complex config object":
   test "diff values":
     var settings = newConfigSettings(nvs, ExampleComplexConfigs(), 1)
 
+    settings.loadAll()
+    let noHasDiff = settings.isDiff()
+    echo "noHasDiff: ", repr(noHasDiff)
+    check noHasDiff == false
+
     settings.values.dac_calib_gain = 1111
     settings.values.dac_calib_offset = 2222
 
@@ -183,7 +206,7 @@ suite "nvs complex config object":
     settings.values.adc_calibs.b = -2121
     settings.values.adc_calibs.c = 89.4324
 
-    # check loaded
+    ## check loaded
     let hasDiff = settings.isDiff()
     echo "hasDiff: ", repr(hasDiff)
     check hasDiff == true
