@@ -80,7 +80,6 @@ suite "nvs basic config object":
     settings.values.dac_calib_offset = 2222
     settings.values.adc_calib_gain = 3.34e-1
     settings.values.adc_calib_offset = 89032
-
     # check loaded
     settings.saveAll()
 

@@ -63,6 +63,8 @@ proc getObj[T: ref](v: typedesc[T]): T =
   result = T()
 proc getObj[T](v: typedesc[T]): T =
   discard
+template emptyWrapper(v: untyped): untyped = v
+template noneWrapper(v: untyped): static[bool] = false
 
 proc loadFieldValue*[V](store: NvsConfig, keyId: NvsId, value: var V): bool =
   try:
@@ -110,10 +112,11 @@ template saveField*[V](
     logDebug("CFG", "skipping name: ", keyId, name)
 
 proc checkField*(
+    overrideTest: static[bool],
     base: static[string],
     index: static[int],
     name: static[string],
-    overrideTest: static[bool]
+    value: static[bool]
 ) {.compileTime.} =
   let baseName = base & "/" & name
   let baseHash: Hash = mangleFieldName(baseName)
@@ -132,34 +135,33 @@ proc checkField*(
   if not found:
     keyTableCheck[$keyId] = newLit(name)
 
-template forAllFields(store, values, doAllImpl, doField, baseName: untyped) =
+template forAllFields(store, values, doAllImpl, doField, baseName, mapper: untyped) =
   for field, value in values.fieldPairs():
     when typeof(value) is object:
       doAllImpl(store, value, index, prefix = baseName & "/" & field)
     elif typeof(value) is tuple:
-      doField(store, baseName, index, field, value)
+      doField(store, baseName, index, field, mapper(value))
     elif typeof(value) is ref:
       static: error("not implemented yet")
     elif typeof(value) is array:
       static: error("not implemented yet")
     else:
-      doField(store, baseName, index, field, value)
+      doField(store, baseName, index, field, mapper(value))
 
-template checkAllFields*[T](values: typedesc[T], index: static[int], prefix: static[string], overrideTest = false) =
+template checkFieldTmpl*( overrideTest, base, index, name, value: untyped) =
+  static:
+    checkField(overrideTest, base, index, name, value)
+
+template checkAllFields*[T](overrideTest: static[bool], values: typedesc[T], index: static[int], prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
+  const store = false
   var vals = getObj(values)
-  forAllFields(store, vals, loadAllImpl, loadField, baseName)
-  # echo "CHECKFIELDSIMPL: ", $typeof(values), " basename: ", baseName
-  # for field, value in getObj(values).fieldPairs():
-  #   when typeof(value) is object or typeof(value) is tuple:
-  #     checkAllFields(typeof(value), index, baseName & "/" & field, overrideTest)
-  #   elif typeof(value) is ref:
-  #     static: warning("not implemented yet")
-  #   elif typeof(value) is array:
-  #     static: warning("not implemented yet")
-  #   else:
-  #     static:
-  #       checkField(baseName, index, field, overrideTest)
+  forAllFields(store, vals, checkAllFields, checkFieldTmpl, baseName, noneWrapper)
+
+template checkAllFields*[T](overrideTest: static[bool], value: T, index: static[int], prefix: static[string]) =
+  const store = false
+  checkAllFields(store, typeof value, index, prefix)
+
 
 proc diffAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
@@ -179,25 +181,25 @@ proc diffAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[stri
 proc loadAllImpl[T](store: NvsConfig, values: var T, index: int, prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
   # echo "LOADALLIMPL: ", $typeof(values), " basename: ", baseName
-  forAllFields(store, values, loadAllImpl, loadField, baseName)
+  forAllFields(store, values, loadAllImpl, loadField, baseName, emptyWrapper)
 
 proc loadAll*[T](settings: var ConfigSettings[T], index: static[int] = 0) =
   ## loads all fields for an object from an nvs store
   ## 
   let idx = if index != 0: index else: settings.index
-  checkAllFields(T, index, prefix = "")
+  checkAllFields(false, T, index, prefix = "")
   loadAllImpl(settings.store, settings.values, idx, prefix = "")
 
 proc saveAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
   # echo "SAVEALLIMPL: ", $typeof(values), " basename: ", baseName
-  forAllFields(store, values, saveAllImpl, saveField, baseName)
+  forAllFields(store, values, saveAllImpl, saveField, baseName, emptyWrapper)
 
 proc saveAll*[T](settings: ConfigSettings[T], index: static[int] = 0) =
   ## saves all fields for an object into an nvs store
   ## 
   let idx = if index != 0: index else: settings.index
-  checkAllFields(T, index, prefix = "")
+  checkAllFields(false, T, index, prefix = "")
   saveAllImpl(settings.store, settings.values, idx, prefix = "")
 
 proc mdiffs*[T](settings: ConfigSettings[T], values: T, index: static[int] = 0) =
@@ -215,4 +217,4 @@ proc newConfigSettings*[T](nvs: NvsConfig, config: T, index: static[int] = 0): C
   result.values = config
   result.index = index
 
-  checkAllFields(T, index, prefix = "")
+  checkAllFields(false, T, index, prefix = "")
