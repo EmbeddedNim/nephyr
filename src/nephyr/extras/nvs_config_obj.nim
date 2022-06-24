@@ -132,6 +132,12 @@ template diffField*[V](
     logExtraDebug("CFG", "diff skipping name: ", keyId, name)
     # diffs.changed = true
 
+template isObjectVal[R, S](value: typedesc[(R, S)]): bool =
+  S is object
+
+template isObject(value: untyped): bool =
+  isObjectVal( genericParams(typeof(value)) )
+
 proc checkField*(
     overrideTest: static[bool],
     base: static[string],
@@ -166,7 +172,13 @@ template doForAllFields(store, values, doAllImpl, doField, baseName: untyped) =
     elif typeof(value) is ref:
       static: error("not implemented yet")
     elif typeof(value) is array:
-      static: error("not implemented yet")
+      static:
+        warning("obj arr not implemented yet: " & repr(genericParams(typeof(value))) )
+      when isObject(value):
+        static:
+          error("obj arr not implemented yet" )
+      else:
+        doField(store, baseName, index, field, value)
     else:
       doField(store, baseName, index, field, value)
 
