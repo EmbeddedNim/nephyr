@@ -1,5 +1,4 @@
-_cache_*/
-test
-*-log.txt
-!t*
-t*.nim
+t*
+/*/*
+!*.nim
+!*.nims
