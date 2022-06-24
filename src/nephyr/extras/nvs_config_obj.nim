@@ -147,17 +147,19 @@ template forAllFields(store, values, doAllImpl, doField, baseName: untyped) =
 
 template checkAllFields*[T](values: typedesc[T], index: static[int], prefix: static[string], overrideTest = false) =
   const baseName = makeBaseName(prefix, T)
+  var vals = getObj(values)
+  forAllFields(store, vals, loadAllImpl, loadField, baseName)
   # echo "CHECKFIELDSIMPL: ", $typeof(values), " basename: ", baseName
-  for field, value in getObj(values).fieldPairs():
-    when typeof(value) is object or typeof(value) is tuple:
-      checkAllFields(typeof(value), index, baseName & "/" & field, overrideTest)
-    elif typeof(value) is ref:
-      static: warning("not implemented yet")
-    elif typeof(value) is array:
-      static: warning("not implemented yet")
-    else:
-      static:
-        checkField(baseName, index, field, overrideTest)
+  # for field, value in getObj(values).fieldPairs():
+  #   when typeof(value) is object or typeof(value) is tuple:
+  #     checkAllFields(typeof(value), index, baseName & "/" & field, overrideTest)
+  #   elif typeof(value) is ref:
+  #     static: warning("not implemented yet")
+  #   elif typeof(value) is array:
+  #     static: warning("not implemented yet")
+  #   else:
+  #     static:
+  #       checkField(baseName, index, field, overrideTest)
 
 proc diffAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
