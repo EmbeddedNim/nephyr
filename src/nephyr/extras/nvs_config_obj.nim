@@ -20,6 +20,10 @@ type
     values*: T
     index*: int
 
+  DiffStore = object
+    store: NvsConfig
+    changed: bool
+
 ## The code below handles mangling field names to unique id's
 ## for types like ints, floats, strings, etc
 ## 
@@ -108,7 +112,7 @@ template saveField*[V](
     logDebug("CFG", "skipping name: ", keyId, name)
 
 template diffField*[V](
-    store: NvsConfig,
+    diffs: var DiffStore,
     base: string,
     index: int,
     name: string,
@@ -116,12 +120,15 @@ template diffField*[V](
 ) =
   const baseHash: Hash = mangleFieldName(base & "/" & name)
   let keyId = baseHash.toNvsId(index)
-  var previous: T
-  let res = loadFieldValue(store, keyid, previous)
+  var previous = getObj(typeof V)
+  let res = loadFieldValue(diffs.store, keyid, previous)
   if res:
     logDebug("CFG diff name:", name, keyId, " => ", value)
   else:
-    logDebug("CFG", "diffskipping name: ", keyId, name)
+    logDebug("CFG", "diff skipping name: ", keyId, name)
+    diffs.changed = true
+  if previous != value:
+    diffs.changed = true
 
 proc checkField*(
     overrideTest: static[bool],
@@ -165,7 +172,7 @@ template checkFieldTmpl( overrideTest, base, index, name, value: untyped) =
   static:
     checkField(overrideTest, base, index, name)
 
-proc diffAllImpl[T](store: NvsConfig, values: T, index: int, prefix: static[string]) =
+proc diffAllImpl[T](store: var DiffStore, values: T, index: int, prefix: static[string]) =
   const baseName = makeBaseName(prefix, T)
   echo "DIFFALLIMPL: ", $typeof(values), " basename: ", baseName
   doForAllFields(store, values, diffAllImpl, diffField, baseName)
@@ -216,7 +223,9 @@ proc isDiff*[T](settings: ConfigSettings[T], index: static[int] = 0): bool =
   ## 
   let idx = if index != 0: index else: settings.index
   var previous: T = getObj(T)
-  diffAllImpl(settings.store, previous, idx, prefix = "")
+  var diffStore = DiffStore(store: settings.store)
+  diffAllImpl(diffStore, previous, idx, prefix = "")
+  result = diffStore.changed
 
 proc newConfigSettings*[T](nvs: NvsConfig, config: T, index: static[int] = 0): ConfigSettings[T] =
   new(result)

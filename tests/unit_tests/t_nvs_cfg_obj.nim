@@ -186,3 +186,4 @@ suite "nvs complex config object":
     # check loaded
     let hasDiff = settings.isDiff()
     echo "hasDiff: ", repr(hasDiff)
+    check hasDiff == true

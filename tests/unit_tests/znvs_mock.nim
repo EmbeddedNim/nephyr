@@ -39,6 +39,8 @@ proc nvs_write*(fs: ptr nvs_fs; id: uint16; data: pointer; len: cint): cint =
   fs.data[id] = buf
 
 proc nvs_read*(fs: ptr nvs_fs; id: uint16; data: pointer; len: cint): cint =
+  if id notin fs.data:
+    return -2
   var buf = fs.data[id]
   copyMem(result.addr, buf[0].addr, 1)
   copyMem(data, buf[1].addr, len)
