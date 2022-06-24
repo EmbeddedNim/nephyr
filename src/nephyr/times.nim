@@ -59,19 +59,20 @@ proc delayMillis*(ts: int): bool {.discardable.} =
 #   while remaining != 0:
 #     remaining  = k_msleep(remaining)
 
-when defined(linux):
-  type
-    TimerId* = int
-elif defined(zephyr):
+when defined(zephyr):
   type
     TimerId* = ptr k_timer
 
-type
-  TimerFunc* = proc (timerid: TimerId) {.cdecl.}
+  type
+    TimerFunc* = proc (timerid: TimerId) {.cdecl.}
 
-proc createTimer*(timer: var k_timer, cb: TimerFunc) =
-  if cb != nil:
-    k_timer_init(addr timer, cb, nil)
+  proc createTimer*(timer: var k_timer, cb: TimerFunc) =
+    if cb != nil:
+      k_timer_init(addr timer, cb, nil)
+
+elif defined(posix):
+  type
+    TimerId* = int
 
 proc toTimeout*(delay: static[Millis]): k_timeout_t =
   ## convert Millis to k_timeout_t
