@@ -184,6 +184,5 @@ suite "nvs complex config object":
     settings.values.adc_calibs.c = 89.4324
 
     # check loaded
-    # settings.diff()
-
-  
+    let hasDiff = settings.isDiff()
+    echo "hasDiff: ", repr(hasDiff)
