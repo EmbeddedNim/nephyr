@@ -19,7 +19,7 @@ export Pins
 
 type
 
-  Pin* = object
+  Pin* = ref object
     port*: ptr device
     pin*: gpio_pin_t
     mode*: gpio_flags_t
