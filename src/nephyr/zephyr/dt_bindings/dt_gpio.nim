@@ -207,7 +207,7 @@ proc DT_GPIO_LABEL*(node_id: cminvtoken; gpio_pha: cminvtoken): cstring {.import
 ##  @return the pin cell value at index "idx"
 ##  @see DT_PHA_BY_IDX()
 ##
-proc DT_GPIO_PIN_BY_IDX*(node_id: cminvtoken; gpio_pha: cminvtoken; idx: int): gpio_pin_t {.
+proc DT_GPIO_PIN_BY_IDX*(node_id: cminvtoken; gpio_pha: cminvtoken; idx: cminvtoken): gpio_pin_t {.
     importc: "DT_GPIO_PIN_BY_IDX", header: hdr.}
 
 

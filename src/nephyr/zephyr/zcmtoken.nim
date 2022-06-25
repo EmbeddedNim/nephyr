@@ -1,4 +1,7 @@
-import macros
+import std/[macros, strutils]
+
+import cdecl/cdeclapi
+
 
 type
   cmtoken* = distinct string
@@ -66,6 +69,16 @@ macro CM_PROC*(macroName: untyped, margs: untyped): untyped =
       var mi2 {.importc: `ma`, global, nodecl, noinit.}: cminvtoken
       mi2
 
+proc mkTokPsuedoVar(nm: string): NimNode {.compileTime.} = 
+  let mi = newLit(nm)
+  result = quote do:
+      var mi2 {.importc: `mi`, global, nodecl, noinit.}: cminvtoken
+      mi2
+
+proc tokCompFmt(sfmt: string, args: varargs[string]): string {.compileTime.} = 
+  result = sfmt % args
+  
+
 macro `tok`*(token: untyped): cminvtoken = 
   let nm: string = 
     if token.kind == nnkAccQuoted:
@@ -80,11 +93,23 @@ macro `tok`*(token: untyped): cminvtoken =
       echo "tok args: ", token.treeRepr
       error("tok must be used like 'tok\"MYCTOKEN\"' or 'tok`MYCTOKEN`' ", token)
       raise newException(ValueError, "tok error")
+  result = mkTokPsuedoVar(nm)
   
+
+macro tokFrom*(nm: static[string]): cminvtoken = 
+  result = mkTokPsuedoVar(nm)
+
+
+macro ctokFromUntypedWithFmt*(strfmt: string, token: untyped): cminvtoken = 
+  let nm = strfmt.strVal % symbolName(token)
   let mi = newLit(nm)
   result = quote do:
       var mi2 {.importc: `mi`, global, nodecl, noinit.}: cminvtoken
       mi2
+
+template tokFromFmt*(sfmt: static[string], token: static[string]): cminvtoken = 
+  tokFrom(tokCompFmt(sfmt, token))
+
 
 macro CDefineDeclareVar*(name: untyped, macroRepr: untyped, retType: typedesc) =
   let macroInvokeName = newLit( macroRepr.repr )

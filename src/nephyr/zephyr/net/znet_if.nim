@@ -35,8 +35,6 @@ import posix
 
 const hdr = "<net/net_if.h>"
 
-
-
 ## *
 ##  @brief Network Interface unicast IP addresses
 ##
