@@ -13,6 +13,22 @@ import strformat
 
 proc NimMain() {.importc.}
 
+template wrappAllErrors*(name: string, procBody: untyped): untyped =
+  try:
+    `procBody`
+  except Exception as e:
+    ## manually print stack to handle lower memory devices
+    echo "[" & name & "]: exception: ", getCurrentExceptionMsg()
+    let stes = getStackTraceEntries(e)
+    for ste in stes:
+      echo "[" & name & "]: ", $ste
+  except Defect as e:
+    ## manually print stack to handle lower memory devices
+    echo "[" & name & "]: defect: ", getCurrentExceptionMsg()
+    let stes = getStackTraceEntries(e)
+    for ste in stes:
+      echo "[" & name & "]: ", $ste
+
 macro zephyr_main*(p: untyped): untyped =
   ## default wrapper that wraps exceptions and prints them out. 
   ## 
@@ -31,20 +47,7 @@ macro zephyr_main*(p: untyped): untyped =
   # wrap c body
   result[procBodyIdx] = quote do:
     NimMain() # initialize garbage collector memory, types and stack
-    try:
-      `procBody`
-    except Exception as e:
-      ## manually print stack to handle lower memory devices
-      echo "[main]: exception: ", getCurrentExceptionMsg()
-      let stes = getStackTraceEntries(e)
-      for ste in stes:
-        echo "[main]: ", $ste
-    except Defect as e:
-      ## manually print stack to handle lower memory devices
-      echo "[main]: defect: ", getCurrentExceptionMsg()
-      let stes = getStackTraceEntries(e)
-      for ste in stes:
-        echo "[main]: ", $ste
+    wrappAllErrors("main", `procBody`)
     echo "unknown error causing reboot"
     # sysReboot()
     sysPanic()
