@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.3.1"
+version       = "0.3.2"
 author        = "Jaremy J. Creechley"
 description   = "Nim wrapper for Zephyr RTOS"
 license       = "Apache-2.0"
@@ -12,9 +12,9 @@ requires "nim >= 1.6.5"
 requires "msgpack4nim >= 0.3.1"
 requires "stew >= 0.1.0"
 requires "cdecl >= 0.4.5"
-requires "https://github.com/EmbeddedNim/nephyrcli#head"
-requires "mcu_utils#head"
-requires "fastrpc#head"
+requires "https://github.com/EmbeddedNim/nephyrcli >= 0.3.1"
+requires "mcu_utils >= 0.3.3"
+requires "fastrpc >= 0.2.0"
 
 
 import os, sequtils, sugar
